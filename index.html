@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki - 首页</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+        ↑ 顶部
+</head>
+</button>    
+<body>
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()"><img src="llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+
+                <li><a href="index.html" class="active">首页</a></li>
+                <li><a href="about.html">关于我们</a></li>
+                <li><a href="art.html">艺术展示</a></li>
+                <li><a href="contact.html">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
+
+    <!-- 这里写全部的内容。知道吧，。 -->
+    <main id="main-content">
+        <h1> 劳埃德大师 Wiki</h1>
+        <p>欢迎来到劳埃德大师的wiki！您可以在此了解劳埃德大师相关的内容</p>
+        <br>
+        <br>
+        <p>小贴士：点击左上角的劳埃德大师可以回到上一页</p>
+    </main>
+
+    <br>
+    <hr>
+    <br>
+
+    <!-- 卡片事例。 -->
+    <div class="card">
+        <div class="card-body">
+            <h3>劳埃德简介</h3>
+            <p>这里是劳埃德人物简介，帮助您快速了解劳埃德大师</p>
+            <a href="introduction.html" class="card-btn">了解 →</a>
+        </div>
+    </div>
+
+    <br>
+    <div class="card">
+        <div class="card-body">
+            <h3>劳埃德历史</h3>
+            <p>这里是劳埃德相关历史事件，帮助您探究劳埃德的人生经历</p>
+            <a href="history.html" class="card-btn">了解 →</a>
+        </div>
+    </div>
+
+    <br>
+    <div class="card">
+        <div class="card-body">
+            <h3>劳埃德专业交流社区</h3>
+            <p>这里是劳埃德专业交流社区，专注于劳埃德大师艺术产出</p>
+            <a href="#" class="card-btn">了解 →</a>
+        </div>
+    </div>
+
+    <br>
+    <div class="card">
+        <div class="card-body">
+            <h3>劳埃德社区经典成员</h3>
+            <p>这里是劳埃德社区的主要成员</p>
+            <a href="#" class="card-btn">了解 →</a>
+        </div>
+    </div>
+
+    <br>
+    <div class="card">
+        <div class="card-body">
+            <h3>wiki创作者</h3>
+            <p>这里是劳埃德wiki的创作者们</p>
+            <a href="#" class="card-btn">了解 →</a>
+        </div>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="pagefind/pagefind-ui.js"></script>
+    <script>
+        new PagefindUI({ 
+            element: "#search",
+        });
+    </script>
+</body>
+</html>
