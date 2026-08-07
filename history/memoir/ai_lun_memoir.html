@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+</head>
+<body>
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+        ↑ 顶部
+    </button>    
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+
+                <li><a href="/index.html" class="active">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
+
+    <!-- 这里写全部的内容。知道吧，。 -->
+
+    <main id="main-content">
+        <h1>艾伦回忆录</h1>
+        <p></p>
+        <br>
+        <p>本文作者：<a href="/character/ai_lun.html">苦命的艾伦（QQ：3981311799）</a></p>
+    </main>
+    <br>
+    <hr>
+    <br>
+
+    <div class="toc">
+        <h2> 目录</h2>
+        <ul>
+            <li><a href="#ai_lun_memoir-1">前言</a></li>
+            
+            <li><a href="#ai_lun_memoir-2">第一章-劳埃德其人</a></li>
+
+            <li><a href="#ai_lun_memoir-3">第二章-翻天了，翻天了，不是梦</a></li>
+
+            <li><a href="#ai_lun_memoir-4">第三章-浪潮</a></li>
+
+            <li><a href="#ai_lun_memoir-5">第四章-七月事件</a></li>
+
+            <li><a href="#ai_lun_memoir-6">第五章-八四事件</a></li>
+
+            <li><a href="#ai_lun_memoir-7">后记</a></li>
+        </ul>
+    </div>
+
+    <br>
+    <br>
+
+    <h3 id="ai_lun_memoir-1">前言</h3>
+    <hr>
+    <br>
+<p>
+    我进这个群的时候，就养成了一个习惯——把那些我觉得值得记的事记下来。
+    <br><br>
+    起因很简单，就是觉得这些事以后可能会忘。
+    <br><br>
+    后来事情越来越多，记着记着就断了，也就没再管了。
+    <br><br>
+    但后面那段时间，不断有人来问我：“当时到底是怎么回事？”
+    <br><br>
+    问的人多了，我就想：
+    <br><br>
+    既然问的人这么多，我干脆把它写出来，免得一个人一个人地讲。
+    <br><br>
+    我写这些，不是为了评判谁对谁错，也不是为了给谁翻案或洗白。
+    <br><br>
+    只是想把这些年我们这群人一起经历过的事，尽可能完整地记下来。
+    <br><br>
+    事是真的，人也是真的，
+    <br><br>
+    只是有些称呼已经换了好几轮，有些人的名字已经想不起来了。
+    <br><br>
+    这本回忆录，算是对那些日子一个交代吧。
+    <br><br>
+</p>
+<br>
+<br>
+<h3 id="ai_lun_memoir-2">第一章-劳埃德其人</h3>
+<hr>
+<br>
+<p>
+    李岩喆出道就很火。最初网名叫“苦命的艾伦”。但只用了很短时间。
+    <br><br>
+    真正让他火起来、被大家记住的，是他那套“劳埃德”皮肤，加上菜得离谱的操作
+    <br><br>
+    ——硬是把自己玩成了一个网络红人。
+    <br><br>
+    他用“劳埃德”这个皮肤用得太久，后来干脆把网名也改成了劳埃德。
+    <br><br>
+</p>
+<hr>
+<br>
+<p>
+我第一次看到他，是在一个视频推荐里。
+<br><br>
+当时点进去，看见一个人顶着“劳埃德”的皮肤，打出了我见过最离谱的操作。
+<br><br>
+我看完笑出了声，然后就顺着主页把他所有视频都翻了一遍。
+<br><br>
+后面又发生了一些盗视频事件，我在知道这件事以后就取关他了。
+<br><br>
+</p>
+<hr>
+<br>
+<p>
+后来他第一次退网，号找不回来了。
+<br><br>
+过了挺长时间，他又新开了号，发了道歉视频说要回归。
+<br><br>
+我是看了那个视频之后，才加进了他新开的QQ群。
+<br><br>
+那时候是前年11月，天气已经开始转凉了。
+<br><br>
+进群那天，在我印象中还是很火的。
+<br><br>
+我还没了解太多。
+<br><br>
+没想到后面会发生那么多事。
+<br><br>
+</p>
+<hr>
+<br>
+<p>
+后来我才知道。他刚发完道歉视频的第二天，就把令狐——群里的老粉代表，
+<br><br>
+管理过维权群，第一次内战与他有关——拉黑了。
+<br><br>
+我记得好像大多数老粉都被他拉黑过。
+<br><br>
+后面他说过是什么理由，但我也忘了。
+<br><br>
+</p>
+<hr>
+<br>
+<p>
+    
+据说那时候谁给李岩喆钱多，谁就是正统。
+<br><br>
+这是老粉们一致肯定的。
+<br><br>
+当时李岩喆大概是对令狐说“金于臻是叛徒”，
+<br><br>
+又对金于臻说“令狐是叛徒”，两头挑，把关系彻底搅乱。
+<br><br>
+再往前追溯，大前年的时候，
+<br><br>
+好像是令狐还是尼古拉教他注册的QQ——他连QQ怎么注册都是别人教的。
+<br><br>
+（令狐。前端注）
+<br><br>
+</p>
+<hr>
+<br>
+<p>
+那段时期李岩喆自称信奉“三个神秘思想”，
+</p>
+<div class="card">
+    <div class="card-body">
+                    <img src="/image/record/09a5fff3fdfa537bd21cbab0bcda64f7.png" alt="大师聊天记录">
+            </div>
+        </div>
+<br><br>
+<p>
+在群里公开吹捧XTL，还专门为此画过一幅画。
+<br><br>
+金于臻同志和鬼头多次劝他，金于臻甚至因此被禁言过整整一个月。
+<br><br>
+就在那之前不久，李岩喆刚在群里说过“金于臻是我老婆”，
+<br><br>
+金于臻也送过他不少模组。
+</p>
+<br><br>
+<hr>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+
+<h3 id="ai_lun_memoir-3">第二章-翻天了，翻天了，不是梦</h3>
+<hr>
+<br>
+
+<p>
+    最终，艾露（现已半退网，前艾伦）、金于臻和我等人发起冲锋，史称“劳家军第二次内战”。
+    <br><br>
+    后续又爆发了一系列小矛盾，李岩喆解散了群聊。
+    <br><br>
+    艾露建了“第二入民阵线”，自己任群主，老粉们任管理，李岩喆只当一个吉祥物。
+    <br><br>
+    也就是在那段时间，我给李岩喆和他的AI分身争吵了几十句话的聊天记录截了图——从此成了群里的一幅名篇。
+    <br><br>
+    艾露当时还说过：“真假大师，哪个是真？哪个是假？”
+    <br><br>
+    后来李岩喆自建了“第三入民阵线”，在群里假装自己是个善于学习MLM的人。
+    <br><br>
+    但据后来了解，那些理论书他连书皮都没看过，却强迫群里的人搞什么背诵。
+    <br><br>
+    我大批他搞形式主义。他在群里又跟自己的AI分身吵了起来，
+    <br><br>
+    直接对AI分身用“神⭕️”来压，还说AI分身不属于入民。
+    <br><br>
+    他神⭕️过很多次，基本上每次都弄。我就是被他神⭕️整麻的
+    <br><br>
+    ——无论什么事，只要他想压人，就拿这一套出来，
+    <br><br>
+    虽然他连那些名词长什么样都不知道，只会说什么背诵什么。
+    <br><br>
+    后来我们又多次争吵，最终我和我挺多号都被踢出了群聊。
+    <br><br>
+    再后来不知道什么原因，艾露兵不血刃地拿下第三阵线。
+    <br><br>
+    在我的努力下，它变成了一个《进击的巨人》讨论群。
+    <br><br>
+</p>
+
+<hr>
+<br>
+<br>
+<p>
+不过后来我和艾露关系崩了
+<br>
+——那次他退网的时候不把群主转给我，而是转给了金于臻。
+<br><br>
+我当时闹了脾气。现在回头看，那时候很幼稚，
+<br><br>
+觉得自己对群的贡献很高，不甘心被那样对待。
+<br><br>
+“二民”后来成了金于臻备用群，
+<br><br>
+“三民”后来成了死群。
+<br><br>
+再后来我们和好了，但艾露已经很长时间不与人说话了，基本半退网了。
+<br><br>
+现在我自认为算是接了他的位置，
+<br><br>
+刚认识李岩喆的时候，群里面我和他的那个关系最密切。
+<br><br>
+</p>
+
+<br><br>
+<hr>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+
+<h3 id="ai_lun_memoir-4">第三章-浪潮</h3>
+<hr>
+<br>
+<p>
+    
+去年暑假，我们又和李岩喆修复了关系。
+<br><br>
+我当时算是卧底进去的。后来我和独尊这群人跟李岩喆连麦的时候，我们还模仿之前跟AI的对骂
+<br><br>
+——那时候大家都觉得好笑，那段时间也是群里最轻松的日子。
+<br><br>
+那段时间，金于臻的第一波MC服务器也开了。
+<br><br>
+那是李岩喆流量的第二波高潮，群里其乐融融。
+<br><br>
+不过后来在服务器是否重启的问题上，我和金于臻、林辉智闹掰了。
+<br><br>
+当时有一部分成员搞创造风，林辉智觉得得重启，
+<br><br>
+但后来第二次MC服务器里金于臻自己就是创造风头子。
+<br><br>
+</p>
+<hr>
+<br>
+<p>
+    后来群里的很多事情我没怎么看，有一场“第二点五次内战”，
+    <br><br>
+    之后暑假末尾李岩喆又解散了群聊。不过后来发现还是又进行了很多神⭕️，
+    <br><br>
+    只不过那个时候我很少看群，群里面消息太多了，一秒大概就有三四十条消息。
+    <br><br>
+    再后来，我和独尊把他拉回了我个人的服务器群——那是我的群，
+    <br><br>
+    我是群主。李岩喆说自己没时间管群，
+    <br><br>
+    过后来也没搞服务器了，也就成了专门的关于他的群了。
+    <br><br>
+    那段时间我和独尊轮流管群，管群的主力是我，独尊是宣传出力最大的。
+    <br><br>
+    到去年秋天，这群对外开放了，许多劳家军都进群了，
+    <br><br>
+    包括金于臻、林辉智、艾露。我和他们和好了。后来群又被封过一次，
+    <br><br>
+    我号也被点了，据说是林辉智干的。我还创过一个分群，但没过多久也解散了。
+    <br><br>
+</p>
+<hr>
+<br>
+<p>
+    
+又到寒假，金于臻进行了第二次服务器运动，
+<br><br>
+李岩喆的流量再次回到高峰，我们都挺替他开心的。
+<br><br>
+这期间还搞过几次抓内鬼活动。林辉智想打我们群，
+<br><br>
+但后来他不再行动了，我们也没再管。
+<br><br>
+那时候李岩喆说想要林辉智的大头照，
+<br><br>
+我直接把我同学的照片发了过去
+<br><br>
+——因为我那同学也传过我的照片。
+<br><br>
+结果他还真信了。
+<br><br>
+一个广东人背景墙上怎么可能写着“湖南省”三个字，
+<br><br>
+正常人都不应该信，但李岩喆信了。
+<br><br>
+</p>
+<hr>
+<br>
+<p>
+    寒假结束的时候，李岩喆开始玩三角洲。
+    <br><br>
+    他玩三角洲的时间越来越长，跑酷视频越出越少，
+    <br><br>
+    后来干脆就只剩三角洲视频了。
+    <br><br>
+    三角洲那东西远没他跑酷幽默，技术也谈不上，完全就是鸡肋
+    <br><br>
+    ——食之无味，弃之可惜。
+    <br><br>
+    那段时间我们也和他玩过，
+    <br><br>
+    群里面对他不满其实挺多的，但我们还是在保卫他。
+    <br><br>
+</p>
+
+<br><br>
+<hr>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+
+<h3 id="ai_lun_memoir-5">第四章-七月事件</h3>
+<hr>
+<br>    
+<p>
+    
+到七月，有人开始模仿他，换上他前年寒假用的那个头像，学他说话。
+<br><br>
+他就开始动用神权，一直压人。
+<br><br>
+我觉得这不就是在开玩笑吗？他好像经常面对这种玩笑就不领情。
+<br><br>
+为了限制他的权利，我当时出台过不少群规，但全被他撤回了。
+<br><br>
+他说：“小群只有规，没有法。”
+<br><br>
+那时候在独尊的宣传下，群聊已经有二百多个人了。
+<br><br>
+他玩三角洲玩得菜，问题是他对待我们的态度也在变。
+<br><br>
+</p>
+
+<br><br>
+<hr>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+
+
+<h3 id="ai_lun_memoir-6">第五章-八四事件</h3>
+<hr>
+<br>    
+<p>
+    到了8月4日，矛盾才正式激化。
+    <br><br>
+    独尊在分群开了个玩笑，把群名改成“打倒李岩喆”。
+    <br><br>
+    李岩喆就以这个为理由，直接撤了独尊的管理员。
+    <br><br>
+    我们跟他理论，基本上我们说十多句，他才回一句。
+    <br><br>
+    我说他忘恩负义，他说我对他一点恩都没有
+    <br><br>
+    ——还拿我给他的红跟他朋友给他的红比。
+    <br><br>
+    恩情之间怎么能比较呢？
+    <br><br>
+    我红给他少，是因为他经常自己找朋友玩，
+    <br><br>
+    很少理我们，总共都没出多少红。
+    <br><br>
+    和他玩的对局就那么六七把，我出了三个红，给了他两个，
+    <br><br>
+    这难道还算少吗？
+    <br><br>
+    最后我和独尊全被踢了。
+    <br><br>
+    我们联系到另一个管理员李文亚同志，把群里所有人全踢了。
+    <br><br>
+    第二日凌晨，跳跳虎同志和独尊对他的群聊进行了举报。
+    <br><br>
+    那天下午，他的群聊和号全被封了。以胜利告终。
+    <br><br>
+    但“胜利”这个词用在这里其实很别扭。
+    <br><br>
+    群没了，号没了，那些一起玩过的人也散了。
+    <br><br>
+    那些曾经一起笑过的日子，就这样慢慢耗尽了...
+    <br><br>
+</p>
+
+<br><br>
+<hr>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+
+
+<h3 id="ai_lun_memoir-7">后记</h3>
+<hr>
+<br>    
+<p>
+    其实回头想想，这段历史就像一场不断重复的循环。
+    <br><br>
+    他出道、火、退网、回来、道歉、再火、再闹、再散。
+    <br><br>
+    每一轮循环里，都会有人走、有人留、有人重新回来、有人再也不回来。
+    <br><br>
+    我写下这些，不是为了评判谁对谁错，
+    <br><br>
+    只是为了记录一段真实存在过的历史
+    <br><br>
+    ——那些在QQ群里建立又瓦解的共同体，
+    <br><br>
+    那些曾经一起玩、一起笑的人，以及那个叫李岩喆的人。
+    <br><br>
+</p>
+
+<br><br>
+<hr>
+<br>
+
+<br>
+<br>
+<br>
+<br>
+<p>
+    全文完
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script src="/js/theme.js"></script>
+    <script src="/pagefind/pagefind-ui.js"></script>
+    <script>
+        new PagefindUI({ 
+            element: "#search",
+        });
+    </script>
+</body>
+</html>
