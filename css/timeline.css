@@ -1,0 +1,149 @@
+/* ==========================================
+   timeline.css - 圆点垂直居中，移动端适配
+   ========================================== */
+
+   .timeline {
+    position: relative;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 40px 0;
+}
+
+/* 中央竖直线 */
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 4px;
+    background: var(--primary);
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+/* ===== 条目容器：垂直居中 ===== */
+.timeline-item {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;          /* 垂直居中 */
+    padding: 20px 0;
+    position: relative;
+    width: 50%;
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* 左侧条目 */
+.timeline-item {
+    margin-left: 0;
+    padding-right: 40px;
+    text-align: right;
+}
+
+/* 右侧条目 */
+.timeline-item:nth-child(even) {
+    margin-left: 50%;
+    padding-right: 0;
+    padding-left: 40px;
+    text-align: left;
+    transform: translateX(30px);
+}
+
+/* ===== 内容卡片 ===== */
+.timeline-item .content {
+    background: var(--card-bg);
+    padding: 20px 24px;          /* 保持对称 */
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    max-width: 80%;
+    transition: box-shadow 0.3s;
+}
+.timeline-item .content:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.timeline-item .content h3 {
+    color: var(--heading);
+    margin: 0 0 6px 0;
+    font-size: 1.2rem;
+}
+.timeline-item .content p {
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* ===== 小圆点：覆盖时间线且垂直居中 ===== */
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    top: 50%;                      /* 垂直居中 */
+    width: 16px;
+    height: 16px;
+    background: var(--primary);
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--primary);
+    z-index: 2;
+}
+
+/* 左侧条目：圆点位于右边缘，水平居中到时间线 */
+.timeline-item::after {
+    right: 0;
+    transform: translateX(50%) translateY(-50%);
+}
+
+/* 右侧条目：圆点位于左边缘，水平居中到时间线 */
+.timeline-item:nth-child(even)::after {
+    left: 0;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+/* ===== 浮现动画 ===== */
+.timeline-item.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ===== 响应式：移动端（宽度 ≤ 700px） ===== */
+@media (max-width: 700px) {
+    /* 1. 竖线位置固定到左侧 20px */
+    .timeline::before {
+        left: 20px;
+    }
+
+    /* 2. 每个条目占满宽度，卡片靠左 */
+    .timeline-item {
+        width: 100%;
+        margin-left: 0 !important;
+        padding-left: 50px !important;  /* 给圆点留出空间 */
+        padding-right: 0 !important;
+        text-align: left !important;
+        transform: none !important;      /* 取消横向偏移 */
+        align-items: center;             /* 保持垂直居中 */
+    }
+
+    /* 3. 偶数条目也强制靠左（清除右侧布局） */
+    .timeline-item:nth-child(even) {
+        transform: none !important;
+    }
+
+    /* 4. 圆点精准定位在竖线位置（left: 20px），垂直居中 */
+    .timeline-item::after {
+        left: 20px !important;
+        right: auto !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+    }
+
+    /* 5. 卡片宽度自适应，无最大宽度限制 */
+    .timeline-item .content {
+        max-width: 100%;
+        margin: 0;
+        /* 如果需要卡片间距，可以加 margin-bottom，但保持水平靠左 */
+    }
+}

@@ -206,3 +206,39 @@ if (topBtn) {
         }
     });
 }
+
+
+(function() {
+    'use strict';
+
+    // 当 DOM 加载完成后初始化所有时间线
+    document.addEventListener('DOMContentLoaded', function() {
+        // 找到页面上所有 .timeline 容器
+        const timelines = document.querySelectorAll('.timeline');
+        if (!timelines.length) return;
+
+        // 为每个时间线独立创建观察器
+        timelines.forEach(function(timeline) {
+            const items = timeline.querySelectorAll('.timeline-item');
+            if (!items.length) return;
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                        // 如果想只触发一次，可以取消观察
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.3,
+                rootMargin: '0px'
+            });
+
+            items.forEach(function(item) {
+                observer.observe(item);
+            });
+        });
+    });
+
+})();
