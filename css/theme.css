@@ -754,3 +754,24 @@ html {
     transform: translateX(-4px); /* 向左微移，增加动感 */
     text-decoration: none;
 }
+
+/* ===== 展示 HTML 代码的容器 ===== */
+.code-block {
+    background: var(--input-bg);        /* 跟随你的输入框背景色 */
+    border: 1px solid var(--border);     /* 跟随主题边框 */
+    border-radius: var(--border-radius);
+    padding: 20px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text);
+    overflow-x: auto;                    /* 防止窄屏时横向溢出 */
+    white-space: pre-wrap;               /* 自动换行 */
+    margin: 16px 0;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.code-block code {
+    font-family: inherit;
+    color: var(--text);
+    display: block;
+}
