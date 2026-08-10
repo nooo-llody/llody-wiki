@@ -1,0 +1,249 @@
+
+    <!-- 要改的地方在这 -->
+         <!-- 需要注意的是，有一些地方写的中文是用于占位的-->
+
+         <!-- “个人B站UID”处一定要改成UID  -->
+         <!-- 其他的地方倒是无所谓。如果可以的话当然要改。但是不想改也行 -->
+    <!-- 你的名字拼音处格式为：lao_ai_de(劳埃德),nooo (nooo) 对大小写敏感 -->
+
+    <main id="main-content">
+        <h1> 你的名字拼音</h1>
+        <p>劳埃德艺术家</p>
+        <br>
+        <p>本文作者：<a href="/character/你的名字拼音.html">你的名字拼音（QQ：3778283627）</a>
+    </main>
+    <br>
+    <hr>
+    <br>
+
+    <div class="toc">
+        <h2> 目录</h2>
+        <ul>
+            <li><a href="#你的名字拼音-1">基本资料</a></li>
+            <li><a href="#你的名字拼音-2">人物简介</a></li>
+            <li><a href="#你的名字拼音-3">人物生平</a></li>
+            <li><a href="#你的名字拼音-4">账号状态</a></li>
+            <li><a href="#你的名字拼音-5">网络影响</a></li>
+        </ul>
+    </div>
+    
+    <h3 id="你的名字拼音-1">基本资料</h3>
+
+        <!-- 如果有不想写的地方就删了,删这些： -->
+    <!--    <tr>  -->
+    <!--        <th> -->
+    <!--            项目名称 -->
+    <!--        </th> -->
+    <!--        <th> -->
+    <!--            内容名称 -->
+    <!--        </th> -->
+    <!--    </tr>  -->
+
+    
+<table border="1">
+    <tr>
+        <th>
+            项目
+        </th>
+        <th>
+            内容
+        </th>
+    </tr>
+    <tr>
+        <td>
+            名称
+        </td>
+        <td>
+            你的名字（ID）
+        </td>
+    </tr>
+    <tr>
+        <td>
+            出生日期
+        </td>
+        <td>
+            你的出生日期
+        </td>
+    </tr>
+    <tr>
+        <td>
+            主要平台
+        </td>
+        <td>
+            QQ
+        </td>
+    </tr>
+    <tr>
+        <td>
+            阵营
+        </td>
+        <td>
+            保劳派
+        </td>
+    </tr>
+    
+</table>
+
+
+        <!-- 按 -->
+        <!-- <br><br> -->
+        <!-- 第XX行 -->
+        <!-- 这个格式写 -->
+
+    <br>
+    <h3 id="你的名字拼音-2">人物简介</h3>
+    <hr>
+    <p>第一行
+    <br><br>
+    第二行
+
+
+
+
+
+    <br><br>
+    </p>
+
+<br>
+<br>
+<br>
+            
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+
+    <h3 id="你的名字拼音-3">人物生平</h3>
+    <div class="card">
+        <div class="card-body">
+
+                        <h2 style="margin-top: 40px;">日期</h2>
+                        <h3>标题</h3>
+                        <hr>
+                        <br>
+                        <p>内容</p>
+                </div>
+            </div>
+
+    <div class="timeline">
+
+        
+
+                <!-- 需要加按这个作为一个单元 -->
+
+
+                <!-- 单元开始 -->
+
+        <div class="timeline-item">
+            <div class="content">
+                <h3>日期</h3>
+                <hr>
+                <p>内容</p>
+                <p>内容</p>               
+                <p>内容...</p>               
+                <!-- 按<p>内容...</p> 格式写。 -->
+
+
+                
+
+            </div>
+        </div>
+
+
+                <!-- 单元结束 -->
+
+
+        <div class="timeline-item">
+            <div class="content">
+                <h3>日期</h3>
+                <hr>
+                <p>内容</p>
+                <p>内容</p>
+            </div>
+        </div>
+
+        
+        <div class="timeline-item">
+            <div class="content">
+                <h3>未来...</h3>
+                <hr>
+                <p>内容</p>
+            </div>
+        </div>
+
+    </div>
+        <br>
+    <br>
+    <br>
+
+
+    <h3 id="你的名字拼音-4">账号状态</h3>
+    <br>
+
+
+                <!-- 需要加按这个作为一个单元 -->
+
+
+                <!-- 单元开始 -->
+
+    <div class="card"><a href="https://space.bilibili.com/个人B站UID">
+        <div class="card-body">
+                        <p>第一账号</p>
+                        <ol>
+                            <li>
+                                平台：哔哩哔哩（bilibili）
+                            </li>
+                            <li>
+                                功能：账号功能
+                            </li>
+                            <li>
+                                状态：已弃用/正在使用/未启用
+                            </li>
+                        </ol>
+                </div>
+            </a>
+            </div>
+            <br>
+                 <!-- 单元结束 -->
+
+
+
+
+            <div class="card"><a href="https://space.bilibili.com/个人B站UID">
+                <div class="card-body">
+                                <p>第二账号</p>
+                                <ol>
+                                    <li>
+                                        平台：哔哩哔哩（bilibili）
+                                    </li>
+                                    <li>
+                                        功能：账号功能
+                                    </li>
+                                    <li>
+                                        状态：已弃用/正在使用/未启用
+                                    </li>
+                                </ol>
+                        </div>
+                    </a>
+                    </div>
+                
+
+
+
+        <br>
+        <br>
+
+        <h3 id="你的名字拼音-5">网络影响</h3>
+        <hr>
+        <p>
+            内容
+                             <!-- 换行用<br> -->
+        </p>
+
+<br><br><br>
+
+
+
+
