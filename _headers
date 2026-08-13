@@ -4,5 +4,8 @@
 /js/*
   Content-Type: application/javascript
 
-/pagefind/*
+/pagefind/*.css
+  Content-Type: text/css
+
+/pagefind/*.js
   Content-Type: application/javascript
