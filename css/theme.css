@@ -1,4 +1,8 @@
-* {
+/* ==========================================
+   全局重置 & 主题变量
+   ========================================== */
+
+   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -22,6 +26,10 @@
     --nav-height: 64px;
 }
 
+/* ==========================================
+   基础元素
+   ========================================== */
+
 body {
     font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
     background-color: var(--bg);
@@ -31,6 +39,7 @@ body {
     transition: background-color 0.2s, color 0.2s;
     min-height: 100vh;
     line-height: 1.6;
+    animation: pageFadeIn 0.35s ease-out forwards;
 }
 
 h1, h2, h3, h4 {
@@ -39,6 +48,66 @@ h1, h2, h3, h4 {
 }
 
 p { margin: 6px 0; }
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+a:hover { text-decoration: underline; }
+
+ul, ol { padding-left: 24px; }
+
+img {
+    max-width: 300px;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border);
+    margin: 8px 0;
+}
+
+blockquote {
+    border-left: 4px solid var(--primary);
+    padding-left: 16px;
+    margin: 12px 0;
+    font-style: italic;
+    color: var(--text);
+    opacity: 0.8;
+}
+
+/* ==========================================
+   表单元素
+   ========================================== */
+
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg);
+    color: var(--text);
+    font-size: var(--font-size);
+}
+
+button,
+input[type="submit"],
+input[type="reset"] {
+    background-color: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: calc(var(--font-size) * 0.9);
+    transition: filter 0.2s, transform 0.1s;
+    margin: 4px 0;
+}
+button:hover { filter: brightness(0.85); }
+button:active { transform: scale(0.97); }
+
+/* ==========================================
+   表格
+   ========================================== */
 
 table {
     border-collapse: collapse;
@@ -60,55 +129,10 @@ th {
     color: #fff;
 }
 
-a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-}
-a:hover { text-decoration: underline; }
+/* ==========================================
+   导航栏
+   ========================================== */
 
-button, input[type="submit"], input[type="reset"] {
-    background-color: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 8px 20px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: calc(var(--font-size) * 0.9);
-    transition: filter 0.2s, transform 0.1s;
-    margin: 4px 0;
-}
-button:hover { filter: brightness(0.85); }
-button:active { transform: scale(0.97); }
-
-input[type="text"], input[type="password"], input[type="number"] {
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius);
-    background-color: var(--input-bg);
-    color: var(--text);
-    font-size: var(--font-size);
-}
-
-ul, ol { padding-left: 24px; }
-
-img {
-    max-width: 300px;
-    border-radius: var(--border-radius);
-    border: 2px solid var(--border);
-    margin: 8px 0;
-}
-
-blockquote {
-    border-left: 4px solid var(--primary);
-    padding-left: 16px;
-    margin: 12px 0;
-    font-style: italic;
-    color: var(--text);
-    opacity: 0.8;
-}
-
-/* ===== 导航栏 ===== */
 .navbar {
     position: fixed;
     top: 0;
@@ -176,7 +200,10 @@ blockquote {
     flex-shrink: 0;
 }
 
-/* 搜索框 */
+/* ==========================================
+   自定义搜索框（原生 search-wrapper）
+   ========================================== */
+
 .search-wrapper {
     display: flex;
     align-items: center;
@@ -219,7 +246,10 @@ blockquote {
 }
 .search-wrapper .search-btn:hover { filter: brightness(0.88); }
 
-/* 自定义按钮 */
+/* ==========================================
+   自定义按钮 & 面板
+   ========================================== */
+
 .customize-btn {
     background: var(--primary);
     color: #fff;
@@ -243,7 +273,6 @@ blockquote {
 }
 .customize-btn:active { transform: scale(0.96); }
 
-/* 自定义面板 */
 .customize-panel {
     position: fixed;
     top: calc(var(--nav-height) + 12px);
@@ -338,251 +367,37 @@ blockquote {
     border-radius: 10px;
 }
 
-/* 搜索高亮（如果你保留了当前页高亮） */
-.search-highlight {
-    background-color: #ffff99 !important;
-    color: #1a2332 !important;
-    border-radius: 2px;
-    padding: 0 2px;
-}
-
-/* 搜索结果提示 */
-#searchResultInfo {
-    position: fixed;
-    top: calc(var(--nav-height) + 12px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--card-bg);
-    backdrop-filter: blur(8px);
-    padding: 8px 24px;
-    border-radius: 50px;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    z-index: 3000;
-    font-size: 0.95rem;
-    display: none;
-    color: var(--text);
-    transition: opacity 0.3s;
-    pointer-events: none;
-}
-#searchResultInfo.show { display: block; }
-
-/* 响应式 */
-@media (max-width: 850px) {
-    .navbar {
-        padding: 0 16px;
-        flex-wrap: wrap;
-        height: auto;
-        min-height: var(--nav-height);
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
-    body { padding-top: calc(var(--nav-height) + 60px); }
-    .navbar-links {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-top: 4px;
-    }
-    .nav-actions { flex: 1; justify-content: flex-end; }
-    .search-wrapper input[type="text"] { width: 100px; }
-    .search-wrapper input[type="text"]:focus { width: 130px; }
-}
-
-@media (max-width: 500px) {
-    .navbar-brand span { display: none; }
-    .navbar-links li a { padding: 4px 8px; font-size: 0.8rem; }
-    .search-wrapper input[type="text"] { width: 70px; font-size: 0.8rem; }
-    .search-wrapper input[type="text"]:focus { width: 100px; }
-    .search-wrapper .search-btn { padding: 4px 10px; font-size: 0.75rem; }
-    .customize-btn { padding: 4px 12px; font-size: 0.8rem; }
-    .customize-btn span { display: none; }
-}
 /* ==========================================
-   卡片样式 (Card Styles)
+   Pagefind 搜索框 - 完整覆盖
    ========================================== */
 
-/* 1. 单个卡片容器 */
-.card {
-    background: var(--card-bg);          /* 跟随主题背景 */
-    border: 1px solid var(--border);      /* 跟随主题边框 */
-    border-radius: var(--border-radius);  /* 跟随主题圆角 */
-    padding: 0;                           /* 内边距由内部元素控制 */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* 轻微阴影增加立体感 */
-    transition: transform 0.25s ease, box-shadow 0.3s ease;
-    overflow: hidden;                    /* 保证圆角裁切图片 */
-    display: flex;
-    flex-direction: column;              /* 内容垂直排列 */
-    height: 100%;                        /* 保证同一网格内等高 */
-}
-
-/* 2. 鼠标悬停效果（提升交互感） */
-.card:hover {
-    transform: translateY(-6px);         /* 轻轻浮起 */
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-    border-color: var(--primary);        /* 边框变为主色 */
-}
-
-/* 3. 卡片图片（铺满顶部） */
-.card-img {
-    width: 100%;
-    height: 200px;                       /* 固定高度，方便统一 */
-    object-fit: cover;                  /* 图片裁剪居中，不变形 */
-    display: block;
-    background-color: var(--border);    /* 图片加载前的占位色 */
-}
-
-/* 4. 卡片内容区域（文字部分） */
-.card-body {
-    padding: 18px 20px 20px;
-    flex: 1;                            /* 自动撑满剩余空间 */
-    display: flex;
-    flex-direction: column;
-}
-
-.card-body h3 {
-    margin: 0 0 8px 0;
-    font-size: 1.2rem;
-    color: var(--heading);
-}
-
-.card-body p {
-    margin: 0 0 12px 0;
-    font-size: 0.95rem;
-    color: var(--text);
-    line-height: 1.5;
-    flex: 1;                            /* 把按钮推向底部 */
-}
-
-/* 5. 卡片上的按钮（如果有） */
-.card-body .card-btn {
-    align-self: flex-start;             /* 按钮左对齐，不拉伸 */
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 6px 18px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: filter 0.2s;
-    text-decoration: none;
-    display: inline-block;
-}
-.card-body .card-btn:hover {
-    filter: brightness(0.85);
-    text-decoration: none;
-}
-
-/* ===== 卡片网格布局 ===== */
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 24px;                          /* 卡片之间的间距 */
-    margin: 20px 0 30px;
-}
-
-/* 针对小屏幕优化 */
-@media (max-width: 600px) {
-    .card-grid {
-        grid-template-columns: 1fr;      /* 手机上一列显示 */
-        gap: 16px;
-    }
-    .card-img {
-        height: 160px;
-    }
-}
-
-/* 1. 现代浏览器顶级过渡（Chrome/Edge） */
-@view-transition { navigation: auto; }
-::view-transition-old(root) { animation: 0.3s ease-out both fade-out; }
-::view-transition-new(root) { animation: 0.35s ease-in both fade-in; }
-
-/* 2. 全浏览器兜底入场动画（Firefox/Safari/旧版） */
-@keyframes pageFadeIn {
-    0% { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
-}
-body {
-    animation: pageFadeIn 0.35s ease-out forwards;
-}
-
-/* 共用关键帧 */
-@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
-@keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
-
-#search {
-    position: relative;
-    display: inline-block;
-    /* 保持与之前相同的宽度 */
-    margin-right: 12px;  /* 新增：向左微移（调整数值可改变距离） */
-}
-
-
-
-
-/* 搜索结果下拉面板：绝对定位，脱离文档流 */
-/* 删除了重复定义，只保留一份，并添加 :empty 隐藏 */
-.pagefind-ui__drawer {
-    position: absolute !important;
-    top: calc(100% + 8px) !important;
-    left: 0 !important;
-    right: 0 !important;
-    min-width: 280px !important;
-    background: var(--card-bg) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: var(--border-radius) !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 6px 0 !important;
-    max-height: 400px !important;
-    overflow-y: auto !important;
-    z-index: 9999 !important;
-}
-/* 空状态时隐藏下拉面板 */
-.pagefind-ui__drawer:empty {
-    display: none !important;
-}
-
-/* 调整下拉面板内的文本颜色，跟随主题 */
-.pagefind-ui__result {
-    color: var(--text) !important;
-}
-.pagefind-ui__result-link {
-    color: var(--accent) !important;
-}
-.pagefind-ui__result-title {
-    color: var(--heading) !important;
-}
-.pagefind-ui__result-excerpt {
-    color: var(--text) !important;
-    opacity: 0.8;
-}
-/* ===== Pagefind 搜索框 - 主题适配（保留清除按钮） ===== */
-
-/* 搜索框容器（合并了之前的定义） */
+/* 容器 */
 #search {
     position: relative;
     display: inline-block;
     width: 200px;
-    margin-right: 12px;   /* 向左微移 */
+    margin-right: 12px;
 }
 
-/* 输入框 */
+/* 输入框 - 完全重写，兼容所有版本 */
 .pagefind-ui__search-input {
-    background: var(--input-bg) !important;
-    color: var(--text) !important;
+    all: revert !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    width: 100% !important;
+    height: 36px !important;
+    padding: 6px 12px 6px 36px !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--border-radius) !important;
-    padding: 6px 12px !important;          /* 与普通 input 内边距一致 */
-    height: 36px !important;               /* 固定高度，避免跳动 */
+    background-color: var(--input-bg) !important;
+    color: var(--text) !important;
     font-size: var(--font-size) !important;
     outline: none !important;
     box-shadow: none !important;
     transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    font-weight: 400 !important;
 }
 
 .pagefind-ui__search-input::placeholder {
@@ -595,7 +410,12 @@ body {
     box-shadow: 0 0 0 3px rgba(59, 127, 189, 0.2) !important;
 }
 
-/* 清除按钮（现在保留并美化） */
+/* 隐藏默认搜索按钮（🔎 以 ::before 形式存在，下面单独控制） */
+.pagefind-ui__search-button {
+    display: none !important;
+}
+
+/* 清除按钮（×） */
 .pagefind-ui__search-clear {
     color: var(--text) !important;
     background: transparent !important;
@@ -610,9 +430,24 @@ body {
     opacity: 1;
 }
 
-/* 隐藏默认搜索按钮（保留输入框右侧的清除按钮） */
-.pagefind-ui__search-button {
-    display: none !important;
+/* 搜索图标（::before 伪元素） */
+.pagefind-ui__form::before {
+    top: 50% !important;
+    left: 12px !important;
+    transform: translateY(-50%) !important;
+    width: 18px !important;
+    height: 18px !important;
+    background-color: var(--text) !important;
+    opacity: 0.7 !important;
+    -webkit-mask-size: 100% !important;
+    mask-size: 100% !important;
+    z-index: 9 !important;
+    pointer-events: none !important;
+}
+/* 聚焦时图标变色 */
+.pagefind-ui__form:focus-within::before {
+    background-color: var(--primary) !important;
+    opacity: 1 !important;
 }
 
 /* 下拉结果面板 */
@@ -656,8 +491,6 @@ body {
     opacity: 0.8;
     font-size: 0.9rem;
 }
-
-/* 悬停高亮 */
 .pagefind-ui__result:hover {
     background: var(--primary) !important;
     color: #fff !important;
@@ -677,151 +510,168 @@ body {
     border-radius: 10px;
 }
 
-/* ===== 修正 Pagefind 搜索图标（:before 伪元素） ===== */
+/* ==========================================
+   搜索结果提示（当前页高亮）
+   ========================================== */
 
-/* 覆盖默认的图标样式 */
-.pagefind-ui__form.svelte-e9gkc3:before {
-    /* 位置：垂直居中 */
-    top: 50% !important;
-    left: 12px !important;           /* 与输入框内边距对齐 */
-    transform: translateY(-50%) !important;
-    
-    /* 尺寸：适当大小 */
-    width: 18px !important;
-    height: 18px !important;
-    
-    /* 颜色：跟随主题文字颜色 */
-    background-color: var(--text) !important;
-    
-    /* 保留 mask 相关属性 */
-    -webkit-mask-size: 100% !important;
-    mask-size: 100% !important;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    
-    /* 其他 */
-    opacity: 0.7 !important;
-    z-index: 9 !important;
-    pointer-events: none !important;
+.search-highlight {
+    background-color: #ffff99 !important;
+    color: #1a2332 !important;
+    border-radius: 2px;
+    padding: 0 2px;
 }
 
-/* 输入框聚焦时，图标变色（提升交互感） */
-.pagefind-ui__form:focus-within.svelte-e9gkc3:before {
-    background-color: var(--primary) !important;
-    opacity: 1 !important;
-}
-
-/* 确保输入框有足够的左内边距，为图标留空间 */
-.pagefind-ui__search-input {
-    padding-left: 36px !important;   /* 为左侧图标留出空间 */
-}
-
-/* 悬停时图标变为主色（可选） */
-.pagefind-ui__search-button:hover .pagefind-ui__form.svelte-e9gkc3:before {
-    background-color: var(--primary) !important;
-    opacity: 1 !important;
-}
-
-
-/* ===== 展示 HTML 代码的容器 ===== */
-.code-block {
-    background: var(--input-bg);        /* 跟随你的输入框背景色 */
-    border: 1px solid var(--border);     /* 跟随主题边框 */
-    border-radius: var(--border-radius);
-    padding: 20px 24px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
+#searchResultInfo {
+    position: fixed;
+    top: calc(var(--nav-height) + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    padding: 8px 24px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    z-index: 3000;
+    font-size: 0.95rem;
+    display: none;
     color: var(--text);
-    overflow-x: auto;                    /* 防止窄屏时横向溢出 */
-    white-space: pre-wrap;               /* 自动换行 */
-    margin: 16px 0;
-    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: opacity 0.3s;
+    pointer-events: none;
 }
+#searchResultInfo.show { display: block; }
 
-.code-block code {
-    font-family: inherit;
-    color: var(--text);
-    display: block;
-}
+/* ==========================================
+   卡片
+   ========================================== */
 
-/* 基础重置 */
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: system-ui, sans-serif;
-    background: #f5f6fa;
-    padding: 40px;
-}
-h1 { margin-bottom: 24px; }
-
-/* 卡片网格 */
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
-}
-
-/* 卡片容器 */
 .card {
-    background: #fff;
-    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.3s ease;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary);
 }
 
-/* 视频容器（4:3 比例） */
-.card-video-wrapper {
-    position: relative;
-    padding-bottom: 75%;          /* 4:3 = 3/4 */
-    height: 0;
-    background-color: #000;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    overflow: hidden;
-}
-
-/* 动态插入的 iframe（绝对定位覆盖） */
-.card-video-wrapper iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
+.card-img {
     width: 100%;
-    height: 100%;
-    border: 0;
-    z-index: 2;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    background-color: var(--border);
 }
 
-/* 播放时隐藏背景图（由 JS 添加 playing 类） */
-.card-video-wrapper.playing {
-    background-image: none !important;
-}
-
-/* 卡片底部文字 */
 .card-body {
-    padding: 16px;
+    padding: 18px 20px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 .card-body h3 {
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: var(--heading);
+}
+.card-body p {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.5;
+    flex: 1;
+}
+.card-body .card-btn {
+    align-self: flex-start;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 6px 18px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: filter 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+.card-body .card-btn:hover {
+    filter: brightness(0.85);
+    text-decoration: none;
 }
 
-/* ===== 返回顶部按钮 ===== */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    margin: 20px 0 30px;
+}
+@media (max-width: 600px) {
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .card-img { height: 160px; }
+}
+
+/* ==========================================
+   目录（TOC）
+   ========================================== */
+
+.toc {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    padding: 20px 28px;
+    margin: 20px 0 30px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.toc h2 {
+    margin: 0 0 12px 0;
+    font-size: 1.2rem;
+    color: var(--heading);
+}
+.toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+.toc ul li a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+.toc ul li a:hover {
+    border-bottom-color: var(--primary);
+    text-decoration: none;
+}
+@media (max-width: 600px) {
+    .toc ul { flex-direction: column; gap: 6px; }
+}
+
+/* ==========================================
+   返回顶部按钮
+   ========================================== */
+
 .back-top-btn {
-    position: fixed !important;   /* 强制固定定位 */
-    bottom: 100px !important;     /* 距离底部 100px */
-    right: 30px !important;       /* 距离右侧 30px */
-    z-index: 999 !important;      /* 确保在其他内容之上 */
-    
+    position: fixed !important;
+    bottom: 100px !important;
+    right: 30px !important;
+    z-index: 999 !important;
     background: var(--primary);
     color: #fff;
     border: none;
@@ -831,7 +681,7 @@ h1 { margin-bottom: 24px; }
     cursor: pointer;
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
     transition: opacity 0.3s, transform 0.2s;
-    opacity: 0;                   /* 默认隐藏 */
+    opacity: 0;
     pointer-events: none;
 }
 .back-top-btn.show {
@@ -843,53 +693,138 @@ h1 { margin-bottom: 24px; }
     transform: scale(1.05);
 }
 
-/* ===== 完全重写 Pagefind 搜索输入框（兼容所有版本） ===== */
-
-/* 输入框 */
-.pagefind-ui__search-input {
-    all: revert !important;           /* 重置 Pagefind 的 all: unset */
-    box-sizing: border-box !important;
-    display: flex !important;
-    width: 100% !important;
-    height: 36px !important;
-    padding: 6px 12px 6px 36px !important;
-    border: 1px solid var(--border) !important;
-    border-radius: var(--border-radius) !important;
-    background-color: var(--input-bg) !important;
-    color: var(--text) !important;
-    font-size: var(--font-size) !important;
-    outline: none !important;
-    box-shadow: none !important;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    font-weight: 400 !important;
+.back-btn {
+    display: inline-block;
+    padding: 8px 20px;
+    margin: 16px 0;
+    background: var(--primary);
+    color: #fff;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s, transform 0.15s;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+.back-btn:hover {
+    filter: brightness(0.85);
+    transform: translateX(-4px);
+    text-decoration: none;
 }
 
-/* 聚焦状态 */
-.pagefind-ui__search-input:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 3px rgba(59, 127, 189, 0.2) !important;
+/* ==========================================
+   代码块
+   ========================================== */
+
+.code-block {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    padding: 20px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin: 16px 0;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.code-block code {
+    font-family: inherit;
+    color: var(--text);
+    display: block;
 }
 
-/* ===== 搜索图标修复 ===== */
+/* ==========================================
+   布局工具
+   ========================================== */
 
-.pagefind-ui__form::before {
-    top: 50% !important;
-    left: 12px !important;
-    transform: translateY(-50%) !important;
-    width: 18px !important;
-    height: 18px !important;
-    background-color: var(--text) !important;
-    opacity: 0.7 !important;
-    -webkit-mask-size: 100% !important;
-    mask-size: 100% !important;
-    z-index: 9 !important;
-    pointer-events: none !important;
+html {
+    scroll-behavior: smooth;
 }
 
-/* 聚焦时图标变色 */
-.pagefind-ui__form:focus-within::before {
-    background-color: var(--primary) !important;
-    opacity: 1 !important;
+.row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ==========================================
+   页面入场动画
+   ========================================== */
+
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: 0.3s ease-out both fade-out; }
+::view-transition-new(root) { animation: 0.35s ease-in both fade-in; }
+
+@keyframes pageFadeIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+/* ==========================================
+   视频卡片（特殊）
+   ========================================== */
+
+.card-video-wrapper {
+    position: relative;
+    padding-bottom: 75%;
+    height: 0;
+    background-color: #000;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+.card-video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+}
+.card-video-wrapper.playing {
+    background-image: none !important;
+}
+
+/* ==========================================
+   响应式
+   ========================================== */
+
+@media (max-width: 850px) {
+    .navbar {
+        padding: 0 16px;
+        flex-wrap: wrap;
+        height: auto;
+        min-height: var(--nav-height);
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+    body { padding-top: calc(var(--nav-height) + 60px); }
+    .navbar-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
+    }
+    .nav-actions { flex: 1; justify-content: flex-end; }
+    .search-wrapper input[type="text"] { width: 100px; }
+    .search-wrapper input[type="text"]:focus { width: 130px; }
+}
+
+@media (max-width: 500px) {
+    .navbar-brand span { display: none; }
+    .navbar-links li a { padding: 4px 8px; font-size: 0.8rem; }
+    .search-wrapper input[type="text"] { width: 70px; font-size: 0.8rem; }
+    .search-wrapper input[type="text"]:focus { width: 100px; }
+    .search-wrapper .search-btn { padding: 4px 10px; font-size: 0.75rem; }
+    .customize-btn { padding: 4px 12px; font-size: 0.8rem; }
+    .customize-btn span { display: none; }
 }
