@@ -539,6 +539,7 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     padding: 8px 0 !important;
+    display: none !important;
 }
 
 /* 调整下拉面板内的文本颜色，跟随主题 */
@@ -847,4 +848,8 @@ h1 { margin-bottom: 24px; }
 
 .pagefind-ui__search-clear {
     display: none !important;
+}
+
+#search {
+    margin-right: auto;
 }
