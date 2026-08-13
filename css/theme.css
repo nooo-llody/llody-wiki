@@ -368,7 +368,7 @@ th {
 }
 
 /* ==========================================
-   Pagefind 搜索框 - 完整覆盖
+   Pagefind 搜索框 - 使用 #search 提高权重
    ========================================== */
 
 /* 容器 */
@@ -379,9 +379,9 @@ th {
     margin-right: 12px;
 }
 
-/* 输入框 - 完全重写，兼容所有版本 */
-.pagefind-ui__search-input {
-    all: revert !important;
+/* ===== 输入框 - 使用 #search 提高权重，兼容 svelte 类名 ===== */
+#search .pagefind-ui__search-input,
+#search .pagefind-ui__search-input.svelte-e9gkc3 {
     box-sizing: border-box !important;
     display: flex !important;
     width: 100% !important;
@@ -398,25 +398,27 @@ th {
     appearance: none !important;
     -webkit-appearance: none !important;
     font-weight: 400 !important;
+    /* 移除了 all: revert，避免在服务端破坏样式 */
 }
 
-.pagefind-ui__search-input::placeholder {
+#search .pagefind-ui__search-input::placeholder {
     color: var(--border) !important;
     opacity: 0.7;
 }
 
-.pagefind-ui__search-input:focus {
+#search .pagefind-ui__search-input:focus {
     border-color: var(--primary) !important;
     box-shadow: 0 0 0 3px rgba(59, 127, 189, 0.2) !important;
 }
 
-/* 隐藏默认搜索按钮（🔎 以 ::before 形式存在，下面单独控制） */
-.pagefind-ui__search-button {
+/* ===== 隐藏默认搜索按钮 ===== */
+#search .pagefind-ui__search-button {
     display: none !important;
 }
 
-/* 清除按钮（×） */
-.pagefind-ui__search-clear {
+/* ===== 清除按钮 - 重置 button 默认样式 ===== */
+#search .pagefind-ui__search-clear,
+#search .pagefind-ui__search-clear.svelte-e9gkc3 {
     color: var(--text) !important;
     background: transparent !important;
     border: none !important;
@@ -425,13 +427,19 @@ th {
     cursor: pointer;
     opacity: 0.5;
     transition: opacity 0.2s;
+    /* 重置通用 button 样式 */
+    margin: 0 !important;
+    line-height: 1 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
-.pagefind-ui__search-clear:hover {
+
+#search .pagefind-ui__search-clear:hover {
     opacity: 1;
 }
 
-/* 搜索图标（::before 伪元素） */
-.pagefind-ui__form::before {
+/* ===== 搜索图标（::before 伪元素） ===== */
+#search .pagefind-ui__form::before {
     top: 50% !important;
     left: 12px !important;
     transform: translateY(-50%) !important;
@@ -441,17 +449,22 @@ th {
     opacity: 0.7 !important;
     -webkit-mask-size: 100% !important;
     mask-size: 100% !important;
+    -webkit-mask-repeat: no-repeat !important;
+    mask-repeat: no-repeat !important;
+    -webkit-mask-position: center !important;
+    mask-position: center !important;
     z-index: 9 !important;
     pointer-events: none !important;
 }
+
 /* 聚焦时图标变色 */
-.pagefind-ui__form:focus-within::before {
+#search .pagefind-ui__form:focus-within::before {
     background-color: var(--primary) !important;
     opacity: 1 !important;
 }
 
-/* 下拉结果面板 */
-.pagefind-ui__drawer {
+/* ===== 下拉结果面板 ===== */
+#search .pagefind-ui__drawer {
     position: absolute !important;
     top: calc(100% + 8px) !important;
     left: 0 !important;
@@ -468,44 +481,51 @@ th {
     overflow-y: auto !important;
     z-index: 9999 !important;
 }
-.pagefind-ui__drawer:empty {
+
+#search .pagefind-ui__drawer:empty {
     display: none !important;
 }
 
-/* 结果项 */
-.pagefind-ui__result {
+/* ===== 结果项 ===== */
+#search .pagefind-ui__result {
     padding: 8px 16px !important;
     color: var(--text) !important;
     font-size: 0.95rem;
 }
-.pagefind-ui__result-link {
+
+#search .pagefind-ui__result-link {
     color: var(--accent) !important;
     text-decoration: none;
 }
-.pagefind-ui__result-title {
+
+#search .pagefind-ui__result-title {
     color: var(--heading) !important;
     font-weight: 600;
 }
-.pagefind-ui__result-excerpt {
+
+#search .pagefind-ui__result-excerpt {
     color: var(--text) !important;
     opacity: 0.8;
     font-size: 0.9rem;
 }
-.pagefind-ui__result:hover {
+
+#search .pagefind-ui__result:hover {
     background: var(--primary) !important;
     color: #fff !important;
 }
-.pagefind-ui__result:hover .pagefind-ui__result-link,
-.pagefind-ui__result:hover .pagefind-ui__result-title,
-.pagefind-ui__result:hover .pagefind-ui__result-excerpt {
+
+#search .pagefind-ui__result:hover .pagefind-ui__result-link,
+#search .pagefind-ui__result:hover .pagefind-ui__result-title,
+#search .pagefind-ui__result:hover .pagefind-ui__result-excerpt {
     color: #fff !important;
 }
 
-/* 下拉面板滚动条 */
-.pagefind-ui__drawer::-webkit-scrollbar {
+/* ===== 下拉面板滚动条 ===== */
+#search .pagefind-ui__drawer::-webkit-scrollbar {
     width: 6px;
 }
-.pagefind-ui__drawer::-webkit-scrollbar-thumb {
+
+#search .pagefind-ui__drawer::-webkit-scrollbar-thumb {
     background: var(--border);
     border-radius: 10px;
 }
