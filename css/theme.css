@@ -517,28 +517,33 @@ body {
     position: relative;
     display: inline-block;
     /* 保持与之前相同的宽度 */
+    margin-right: 12px;  /* 新增：向左微移（调整数值可改变距离） */
 }
 
 
 
 
 /* 搜索结果下拉面板：绝对定位，脱离文档流 */
+/* 删除了重复定义，只保留一份，并添加 :empty 隐藏 */
 .pagefind-ui__drawer {
     position: absolute !important;
-    top: calc(100% + 8px) !important;  /* 位于搜索框下方 */
+    top: calc(100% + 8px) !important;
     left: 0 !important;
     right: 0 !important;
-    min-width: 300px !important;       /* 确保有足够宽度 */
+    min-width: 280px !important;
     background: var(--card-bg) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--border-radius) !important;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
-    z-index: 9999 !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 6px 0 !important;
     max-height: 400px !important;
     overflow-y: auto !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 8px 0 !important;
+    z-index: 9999 !important;
+}
+/* 空状态时隐藏下拉面板 */
+.pagefind-ui__drawer:empty {
     display: none !important;
 }
 
@@ -556,11 +561,14 @@ body {
     color: var(--text) !important;
     opacity: 0.8;
 }
+/* ===== Pagefind 搜索框 - 主题适配（保留清除按钮） ===== */
 
-/* ===== Pagefind 搜索框主题适配 ===== */
-/* 搜索框容器 */
+/* 搜索框容器（合并了之前的定义） */
 #search {
-    width: 200px; /* 或根据需要调整 */
+    position: relative;
+    display: inline-block;
+    width: 200px;
+    margin-right: 12px;   /* 向左微移 */
 }
 
 /* 输入框 */
@@ -569,8 +577,12 @@ body {
     color: var(--text) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--border-radius) !important;
+    padding: 6px 12px !important;          /* 与普通 input 内边距一致 */
+    height: 36px !important;               /* 固定高度，避免跳动 */
+    font-size: var(--font-size) !important;
     outline: none !important;
     box-shadow: none !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .pagefind-ui__search-input::placeholder {
@@ -583,7 +595,22 @@ body {
     box-shadow: 0 0 0 3px rgba(59, 127, 189, 0.2) !important;
 }
 
-/* 隐藏默认搜索按钮（可选） */
+/* 清除按钮（现在保留并美化） */
+.pagefind-ui__search-clear {
+    color: var(--text) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 8px !important;
+    font-size: 1.2rem !important;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+.pagefind-ui__search-clear:hover {
+    opacity: 1;
+}
+
+/* 隐藏默认搜索按钮（保留输入框右侧的清除按钮） */
 .pagefind-ui__search-button {
     display: none !important;
 }
@@ -606,30 +633,31 @@ body {
     overflow-y: auto !important;
     z-index: 9999 !important;
 }
+.pagefind-ui__drawer:empty {
+    display: none !important;
+}
 
 /* 结果项 */
 .pagefind-ui__result {
     padding: 8px 16px !important;
     color: var(--text) !important;
+    font-size: 0.95rem;
 }
-
 .pagefind-ui__result-link {
     color: var(--accent) !important;
     text-decoration: none;
 }
-
 .pagefind-ui__result-title {
     color: var(--heading) !important;
     font-weight: 600;
 }
-
 .pagefind-ui__result-excerpt {
     color: var(--text) !important;
     opacity: 0.8;
     font-size: 0.9rem;
 }
 
-/* 选中/悬停效果 */
+/* 悬停高亮 */
 .pagefind-ui__result:hover {
     background: var(--primary) !important;
     color: #fff !important;
@@ -640,7 +668,7 @@ body {
     color: #fff !important;
 }
 
-/* 滚动条匹配主题 */
+/* 下拉面板滚动条 */
 .pagefind-ui__drawer::-webkit-scrollbar {
     width: 6px;
 }
@@ -649,112 +677,53 @@ body {
     border-radius: 10px;
 }
 
-.toc {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius);
-    padding: 20px 28px;
-    margin: 20px 0 30px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+/* ===== 修正 Pagefind 搜索图标（:before 伪元素） ===== */
+
+/* 覆盖默认的图标样式 */
+.pagefind-ui__form.svelte-e9gkc3:before {
+    /* 位置：垂直居中 */
+    top: 50% !important;
+    left: 12px !important;           /* 与输入框内边距对齐 */
+    transform: translateY(-50%) !important;
+    
+    /* 尺寸：适当大小 */
+    width: 18px !important;
+    height: 18px !important;
+    
+    /* 颜色：跟随主题文字颜色 */
+    background-color: var(--text) !important;
+    
+    /* 保留 mask 相关属性 */
+    -webkit-mask-size: 100% !important;
+    mask-size: 100% !important;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    
+    /* 其他 */
+    opacity: 0.7 !important;
+    z-index: 9 !important;
+    pointer-events: none !important;
 }
 
-.toc h2 {
-    margin: 0 0 12px 0;
-    font-size: 1.2rem;
-    color: var(--heading);
+/* 输入框聚焦时，图标变色（提升交互感） */
+.pagefind-ui__form:focus-within.svelte-e9gkc3:before {
+    background-color: var(--primary) !important;
+    opacity: 1 !important;
 }
 
-.toc ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
+/* 确保输入框有足够的左内边距，为图标留空间 */
+.pagefind-ui__search-input {
+    padding-left: 36px !important;   /* 为左侧图标留出空间 */
 }
 
-.toc ul li {
-    margin: 0;
+/* 悬停时图标变为主色（可选） */
+.pagefind-ui__search-button:hover .pagefind-ui__form.svelte-e9gkc3:before {
+    background-color: var(--primary) !important;
+    opacity: 1 !important;
 }
 
-.toc ul li a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    padding: 4px 0;
-    border-bottom: 2px solid transparent;
-    transition: border-color 0.2s;
-}
-
-.toc ul li a:hover {
-    border-bottom-color: var(--primary);
-    text-decoration: none;
-}
-
-/* 小屏幕时目录垂直排列 */
-@media (max-width: 600px) {
-    .toc ul {
-        flex-direction: column;
-        gap: 6px;
-    }
-}
-
-css
-html {
-    scroll-behavior: smooth;
-}
-
-.row {
-    display: flex;
-    align-items: center;  /* 垂直居中（可选） */
-    gap: 10px;            /* 两个元素之间的间距（可选） */
-}
-
-.back-top-btn {
-    position: fixed;
-    bottom: 100px;      /* 在“个性化”按钮上方，避免重叠 */
-    right: 30px;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    padding: 10px 18px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    z-index: 999;
-    transition: opacity 0.3s, transform 0.2s;
-    opacity: 0;         /* 默认隐藏 */
-    pointer-events: none;
-}
-.back-top-btn.show {
-    opacity: 1;
-    pointer-events: auto;
-}
-.back-top-btn:hover {
-    filter: brightness(0.85);
-    transform: scale(1.05);
-}
-.back-btn {
-    display: inline-block;
-    padding: 8px 20px;
-    margin: 16px 0;
-    background: var(--primary);
-    color: #fff;
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    font-weight: 500;
-    transition: background 0.2s, transform 0.15s;
-    border: none;
-    cursor: pointer;
-    font-size: 0.95rem;
-}
-.back-btn:hover {
-    filter: brightness(0.85);
-    transform: translateX(-4px); /* 向左微移，增加动感 */
-    text-decoration: none;
-}
 
 /* ===== 展示 HTML 代码的容器 ===== */
 .code-block {
@@ -844,12 +813,4 @@ h1 { margin-bottom: 24px; }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.pagefind-ui__search-clear {
-    display: none !important;
-}
-
-#search {
-    margin-right: auto;
 }
