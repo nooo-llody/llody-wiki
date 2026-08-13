@@ -859,7 +859,7 @@ html {
     margin: 0 !important;
     font-size: 0.9rem !important;           /* 与输入框字体大小一致 */
     line-height: 36px !important;           /* 与输入框高度对齐 */
-    height: 36px !important;                /* 固定高度 */
+    height: 32px !important;                /* 固定高度 */
     display: inline-flex !important;        /* 弹性布局，方便垂直居中 */
     align-items: center !important;
     justify-content: center !important;
