@@ -848,3 +848,30 @@ html {
     .customize-btn { padding: 4px 12px; font-size: 0.8rem; }
     .customize-btn span { display: none; }
 }
+
+/* ===== 清除按钮 - 强制覆盖通用 button 样式 ===== */
+#search .pagefind-ui__search-clear,
+#search .pagefind-ui__search-clear.svelte-e9gkc3 {
+    color: var(--text) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+    font-size: 0.9rem !important;           /* 与输入框字体大小一致 */
+    line-height: 36px !important;           /* 与输入框高度对齐 */
+    height: 36px !important;                /* 固定高度 */
+    display: inline-flex !important;        /* 弹性布局，方便垂直居中 */
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    border-radius: 0 !important;            /* 重置通用 button 的圆角 */
+    box-shadow: none !important;
+    font-weight: 400 !important;
+    vertical-align: middle !important;
+}
+
+#search .pagefind-ui__search-clear:hover {
+    opacity: 1;
+}
