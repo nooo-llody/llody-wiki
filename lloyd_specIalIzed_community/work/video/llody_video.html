@@ -78,40 +78,259 @@
 
     <!-- 这里写全部的内容。知道吧，。 -->
     <main id="main-content">
+        <br>
         <h1> 劳埃德大师 Wiki</h1>
-        <p>劳埃德社区视频</p>
+        <p>劳埃德大师的视频</p>
+        <br>
+        <p>注意，单击视频封面后,视频将会播放,如果网络较慢可能会使播放时间延迟</p>
+        <hr>
+        <br>
+        <br>
+
     </main>
-<br>
-<section class="video-section">
-    <h2>🎥 我的视频菜单</h2>
-    
-    <!-- 卡片网格：这里只需要放 BV 号，其他由 JS 自动生成 -->
-    <div class="card-grid" id="videoGrid">
-        <!-- 每个卡片只需一个 data-bvid 属性，里面写 BV 号 -->
-        <div class="card video-card" data-bvid="BV14s3CzLE9Q"></div>
-    </div>
+    <section class="video-section">
+        <br>
+        <h2>跑酷视频</h2>
+        <br>
 
-    <div class="card-grid" id="videoGrid">
-        <!-- 每个卡片只需一个 data-bvid 属性，里面写 BV 号 -->
-        <div class="card video-card" data-bvid="BV1pbGwzsEKh"></div>
-    </div>
+        <div class="card-grid" id="videoGrid">
 
-</section>
 
-<!-- ========== 播放模态框（弹窗） ========== -->
-<!-- 这个模态框始终隐藏，点击卡片时由 JS 弹出 -->
-<div id="videoModal" class="modal">
-    <div class="modal-content">
-        <!-- 关闭按钮 -->
-        <span class="close-modal">&times;</span>
-        <!-- 视频播放容器（16:9） -->
-        <div class="video-wrapper">
-            <!-- iframe 的 src 由 JS 动态设置，此处留空 -->
-            <iframe id="biliPlayer" src="" allowfullscreen allow="autoplay"></iframe>
+
+            <div class="card video-card" data-bvid="BV14s3CzLE9Q">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【苦命的张启灵】第一次在B站发视频，求关注!.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>第一次在B站发视频</h2>
+                    <hr>
+                    <p>内容: TNT跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1pbGwzsEKh">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/无声喜剧.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>无声喜剧</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1wVuTzcETe">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【在下劳埃德酱】最新视频来袭，快来看看吧！.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>最新视频来袭，快来看看吧！</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV18Ku3zHEaJ">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【在下劳埃德酱】最新视频已上线，快来围观！.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>最新视频已上线，快来围观！</h2>
+                    <hr>
+                    <p>内容: 双人跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1sduFz7EQt">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/这64秒视频我录了10524781分钟.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>这64秒视频我录了10524781分钟</h2>
+                    <hr>
+                    <p>内容: 炫技(?)跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1BXuczuEKD">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【在下劳埃德酱】更新啦，赶紧来围观吧！.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>更新啦，赶紧来围观吧！</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1rWuezTEEb">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【在下劳埃德酱】视频已打包，欢迎围观！.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>视频已打包，欢迎围观！</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+            
+            <div class="card video-card" data-bvid="BV1ThgTzrEiM">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/迪奥剪辑.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>迪奥剪辑</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1XZgNz5EXL">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/不做人这一块.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>不做人这一块</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1NWgGzQEta">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【在下劳埃德酱】我的最新作品，快来一睹为快！.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>我的最新作品，快来一睹为快！</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1PVbyzWErc">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/我劳埃德又回来了.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>我劳埃德又回来了</h2>
+                    <hr>
+                    <p>内容: TNT跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1PVbyzWErc">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/乐高幻影忍者主题跑酷.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>乐高幻影忍者主题跑酷</h2>
+                    <hr>
+                    <p>内容: 双人跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1WT82zFEDS">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/你好陌生人，劳家军招人了.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>你好陌生人，劳家军招人了</h2>
+                    <hr>
+                    <p>内容: 跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV17Wh3zsEUU">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/亿遍过关.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>亿遍过关</h2>
+                    <hr>
+                    <p>内容: 炫技(?)跑酷</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV144t5zuE4o">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/这短短的111秒便是我的童年.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>这短短的111秒便是我的童年</h2>
+                    <hr>
+                    <p>内容: 炫技(?)跑酷</p>
+                </div>
+            </div>
+
+
+
+
+
+
         </div>
-    </div>
-</div>
+            <br>
+            <h2>其他视频</h2>
+            <br>
 
+
+
+
+
+        <div class="card-grid" id="videoGrid">
+
+
+            <div class="card video-card" data-bvid="BV19VugzdEi7">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/大乱斗.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>大乱斗</h2>
+                    <hr>
+                    <p>内容: 多人打架</p>
+                    <p>PS：打架是不对的。请勿模仿！</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1BeuizMEEu">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/【在下劳埃德酱】视频加载中，速速查收惊喜！.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>视频加载中，速速查收惊喜！</h2>
+                    <hr>
+                    <p>内容: 双人打架</p>
+                    <p>PS：打架是不对的。请勿模仿！</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1zruJzbEut">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/莫愁乡（劳埃德.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>莫愁乡（劳埃德</h2>
+                    <hr>
+                    <p>内容: 唱歌</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1RzuozsEPn">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/豌豆的奇妙冒险，第一话、不做人的劳埃德.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>豌豆的奇妙冒险，第一话、不做人的劳埃德</h2>
+                    <hr>
+                    <p>内容: 短剧</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1qxb9zKEuU">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/极限速通！大神劳埃德vs4名宇宙最强猎人.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>极限速通！大神劳埃德vs4名宇宙最强猎人</h2>
+                    <hr>
+                    <p>内容: 速通</p>
+                </div>
+            </div>
+
+            <div class="card video-card" data-bvid="BV1XG8BzXEo1">
+                <div class="card-video-wrapper" style="background-image: url('/image/video_cover/llody/这短短的69秒，我花了 25200 秒.jpg');">
+                </div>
+                <div class="card-body">
+                    <h2>这短短的69秒，我花了 25200 秒</h2>
+                    <hr>
+                    <p>内容: 剪辑</p>
+                </div>
+            </div>
+
+
+
+
+
+        </div>
 
     <script src="/js/theme.js"></script>
     <script src="/pagefind/pagefind-ui.js"></script>
@@ -120,6 +339,6 @@
             element: "#search",
         });
     </script>
-    
+
 </body>
 </html>

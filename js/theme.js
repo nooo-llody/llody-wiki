@@ -243,108 +243,29 @@ if (topBtn) {
 
 })();
 
-(function() {
-    'use strict';
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.video-card');
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // ---------- 1. 获取所有卡片 ----------
-        const cards = document.querySelectorAll('.video-card');
-        const modal = document.getElementById('videoModal');
-        const iframe = document.getElementById('biliPlayer');
-        const closeBtn = document.querySelector('.close-modal');
+    cards.forEach(function(card) {
+        const bvid = card.dataset.bvid;
+        if (!bvid) return;
 
-        if (!cards.length || !modal || !iframe) {
-            console.warn('视频菜单元素未找到，跳过初始化');
-            return; // 如果没有视频卡片，直接退出
-        }
+        // 点击卡片 → 加载并播放视频
+        card.addEventListener('click', function() {
+            const wrapper = this.querySelector('.card-video-wrapper');
+            // 如果已经加载了 iframe，不再重复创建
+            if (wrapper.querySelector('iframe')) return;
 
-        // ---------- 2. 遍历卡片，为每个卡片填充数据 ----------
-        cards.forEach(card => {
-            const bvid = card.dataset.bvid;
-            if (!bvid) return;
+            // 创建 iframe
+            const iframe = document.createElement('iframe');
+            // 使用你喜欢的参数，自动播放（浏览器可能静音）
+            iframe.src = `//player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=1&high_quality=1&controls=1`;
+            iframe.allow = 'autoplay; encrypted-media';
+            iframe.allowFullscreen = true;
+            wrapper.appendChild(iframe);
 
-            // 显示加载状态
-            card.innerHTML = `
-                <div class="card-img" style="background:#e0e0e0;display:flex;align-items:center;justify-content:center;height:200px;">
-                    ⏳ 加载中...
-                </div>
-                <div class="card-body">
-                    <h3>正在获取视频信息...</h3>
-                    <p>请稍候</p>
-                    <button class="card-btn play-btn">▶ 播放</button>
-                </div>
-            `;
-
-            // 调用 B站 API 获取视频信息
-            fetch(`https://api.bilibili.com/x/web-interface/view?bvid=${bvid}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.code !== 0) throw new Error(data.message);
-                    const info = data.data;
-                    card.innerHTML = `
-                        <img class="card-img" src="${info.pic}" alt="${info.title}" loading="lazy">
-                        <div class="card-body">
-                            <h3>${info.title}</h3>
-                            <p>👤 ${info.owner.name}　|　👁 ${info.stat.view} 次播放</p>
-                            <button class="card-btn play-btn">▶ 播放</button>
-                        </div>
-                    `;
-                    bindPlayEvent(card, bvid);
-                })
-                .catch(err => {
-                    console.error(`获取视频 ${bvid} 失败:`, err);
-                    card.innerHTML = `
-                        <div class="card-img" style="background:#ffdddd;display:flex;align-items:center;justify-content:center;height:200px;color:red;">
-                            ⚠️ 加载失败
-                        </div>
-                        <div class="card-body">
-                            <h3>无法获取视频信息</h3>
-                            <p>视频可能被删除</p>
-                            <button class="card-btn play-btn" disabled>▶ 播放</button>
-                        </div>
-                    `;
-                });
-        });
-
-        // ---------- 3. 播放功能 ----------
-        function bindPlayEvent(card, bvid) {
-            const playBtn = card.querySelector('.play-btn');
-            if (playBtn) {
-                playBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    openVideo(bvid);
-                });
-            }
-            card.addEventListener('click', function(e) {
-                if (e.target.closest('.play-btn')) return;
-                openVideo(bvid);
-            });
-        }
-
-        function openVideo(bvid) {
-            const src = `//player.bilibili.com/player.html?isOutside=true&bvid=${bvid}&p=1&autoplay=1&high_quality=1`;
-            iframe.src = src;
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        // ---------- 4. 关闭模态框 ----------
-        function closeVideo() {
-            iframe.src = '';
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeVideo);
-        }
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeVideo();
-        });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.style.display === 'flex') closeVideo();
+            // 标记为已播放，隐藏背景图
+            wrapper.classList.add('playing');
         });
     });
-
-})();
-
+});
