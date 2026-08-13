@@ -845,3 +845,6 @@ h1 { margin-bottom: 24px; }
     text-overflow: ellipsis;
 }
 
+.pagefind-ui__search-clear {
+    display: none !important;
+}
