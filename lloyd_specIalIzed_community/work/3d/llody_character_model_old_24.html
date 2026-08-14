@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/timeline.css" />
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+</head>
+<body>
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+        ↑ 顶部
+    </button>    
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+
+                <li><a href="/index.html" class="active">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
+
+    <!-- 这里写全部的内容。知道吧，。 -->
+    <main id="main-content">
+        <br>
+        <h1> 劳埃德大师 Wiki</h1>
+        <p>劳埃德大师24年的第一个人模</p>
+    </main>
+
+    <br>
+    <hr>
+    <br>
+    <p>项目制作组：</p>
+    <ul>
+
+        <li>
+            <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+            <p>其他</p>
+        </li>
+
+    </ul>
+
+<br><br><br>
+
+
+    <h2>前言</h2>
+    <hr>
+    <p>这是项目组第一次对模型的尝试。</p>
+    <p>(模型为独立创作,使用了社区以外的纹理作为纹理贴图)</p>
+    <br>
+    <p>由于模型仅用于制作封面</p>
+    <p>最初版的模型仅绘制了正面的形象</p>
+    <br>
+    <p>此页面展示的模型纹理为26年后背补丁版</p>
+    <p>由于时间关系。纹理不完善</p>
+
+
+    <model-viewer 
+    id="model-viewer"
+    src="/modle/llody/character_model/muscle_llody_v1.0.glb"
+    environment-image="neutral"
+    exposure="0.25"
+    tone-mapping="aces"
+    camera-orbit="-150deg 120deg 30m"
+    camera-controls
+    alpha
+    animation-name="1"
+    animation-loop
+    style="width: 100%; height: 800px; background-color: transparent;"
+    emissive-factor="200 200 200"
+>
+</model-viewer>
+
+    <!-- ===== 动画切换按钮 ===== -->
+    <div id="animControls" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0 4px;"></div>
+</div>
+
+<!-- ===== 控制脚本（放在这里，紧跟在模型和按钮之后） ===== -->
+<script>
+    (function() {
+        const viewer = document.getElementById('model-viewer');
+        const controls = document.getElementById('animControls');
+
+        // ===== 动画名称映射表（数字 → 显示名称） =====
+        const nameMap = {
+            '1': '待机',   // 根据实际数字调整
+            '2': '飞行',
+            '3': '掉落物'
+            // 继续添加...
+        };
+
+        function getDisplayName(animName) {
+            return nameMap[animName] || `▶ ${animName}`;
+        }
+
+        if (!viewer || !controls) return;
+
+        viewer.addEventListener('load', function() {
+            const anims = this.availableAnimations || [];
+            console.log('可用动画:', anims);
+
+            controls.innerHTML = '';
+            
+            if (anims.length === 0) {
+                controls.innerHTML = '<span style="opacity:0.6;">无可用动画</span>';
+                return;
+            }
+
+            anims.forEach(animName => {
+                const btn = document.createElement('button');
+                btn.textContent = getDisplayName(animName);
+                btn.className = 'card-btn';
+                btn.style.margin = '0';
+                btn.dataset.anim = animName;
+                btn.addEventListener('click', function() {
+                    viewer.animationName = animName;
+                    viewer.play();
+                    console.log(`✅ 切换动画: ${animName}`);
+                });
+                controls.appendChild(btn);
+            });
+
+            if (this.animationName && this.paused) {
+                this.play();
+            }
+        });
+
+        viewer.addEventListener('error', (e) => {
+            console.error('❌ 模型加载失败:', e.detail);
+            controls.innerHTML = '<span style="color:#e74c3c;">加载失败，请检查路径</span>';
+        });
+    })();
+</script>
+    <script src="/js/theme.js"></script>
+    <script src="/pagefind/pagefind-ui.js"></script>
+    <script>
+        new PagefindUI({ 
+            element: "#search",
+        });
+    </script>
+    <script src="/js/timeline.js"></script>
+</body>
+</html>

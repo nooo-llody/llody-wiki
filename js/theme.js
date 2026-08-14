@@ -269,3 +269,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+const viewer = document.querySelector('model-viewer'); // 或通过 ID 获取
+document.getElementById('btn-idle').addEventListener('click', () => {
+    switchAnimation(viewer, 'idle');
+});
+// 同理其他按钮
