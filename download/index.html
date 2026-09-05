@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+</head>
+<body>
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+        ↑ 顶部
+    </button>    
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+
+                <li><a href="/index.html" class="active">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
+
+    <!-- 这里写全部的内容。知道吧，。 -->
+    <main id="main-content">
+        <br>
+        <h1> 劳埃德大师 Wiki</h1>
+        <p>你可以在此处下载艺术作品</p>
+        <br>
+        <br>
+    </main>
+
+    <br>
+    <hr>
+    <br>
+
+    <br><br><br>
+
+    <div class="toc">
+        <h2> 目录</h2>
+        <ul>
+            <li><a href="#film-1">音源音效</a></li>
+            <li><a href="#film-2">模版文件</a></li>
+            <li><a href="#film-3">程序应用</a></li>
+            <li><a href="#film-4">工程文件</a></li>
+            <li><a href="#film-5">风格效果</a></li>
+            <li><a href="#film-6">其他文件</a></li>
+        </ul>
+    </div>
+
+    <!-- 卡片事例。 -->
+    <h2 id="film-1">音源音效</h2>
+    <hr>
+    <br>
+    <p>歌声合成软件所需的人声采样数据库，或电子琴/编曲软件里的乐器音色包。</p>
+    <br><br>
+    <div class="card">
+        <div class="card-body">
+            <h3>将任辽音源</h3>
+            <p>基于OpenUTAU的人声音色采样</p>
+            <a href="/lloyd_specIalIzed_community/work/music/liao_yie_sound_source.html" class="card-btn">了解 →</a>
+            <a href="/files/document.pdf" download="将任辽音源.zip" class="card-btn">下载</a>
+        </div>
+    </div>
+
+
+
+    <h2 id="film-2">模版文件</h2>
+    <hr>
+    <br>
+    <p>在特定软件中使用的基础环境</p>
+    <br><br>
+    <div class="card">
+        <div class="card-body">
+            <h3>暂无</h3>
+            <p>暂无</p>
+            <a href="#" class="card-btn">了解 →</a>
+            <a href="#" download="" class="card-btn">下载</a>
+        </div>
+    </div>
+
+
+    <h2 id="film-3">程序应用</h2>
+    <hr>
+    <br>
+    <p>独立开发的应用或脚本</p>
+    <br><br>
+    <div class="card">
+        <div class="card-body">
+            <h3>暂无</h3>
+            <p>暂无</p>
+            <a href="#" class="card-btn">了解 →</a>
+            <a href="#" download="" class="card-btn">下载</a>
+        </div>
+    </div>
+
+
+    <h2 id="film-4">工程文件</h2>
+    <hr>
+    <br>
+    <p>在特定软件中使用的作品实例</p>
+    <br><br>
+    <div class="card">
+        <div class="card-body">
+            <h3>暂无</h3>
+            <p>暂无</p>
+            <a href="#" class="card-btn">了解 →</a>
+            <a href="#" download="" class="card-btn">下载</a>
+        </div>
+    </div>
+
+
+    <h2 id="film-5">风格效果</h2>
+    <hr>
+    <br>
+    <p>在特定软件中使用的风格化效果</p>
+    <br><br>
+    <div class="card">
+        <div class="card-body">
+            <h3>暂无</h3>
+            <p>暂无</p>
+            <a href="#" class="card-btn">了解 →</a>
+            <a href="#" download="" class="card-btn">下载</a>
+        </div>
+    </div>
+
+
+    <h2 id="film-6">其他文件</h2>
+    <hr>
+    <br>
+    <p>其他可以应用于生产的材料或艺术作品</p>
+    <br><br>
+    <div class="card">
+        <div class="card-body">
+            <h3>暂无</h3>
+            <p>暂无</p>
+            <a href="#" class="card-btn">了解 →</a>
+            <a href="#" download="" class="card-btn">下载</a>
+        </div>
+    </div>
+
+
+
+
+
+    <script src="/js/theme.js"></script>
+    <script src="/pagefind/pagefind-ui.js"></script>
+    <script>
+        new PagefindUI({ 
+            element: "#search",
+        });
+    </script>
+</body>
+</html>

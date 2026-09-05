@@ -9,3 +9,6 @@
 
 /pagefind/*.js
   Content-Type: application/javascript
+
+/download/download_file/*
+  Content-Disposition: attachment
