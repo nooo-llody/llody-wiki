@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki · 起床战争地图</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+
+    <style>
+        .galaxy-embed {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            margin: 24px 0 32px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: var(--bg);
+        }
+        .galaxy-embed canvas { display: block; }
+
+        .galaxy-embed-back {
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            z-index: 20;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 14px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(6px);
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+        .galaxy-embed-back.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .galaxy-embed-back:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .galaxy-embed-back:active {
+            transform: translateY(0) scale(0.95);
+        }
+
+        .galaxy-embed-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 15;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: var(--text);
+            font-size: 1.5rem;
+            font-family: inherit;
+            line-height: 1;
+            padding: 0 0 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+        }
+        .galaxy-embed-nav.show { display: flex; }
+        .galaxy-embed-nav-prev { left: 10px; }
+        .galaxy-embed-nav-next { right: 10px; }
+        .galaxy-embed-nav:hover,
+        .galaxy-embed-nav:active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .galaxy-embed-nav:active {
+            transform: translateY(-50%) scale(0.94);
+        }
+
+        .galaxy-label {
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: inherit;
+            letter-spacing: 0.12em;
+            padding: 4px 12px 4px 10px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--label-color, var(--primary));
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        @media (max-width: 600px) {
+            .galaxy-embed {
+                height: 450px;
+                margin: 18px 0 24px;
+            }
+            .galaxy-embed-back {
+                left: 10px;
+                bottom: 10px;
+                padding: 5px 10px;
+                font-size: 0.8rem;
+            }
+            .galaxy-embed-nav {
+                width: 36px;
+                height: 36px;
+                font-size: 1.3rem;
+                padding: 0 0 8px;
+            }
+            .galaxy-embed-nav-prev { left: 8px; }
+            .galaxy-embed-nav-next { right: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
+            id="backToTop" class="back-top-btn">↑ 顶部</button>
+
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()">
+                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
+                </a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+                <li><a href="/index.html">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html" class="active">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色 <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
+
+    <main id="main-content">
+        <br>
+        <h1>起床战争地图</h1>
+        <p>点击星系中心的恒星进入对应地图详情页</p>
+        <br>
+    </main>
+
+    <hr>
+    <br>
+
+    <div class="toc">
+        <h2>目录</h2>
+        <ul>
+            <li><a href="#build-1">起床战争-大厅</a></li>
+            <li><a href="#build-2">起床战争-solo</a></li>
+            <li><a href="#build-3">起床战争-4v4v4v4</a></li>
+            <li><a href="#build-4">起床战争-4队-钻石环岛</a></li>
+            <li><a href="#build-5">起床战争-8队-钻石环岛</a></li>
+            <li><a href="#build-6">起床战争-4队-无虚空</a></li>
+            <li><a href="#build-7">起床战争-8队-无虚空</a></li>
+            <li><a href="#build-8">起床战争-4队-中钻合并</a></li>
+            <li><a href="#build-9">起床战争-8队-中钻合并</a></li>
+            <li><a href="#build-10">起床战争-RBW</a></li>
+        </ul>
+    </div>
+
+    <h2 id="build-1">起床战争-大厅</h2>
+    <hr>
+    <p>起床战争的加入大厅</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-2">起床战争-solo</h2>
+    <hr>
+    <p>八支队伍的起床战争地图，主要用于 solo。</p>
+    <div class="galaxy-embed" data-galaxy-set="solo-小型地图"></div>
+    <div class="galaxy-embed" data-galaxy-set="solo-大型地图"></div>
+
+    <h2 id="build-3">起床战争-4v4v4v4</h2>
+    <hr>
+    <p>四支队伍的起床战争地图，主要用于 4v4v4v4。</p>
+    <div class="galaxy-embed" data-galaxy-set="4v4v4v4"></div>
+
+    <h2 id="build-4">起床战争-4队-钻石环岛</h2>
+    <hr>
+    <p>四个钻岛相互连接组成环岛</p>
+    <div class="galaxy-embed" data-galaxy-set="diamond-ring-4"></div>
+
+    <h2 id="build-5">起床战争-8队-钻石环岛</h2>
+    <hr>
+    <p>四个钻岛相互连接组成环岛</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-6">起床战争-4队-无虚空</h2>
+    <hr>
+    <p>这里的地图将不再有虚空</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-7">起床战争-8队-无虚空</h2>
+    <hr>
+    <p>这里的地图将不再有虚空</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-8">起床战争-4队-中钻合并</h2>
+    <hr>
+    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-9">起床战争-8队-中钻合并</h2>
+    <hr>
+    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-10">起床战争-RBW</h2>
+    <hr>
+    <p>用于 RBW 的 4V4 地图，有时也用于 1v1</p>
+    <p>暂未收入…</p>
+
+    <!-- ==========================================
+         脚本
+         ========================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+    </script>
+
+    <script src="/js/theme.js"></script>
+    <script src="/pagefind/pagefind-ui.js"></script>
+    <script>new PagefindUI({ element: "#search" });</script>
+
+    <script type="module">
+        import { createEmbedGallery } from '/galaxy-gallery/embed-gallery.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import * as THREE from 'three';
+
+        /* ============================================================
+           ①  GLB 加载函数（不用改）
+           ============================================================ */
+        const gltfLoader = new GLTFLoader();
+
+        async function loadGLB(url) {
+            const gltf = await gltfLoader.loadAsync(url);
+            const model = gltf.scene;
+
+            model.traverse((o) => {
+                if (o.isMesh) {
+                    o.material = o.material.clone();
+                    o.material.transparent = true;
+                }
+            });
+
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const s = 1.6 / Math.max(size.x, size.y, size.z);
+            model.scale.setScalar(s);
+
+            const box2 = new THREE.Box3().setFromObject(model);
+            const center = box2.getCenter(new THREE.Vector3());
+            model.position.sub(center);
+
+            const wrap = new THREE.Group();
+            wrap.add(model);
+            return wrap;
+        }
+
+
+        /* ============================================================
+           ②  星系数据  ── ★★★★★ 你只需要改这一段的文件名 ★★★★★
+
+           ⚠️ 模型路径的文件夹是 /modle/build/bedwars/
+              （你写的是 modle 不是 model，所以下面用 modle）
+
+           文件放在这里：
+             你的网站/modle/build/bedwars/xxx.glb
+
+           把下面所有 xxx.glb 改成你的实际 GLB 文件名。
+           ============================================================ */
+        const EMBED_DATA = {
+
+            /* ============ solo-小型地图 ============ */
+            'solo-小型地图': [
+                {
+                            label: '中心', 
+                            url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_snow_field',
+                            model: '/modle/build/bedwars/solo/bw_solo_snow_field/base.glb',
+
+                    models: [
+                        {
+                            label: 'bw_solo_machine_chinampa',
+                            url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa',
+                            model: '/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb',
+                        },
+                        {
+                            label: 'bw_solo_flesh_reforged',
+                            url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged',
+                            model: '/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb',
+                        },
+                    ],
+                },
+            ],
+
+            /* ============ solo-大型地图 ============ */
+            // 'solo-大型地图': [
+            //     {
+            //         name: 'solo-大型地图',
+            //         color: 0x5b8def,
+            //         starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo',
+            //         starModel: '',
+            //         models: [
+            //             {
+            //                 label: '中心',
+            //                 url: '/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo',
+            //                 model: '',
+            //             },
+            //             {
+            //                 label: '钻岛',
+            //                 url: '/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo',
+            //                 model: '',
+            //             },
+            //         ],
+            //     },
+            // ],
+
+            /* ============ 4v4v4v4 ============ */
+            '4v4v4v4': [
+                {
+                    name: '中心',
+                    color: 0x59c39a,
+                    starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_speedrun',
+                    starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun/base.glb',
+                    models: [
+                        {
+                            label: 'bw_4v4v4v4_pale_dwelling',
+                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_pale_dwelling',
+                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb',
+                        },
+                        {
+                            label: 'bw_4v4v4v4_desert_castle',
+                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
+                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb',
+                        },
+                    ],
+                },
+            ],
+
+            /* ============ 钻石环岛 4 队 ============ */
+            'diamond-ring-4': [
+                {
+                    name: '中心',
+                    color: 0x9b6bd1,
+                    starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
+                    starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
+                    models: [
+                        {
+                            label: 'bw_4v4v4v4_desert_castle',
+                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
+                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
+                        },
+                    ],
+                },
+            ],
+
+        };
+
+
+        /* ============================================================
+           ③  初始化所有容器（不用改）
+           ============================================================ */
+        const embeds = document.querySelectorAll('.galaxy-embed');
+        const instances = [];
+
+        for (const el of embeds) {
+            const key = el.dataset.galaxySet;
+            const data = EMBED_DATA[key];
+            if (!data) {
+                console.warn(`未找到 data-galaxy-set="${key}" 的星系数据`);
+                continue;
+            }
+            try {
+                const inst = await createEmbedGallery(el, {
+                    galaxies: data,
+                    loadModel: loadGLB,
+                    blockHeightMul: 1,
+                });
+                instances.push(inst);
+            } catch (err) {
+                console.error(`初始化 "${key}" 失败：`, err);
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            instances.forEach((i) => i.destroy());
+        });
+    </script>
+
+</body>
+</html>

@@ -875,3 +875,90 @@ html {
 #search .pagefind-ui__search-clear:hover {
     opacity: 1;
 }
+
+/* ==========================================
+   星系视图返回按钮
+   ========================================== */
+
+   .galaxy-back-btn {
+    position: fixed;
+    left: 32px;
+    bottom: 32px;
+    z-index: 1999;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+
+    /* 默认隐藏，等切到星系/模型状态时再显示 */
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        color 0.2s ease;
+}
+
+.galaxy-back-btn.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.galaxy-back-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 6px 22px rgba(59, 127, 189, 0.35);
+    transform: translateY(-2px);
+}
+
+.galaxy-back-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+
+.galaxy-back-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 127, 189, 0.3);
+}
+
+.galaxy-back-btn .back-arrow {
+    display: inline-flex;
+    transition: transform 0.2s ease;
+}
+
+.galaxy-back-btn:hover .back-arrow {
+    transform: translateX(-3px);
+}
+
+/* 小屏适配 */
+@media (max-width: 600px) {
+    .galaxy-back-btn {
+        left: 16px;
+        bottom: 16px;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+    .galaxy-back-btn span {
+        display: none;
+    }
+}

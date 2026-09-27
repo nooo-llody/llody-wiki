@@ -1,29 +1,41 @@
+/* ============================================================
+   主题个性化 —— 全站通用（任何页面都能安全运行）
+   ============================================================ */
 
-(function() {
+   (function() {
+    /* 辅助：安全获取元素 */
+    const $ = (id) => document.getElementById(id);
 
-    const panel = document.getElementById('customPanel');
-    const toggleBtn = document.getElementById('togglePanel');
-    const closeBtn = document.getElementById('closePanelBtn');
+    /* 辅助：安全绑定事件（元素不存在时静默跳过） */
+    const on = (el, event, handler) => {
+        if (el && typeof el.addEventListener === 'function') {
+            el.addEventListener(event, handler);
+        }
+    };
 
-    const bgColor = document.getElementById('bgColor');
-    const textColor = document.getElementById('textColor');
-    const headingColor = document.getElementById('headingColor');
-    const primaryColor = document.getElementById('primaryColor');
-    const accentColor = document.getElementById('accentColor');
-    const borderColor = document.getElementById('borderColor');
-    const fontSize = document.getElementById('fontSize');
-    const borderRadius = document.getElementById('borderRadius');
+    const panel = $('customPanel');
+    const toggleBtn = $('togglePanel');
+    const closeBtn = $('closePanelBtn');
 
-    const bgDisplay = document.getElementById('bgDisplay');
-    const textDisplay = document.getElementById('textDisplay');
-    const headingDisplay = document.getElementById('headingDisplay');
-    const primaryDisplay = document.getElementById('primaryDisplay');
-    const accentDisplay = document.getElementById('accentDisplay');
-    const borderDisplay = document.getElementById('borderDisplay');
-    const fontSizeDisplay = document.getElementById('fontSizeDisplay');
-    const radiusDisplay = document.getElementById('radiusDisplay');
+    const bgColor = $('bgColor');
+    const textColor = $('textColor');
+    const headingColor = $('headingColor');
+    const primaryColor = $('primaryColor');
+    const accentColor = $('accentColor');
+    const borderColor = $('borderColor');
+    const fontSize = $('fontSize');
+    const borderRadius = $('borderRadius');
 
-    const resetBtn = document.getElementById('resetCustom');
+    const bgDisplay = $('bgDisplay');
+    const textDisplay = $('textDisplay');
+    const headingDisplay = $('headingDisplay');
+    const primaryDisplay = $('primaryDisplay');
+    const accentDisplay = $('accentDisplay');
+    const borderDisplay = $('borderDisplay');
+    const fontSizeDisplay = $('fontSizeDisplay');
+    const radiusDisplay = $('radiusDisplay');
+
+    const resetBtn = $('resetCustom');
 
     function setCSSVar(variable, value, displayEl) {
         document.documentElement.style.setProperty(variable, value);
@@ -31,10 +43,12 @@
     }
 
     function syncColorInput(input, displayEl, varName) {
+        if (!input) return;
         setCSSVar(varName, input.value, displayEl);
     }
 
     function syncRangeInput(input, displayEl, varName, suffix = 'px') {
+        if (!input) return;
         setCSSVar(varName, input.value + suffix, displayEl);
     }
 
@@ -50,16 +64,16 @@
     }
 
     function saveSettings() {
-        localStorage.setItem('customTheme', JSON.stringify({
-            bg: bgColor.value,
-            text: textColor.value,
-            heading: headingColor.value,
-            primary: primaryColor.value,
-            accent: accentColor.value,
-            border: borderColor.value,
-            fontSize: fontSize.value,
-            borderRadius: borderRadius.value
-        }));
+        const data = {};
+        if (bgColor)       data.bg           = bgColor.value;
+        if (textColor)     data.text         = textColor.value;
+        if (headingColor)  data.heading      = headingColor.value;
+        if (primaryColor)  data.primary      = primaryColor.value;
+        if (accentColor)   data.accent       = accentColor.value;
+        if (borderColor)   data.border       = borderColor.value;
+        if (fontSize)      data.fontSize     = fontSize.value;
+        if (borderRadius)  data.borderRadius = borderRadius.value;
+        localStorage.setItem('customTheme', JSON.stringify(data));
     }
 
     function loadSettings() {
@@ -67,14 +81,14 @@
         if (!saved) return false;
         try {
             const s = JSON.parse(saved);
-            bgColor.value = s.bg || '#f7f9fc';
-            textColor.value = s.text || '#1a2332';
-            headingColor.value = s.heading || '#0a1220';
-            primaryColor.value = s.primary || '#3b7fbd';
-            accentColor.value = s.accent || '#1f5a8e';
-            borderColor.value = s.border || '#c0cfde';
-            fontSize.value = s.fontSize || '16';
-            borderRadius.value = s.borderRadius || '6';
+            if (bgColor      && s.bg)           bgColor.value = s.bg;
+            if (textColor    && s.text)         textColor.value = s.text;
+            if (headingColor && s.heading)      headingColor.value = s.heading;
+            if (primaryColor && s.primary)      primaryColor.value = s.primary;
+            if (accentColor  && s.accent)       accentColor.value = s.accent;
+            if (borderColor  && s.border)       borderColor.value = s.border;
+            if (fontSize     && s.fontSize)     fontSize.value = s.fontSize;
+            if (borderRadius && s.borderRadius) borderRadius.value = s.borderRadius;
             applyAll();
             return true;
         } catch (_) { return false; }
@@ -82,74 +96,78 @@
 
     function resetToDefault() {
         const d = {
-            bg: '#f7f9fc',
-            text: '#1a2332',
-            heading: '#0a1220',
-            primary: '#3b7fbd',
-            accent: '#1f5a8e',
-            border: '#c0cfde',
-            fontSize: '16',
-            borderRadius: '6'
+            bg: '#f7f9fc', text: '#1a2332', heading: '#0a1220',
+            primary: '#3b7fbd', accent: '#1f5a8e', border: '#c0cfde',
+            fontSize: '16', borderRadius: '6',
         };
-        bgColor.value = d.bg;
-        textColor.value = d.text;
-        headingColor.value = d.heading;
-        primaryColor.value = d.primary;
-        accentColor.value = d.accent;
-        borderColor.value = d.border;
-        fontSize.value = d.fontSize;
-        borderRadius.value = d.borderRadius;
+        if (bgColor)       bgColor.value = d.bg;
+        if (textColor)     textColor.value = d.text;
+        if (headingColor)  headingColor.value = d.heading;
+        if (primaryColor)  primaryColor.value = d.primary;
+        if (accentColor)   accentColor.value = d.accent;
+        if (borderColor)   borderColor.value = d.border;
+        if (fontSize)      fontSize.value = d.fontSize;
+        if (borderRadius)  borderRadius.value = d.borderRadius;
         applyAll();
         localStorage.removeItem('customTheme');
     }
 
-    const colorInputs = [bgColor, textColor, headingColor, primaryColor, accentColor, borderColor];
+    /* 颜色输入绑定 */
+    const colorInputs   = [bgColor, textColor, headingColor, primaryColor, accentColor, borderColor];
     const colorDisplays = [bgDisplay, textDisplay, headingDisplay, primaryDisplay, accentDisplay, borderDisplay];
-    const colorVars = ['--bg', '--text', '--heading', '--primary', '--accent', '--border'];
+    const colorVars     = ['--bg', '--text', '--heading', '--primary', '--accent', '--border'];
+
     colorInputs.forEach((input, idx) => {
-        input.addEventListener('input', function() {
+        on(input, 'input', function() {
             syncColorInput(this, colorDisplays[idx], colorVars[idx]);
             saveSettings();
         });
     });
 
-    fontSize.addEventListener('input', function() {
+    /* 范围输入绑定 */
+    on(fontSize, 'input', function() {
         syncRangeInput(this, fontSizeDisplay, '--font-size', 'px');
         saveSettings();
     });
-    borderRadius.addEventListener('input', function() {
+    on(borderRadius, 'input', function() {
         syncRangeInput(this, radiusDisplay, '--border-radius', 'px');
         saveSettings();
     });
 
-    resetBtn.addEventListener('click', resetToDefault);
+    /* 重置 */
+    on(resetBtn, 'click', resetToDefault);
 
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            panel.classList.toggle('open');
-        });
-    }
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            panel.classList.remove('open');
-        });
-    }
+    /* 面板开关 */
+    on(toggleBtn, 'click', function(e) {
+        e.stopPropagation();
+        if (panel) panel.classList.toggle('open');
+    });
+    on(closeBtn, 'click', function(e) {
+        e.stopPropagation();
+        if (panel) panel.classList.remove('open');
+    });
+
+    /* 点击空白处关闭面板 */
     document.addEventListener('click', function(e) {
-        if (!panel.contains(e.target) && e.target !== toggleBtn) {
+        if (panel && !panel.contains(e.target) && e.target !== toggleBtn) {
             panel.classList.remove('open');
         }
     });
-    panel.addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
+    if (panel) {
+        panel.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
 
+    /* 初始化 */
     const hasSaved = loadSettings();
     if (!hasSaved) applyAll();
 })();
 
-// ===== 滚动隐藏/显示导航栏 =====
+
+/* ============================================================
+   滚动隐藏 / 显示导航栏
+   ============================================================ */
 (function() {
     const navWrapper = document.getElementById('fixed-nav-wrapper');
     if (!navWrapper) return;
@@ -160,12 +178,9 @@
     function handleScroll() {
         const currentScrollY = window.scrollY;
 
-        // 判断方向：向下滚动且不在顶部 -> 隐藏
         if (currentScrollY > lastScrollY && currentScrollY > 50) {
-            // 向下滚动，且滚动距离超过50px（避免微小抖动）
             navWrapper.classList.add('hidden');
         } else {
-            // 向上滚动或位于顶部 -> 显示
             navWrapper.classList.remove('hidden');
         }
 
@@ -173,7 +188,6 @@
         ticking = false;
     }
 
-    // 使用 requestAnimationFrame 优化性能
     window.addEventListener('scroll', function() {
         if (!ticking) {
             window.requestAnimationFrame(function() {
@@ -183,12 +197,10 @@
         }
     });
 
-    // 页面加载时，确保导航栏可见
     window.addEventListener('load', function() {
         navWrapper.classList.remove('hidden');
     });
 
-    // 如果用户快速滚动到顶部，确保导航栏显示（备用）
     window.addEventListener('scroll', function() {
         if (window.scrollY === 0) {
             navWrapper.classList.remove('hidden');
@@ -196,8 +208,14 @@
     });
 })();
 
-const topBtn = document.getElementById('backToTop');
-if (topBtn) {
+
+/* ============================================================
+   返回顶部按钮
+   ============================================================ */
+(function() {
+    const topBtn = document.getElementById('backToTop');
+    if (!topBtn) return;
+
     window.addEventListener('scroll', function() {
         if (window.scrollY > 400) {
             topBtn.classList.add('show');
@@ -205,19 +223,19 @@ if (topBtn) {
             topBtn.classList.remove('show');
         }
     });
-}
+})();
 
 
+/* ============================================================
+   时间线动画
+   ============================================================ */
 (function() {
     'use strict';
 
-    // 当 DOM 加载完成后初始化所有时间线
     document.addEventListener('DOMContentLoaded', function() {
-        // 找到页面上所有 .timeline 容器
         const timelines = document.querySelectorAll('.timeline');
         if (!timelines.length) return;
 
-        // 为每个时间线独立创建观察器
         timelines.forEach(function(timeline) {
             const items = timeline.querySelectorAll('.timeline-item');
             if (!items.length) return;
@@ -226,52 +244,59 @@ if (topBtn) {
                 entries.forEach(function(entry) {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('show');
-                        // 如果想只触发一次，可以取消观察
-                        // observer.unobserve(entry.target);
                     }
                 });
-            }, {
-                threshold: 0.3,
-                rootMargin: '0px'
-            });
+            }, { threshold: 0.3, rootMargin: '0px' });
 
             items.forEach(function(item) {
                 observer.observe(item);
             });
         });
     });
-
 })();
 
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.video-card');
 
-    cards.forEach(function(card) {
-        const bvid = card.dataset.bvid;
-        if (!bvid) return;
+/* ============================================================
+   视频卡片：点击加载 B 站 iframe
+   ============================================================ */
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.video-card');
+        if (!cards.length) return;
 
-        // 点击卡片 → 加载并播放视频
-        card.addEventListener('click', function() {
-            const wrapper = this.querySelector('.card-video-wrapper');
-            // 如果已经加载了 iframe，不再重复创建
-            if (wrapper.querySelector('iframe')) return;
+        cards.forEach(function(card) {
+            const bvid = card.dataset.bvid;
+            if (!bvid) return;
 
-            // 创建 iframe
-            const iframe = document.createElement('iframe');
-            // 使用你喜欢的参数，自动播放（浏览器可能静音）
-            iframe.src = `//player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=1&high_quality=1&controls=1`;
-            iframe.allow = 'autoplay; encrypted-media';
-            iframe.allowFullscreen = true;
-            wrapper.appendChild(iframe);
+            card.addEventListener('click', function() {
+                const wrapper = this.querySelector('.card-video-wrapper');
+                if (!wrapper || wrapper.querySelector('iframe')) return;
 
-            // 标记为已播放，隐藏背景图
-            wrapper.classList.add('playing');
+                const iframe = document.createElement('iframe');
+                iframe.src = `//player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=1&high_quality=1&controls=1`;
+                iframe.allow = 'autoplay; encrypted-media';
+                iframe.allowFullscreen = true;
+                wrapper.appendChild(iframe);
+                wrapper.classList.add('playing');
+            });
         });
     });
-});
+})();
 
-const viewer = document.querySelector('model-viewer'); // 或通过 ID 获取
-document.getElementById('btn-idle').addEventListener('click', () => {
-    switchAnimation(viewer, 'idle');
-});
-// 同理其他按钮
+
+/* ============================================================
+   model-viewer 动画切换（只有页面里存在这些元素时才生效）
+   ============================================================ */
+(function() {
+    const viewer = document.querySelector('model-viewer');
+    const btnIdle = document.getElementById('btn-idle');
+
+    if (!viewer || !btnIdle) return;   // 星系页面没有这些元素，直接跳过
+
+    btnIdle.addEventListener('click', () => {
+        if (typeof switchAnimation === 'function') {
+            switchAnimation(viewer, 'idle');
+        }
+    });
+    // 其他按钮同理...
+})();
