@@ -1,17 +1,12 @@
 // /galaxy-gallery/embed-gallery.js
-// 嵌入式 3D 画廊 — 支持多星系、点击切换、iOS 兼容
+// 嵌入式 3D 画廊 — 含移动端兼容修复
 
 import * as THREE from 'three';
 import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 import { makeBuilding, fadeAll, findAncestor, isDescendant } from './utils.js';
 import { createGalaxyLabel } from './labels.js';
 
-
-/* ============================================================
-   ★ iOS 检测
-   ============================================================ */
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
 
 export async function createEmbedGallery(container, userOptions = {}) {
 
@@ -25,26 +20,24 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const total = galaxies.length;
     if (!total) return { destroy() {} };
 
-    /* ★ 移动端判断：matchMedia 比 clientWidth 更可靠 */
     const isMobile =
         window.matchMedia('(max-width: 767px)').matches ||
         container.clientWidth < 768;
 
-    /* 尺寸 */
-    const orbitRadius  = userOptions.orbitRadius  ?? (isMobile ? 1.5 : 2.2);
-    const starScale    = userOptions.starScale    ?? (isMobile ? 1.1 : 1.6);
-    const planetScale  = userOptions.planetScale  ?? (isMobile ? 0.42 : 0.6);
-    const spacing      = userOptions.spacing      ?? (isMobile ? 5.6 : 8);
-    const zoomFactor   = userOptions.zoomFactor   ?? 1.8;
+    console.log(`[embed] 初始化 | 移动端=${isMobile} | 星系数=${total} | 容器=${container.clientWidth}×${container.clientHeight}`);
+
+    const orbitRadius    = userOptions.orbitRadius    ?? (isMobile ? 1.5 : 2.2);
+    const starScale      = userOptions.starScale      ?? (isMobile ? 1.1 : 1.6);
+    const planetScale    = userOptions.planetScale    ?? (isMobile ? 0.42 : 0.6);
+    const spacing        = userOptions.spacing        ?? (isMobile ? 5.6 : 8);
+    const zoomFactor     = userOptions.zoomFactor     ?? 1.8;
     const blockHeightMul = userOptions.blockHeightMul ?? 1;
 
-    /* 姿态 */
     const initialTiltDeg = userOptions.initialTiltDeg ?? 15;
     const leftTiltDeg    = userOptions.leftTiltDeg    ?? 0;
     const initialTilt = THREE.MathUtils.degToRad(initialTiltDeg);
     const leftTilt    = THREE.MathUtils.degToRad(leftTiltDeg);
 
-    /* 交互 */
     const hoverSpeed    = userOptions.hoverSpeed    ?? 0.5;
     const hoverEase     = userOptions.hoverEase     ?? 0.06;
     const dragSpeedX    = userOptions.dragSpeedX    ?? 0.006;
@@ -60,8 +53,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     const swapDuration  = userOptions.swapDuration  ?? 1.4;
     const swapEase      = userOptions.swapEase      ?? 'sine.inOut';
-
-    const loadModel = userOptions.loadModel || null;
+    const loadModel     = userOptions.loadModel || null;
 
     /* ============================================================
        ②  背景色
@@ -79,15 +71,14 @@ export async function createEmbedGallery(container, userOptions = {}) {
     scene.background = bgColor;
     scene.fog = new THREE.Fog(bgColor, 24, 55);
 
-    /* 尺寸兜底 */
-    let W = container.clientWidth  || window.innerWidth;
-    let H = container.clientHeight || 450;
+    const getW = () => container.clientWidth  || window.innerWidth  || 375;
+    const getH = () => container.clientHeight || 450;
 
-    const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 100);
-    camera.position.set(0, 2.2, isMobile ? 9 : 11);
+    const camera = new THREE.PerspectiveCamera(50, getW() / getH(), 0.1, 100);
+    /* ★ 相机位置：让整个星系团都在视野内 */
+    camera.position.set(0, 2.2, isMobile ? 10 : 11);
     camera.lookAt(0, 0, 0);
 
-    /* 灯光 */
     scene.add(new THREE.AmbientLight(0xffffff, 1.8));
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
     keyLight.position.set(6, 12, 8);
@@ -97,7 +88,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     scene.add(rimLight);
 
     /* ============================================================
-       ④  渲染器（含 iOS 修复）
+       ④  渲染器
        ============================================================ */
     let renderer;
     try {
@@ -106,7 +97,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
             alpha: false,
             powerPreference: 'default',
             failIfMajorPerformanceCaveat: false,
-            /* ★ iOS 上某些版本需要保留绘图缓冲才能显示 */
             preserveDrawingBuffer: isIOS,
         });
     } catch (err) {
@@ -115,23 +105,22 @@ export async function createEmbedGallery(container, userOptions = {}) {
         return { destroy() {} };
     }
 
-    renderer.setSize(W, H);
-
-    /* ★ DPR 限制：iOS / 移动端限制到 1.5，减轻显存压力 */
+    renderer.setSize(getW(), getH());
     const maxPR = isMobile ? 1.5 : 2;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPR));
-
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.cursor = 'grab';
     container.appendChild(renderer.domElement);
 
+    console.log(`[embed] WebGL 已创建 | canvas=${renderer.domElement.width}×${renderer.domElement.height} | DPR=${renderer.getPixelRatio()}`);
+
     /* ============================================================
-       ⑤  CSS2D 渲染器（文字标签用）
+       ⑤  CSS2D 渲染器
        ============================================================ */
     const labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(W, H);
+    labelRenderer.setSize(getW(), getH());
     Object.assign(labelRenderer.domElement.style, {
         position: 'absolute', top: '0', left: '0',
         width: '100%', height: '100%',
@@ -140,14 +129,11 @@ export async function createEmbedGallery(container, userOptions = {}) {
     container.appendChild(labelRenderer.domElement);
 
     /* ============================================================
-       ⑥  世界
+       ⑥  世界 & 模型工厂
        ============================================================ */
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
-    /* ============================================================
-       ⑦  模型工厂
-       ============================================================ */
     function makeTallBuilding(color, seed) {
         const g = makeBuilding(color, seed);
         if (blockHeightMul === 1) return g;
@@ -170,10 +156,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       ⑧  构建星系
+       ⑦  构建星系
        ============================================================ */
     const galaxyList = [];
-    /* 每个星系的位置：x 轴均匀分布 */
     const offsets = [];
     for (let i = 0; i < total; i++) {
         offsets.push((i - (total - 1) / 2) * spacing);
@@ -190,17 +175,14 @@ export async function createEmbedGallery(container, userOptions = {}) {
         galaxyGroup.userData = { type: 'galaxy', index: gi };
         worldGroup.add(galaxyGroup);
 
-        /* 恒星 */
         const star = await getModel(data.color, gi * 100 + 7, data.starModel);
         star.scale.setScalar(starScale);
         star.userData = { type: 'star', galaxyIndex: gi, url: data.starUrl };
         galaxyGroup.add(star);
 
-        /* 行星环 */
         const orbitRing = new THREE.Group();
         galaxyGroup.add(orbitRing);
 
-        /* 行星 */
         const planets = [];
         const models = data.models || [];
         for (let mi = 0; mi < models.length; mi++) {
@@ -224,19 +206,14 @@ export async function createEmbedGallery(container, userOptions = {}) {
             planets.push(planet);
         }
 
-        /* 文字标签 */
         const label = createGalaxyLabel(data.name || `星系 ${gi + 1}`, data.color);
         label.position.set(offsetX, -orbitRadius - 1.6, 0);
         worldGroup.add(label);
 
         galaxyList.push({
             group: galaxyGroup,
-            orbitRing,
-            star,
-            planets,
-            data,
-            baseX: offsetX,
-            baseY: 0,
+            orbitRing, star, planets, data,
+            baseX: offsetX, baseY: 0,
             targetTilt: initialTilt,
             spinVel: 0,
             label,
@@ -244,33 +221,33 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
+    console.log(`[embed] 星系构建完成，共 ${galaxyList.length} 个`);
+
     /* ============================================================
-       ⑨  状态
+       ⑧  状态
        ============================================================ */
     let state = 'overview';
     let activeGalaxyIndex = 0;
 
     /* ============================================================
-       ⑩  返回按钮
+       ⑨  返回按钮
        ============================================================ */
     const backBtn = document.createElement('button');
     backBtn.className = 'galaxy-embed-back';
     backBtn.type = 'button';
     backBtn.innerHTML = '‹ 返回';
     container.appendChild(backBtn);
-
     backBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (state === 'galaxy') revertOverview();
     });
 
     /* ============================================================
-       ⑪  移动端 ‹ › 按钮
+       ⑩  移动端 ‹ › 按钮
        ============================================================ */
     const navPrev = document.createElement('button');
     navPrev.className = 'galaxy-embed-nav galaxy-embed-nav-prev';
     navPrev.type = 'button';
-    navPrev.setAttribute('aria-label', '上一个星系');
     navPrev.innerHTML = '‹';
     navPrev.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -280,30 +257,30 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const navNext = document.createElement('button');
     navNext.className = 'galaxy-embed-nav galaxy-embed-nav-next';
     navNext.type = 'button';
-    navNext.setAttribute('aria-label', '下一个星系');
     navNext.innerHTML = '›';
     navNext.addEventListener('click', (e) => {
         e.stopPropagation();
         switchMobileGalaxy(+1);
     });
 
-    /* 移动端 & 多星系 时显示 ‹ › */
     if (isMobile && total > 1) {
         container.appendChild(navPrev);
         container.appendChild(navNext);
         navPrev.classList.add('show');
         navNext.classList.add('show');
 
-        /* 初始化：只显示第一个星系 */
-        galaxyList.forEach((g, i) => {
-            g.group.visible = (i === 0);
-            if (g.labelEl) g.labelEl.style.opacity = (i === 0) ? '1' : '0';
+        /* ★ 延迟一帧再隐藏其他星系，确保首帧渲染成功 */
+        requestAnimationFrame(() => {
+            galaxyList.forEach((g, i) => {
+                g.group.visible = (i === 0);
+                if (g.labelEl) g.labelEl.style.opacity = (i === 0) ? '1' : '0';
+            });
+            gsap.set(worldGroup.position, { x: -galaxyList[0].baseX });
         });
-        gsap.set(worldGroup.position, { x: -galaxyList[0].baseX });
     }
 
     /* ============================================================
-       ⑫  移动端切换星系
+       ⑪  移动端切换星系
        ============================================================ */
     function switchMobileGalaxy(dir) {
         if (state !== 'overview') return;
@@ -329,7 +306,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       ⑬  进入星系视图
+       ⑫  进入星系视图
        ============================================================ */
     function enterGalaxy(index) {
         state = 'galaxy';
@@ -374,7 +351,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       ⑭  返回总览
+       ⑬  返回总览
        ============================================================ */
     function revertOverview() {
         state = 'overview';
@@ -417,7 +394,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       ⑮  行星 ⇄ 恒星 交换
+       ⑭  行星 ⇄ 恒星 交换
        ============================================================ */
     function swapStarPlanet(galaxy, planet) {
         const oldStar = galaxy.star;
@@ -429,10 +406,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
         const D = swapDuration, E = swapEase;
 
         gsap.to(planet.position, { x: 0, y: 0, z: 0, duration: D, ease: E });
-        gsap.to(planet.scale, {
-            x: starScale, y: starScale, z: starScale,
-            duration: D, ease: E,
-        });
+        gsap.to(planet.scale, { x: starScale, y: starScale, z: starScale, duration: D, ease: E });
         gsap.to(planet.rotation, { x: 0, z: 0, duration: D, ease: E });
 
         gsap.to(oldStar.position, {
@@ -453,7 +427,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       ⑯  输入
+       ⑮  输入
        ============================================================ */
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -522,7 +496,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         const hits = raycaster.intersectObjects(worldGroup.children, true);
 
-        /* overview: 点星系 → 聚焦 */
         if (state === 'overview') {
             if (!hits.length) return;
             const g = findAncestor(hits[0].object, 'galaxy');
@@ -530,7 +503,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
             return;
         }
 
-        /* galaxy: 点恒星跳转 / 点行星交换 / 点空白返回 */
         if (state === 'galaxy') {
             const galaxy = galaxyList[activeGalaxyIndex];
             if (!galaxy) return;
@@ -564,18 +536,36 @@ export async function createEmbedGallery(container, userOptions = {}) {
     container.addEventListener('click', onClick);
 
     /* ============================================================
-       ⑰  渲染循环（含 iOS 修复）
+       ⑯  渲染循环（每帧同步尺寸 + 强制首帧）
        ============================================================ */
     const clock = new THREE.Clock();
     const _starWorld = new THREE.Vector3();
     const _starNDC = new THREE.Vector3();
     let rafId = null;
     let visible = true;
+    let lastW = 0, lastH = 0;
+    let frameCount = 0;
+
+    function syncSize() {
+        const w = getW();
+        const h = getH();
+        if (w > 0 && h > 0 && (w !== lastW || h !== lastH)) {
+            lastW = w;
+            lastH = h;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+            labelRenderer.setSize(w, h);
+        }
+    }
 
     function animate() {
         if (!visible) { rafId = null; return; }
 
         const dt = Math.min(clock.getDelta(), 0.05);
+
+        /* ★ 每帧检查容器尺寸 */
+        syncSize();
 
         const activeList = state === 'overview'
             ? (isMobile && total > 1
@@ -586,7 +576,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         activeList.forEach((g) => {
             if (!g.group.visible) return;
 
-            /* 移动端：自动旋转 */
             if (isMobile) {
                 g.orbitRing.rotation.y += 0.4 * dt;
                 g.star.rotation.y += (0 - g.star.rotation.y) * 0.03;
@@ -595,7 +584,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
                 return;
             }
 
-            /* 桌面端：悬停旋转 + 恒星跟随 */
             if (isDragging) {
                 g.spinVel *= 0.75;
             } else if (mouseActive) {
@@ -637,15 +625,34 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         renderer.render(scene, camera);
         labelRenderer.render(scene, camera);
+
+        /* ★ 首 3 帧打印诊断 */
+        frameCount++;
+        if (frameCount <= 3) {
+            console.log(`[embed] 第 ${frameCount} 帧 | canvas=${renderer.domElement.width}×${renderer.domElement.height} | 可见星系=${activeList.filter(g => g.group.visible).length}`);
+        }
+
         rafId = requestAnimationFrame(animate);
     }
 
-    /* ★ iOS 修复：先渲染一次，不依赖 IntersectionObserver
-       IO 之后只用来"离开视口时暂停"，不负责"进入时启动" */
+    /* ★ 首帧强制同步尺寸 */
+    syncSize();
+
+    /* ★ 直接渲染一帧（不依赖 rAF） */
+    try {
+        renderer.render(scene, camera);
+        labelRenderer.render(scene, camera);
+        console.log('[embed] 首帧渲染完成');
+    } catch (err) {
+        console.error('[embed] 首帧渲染失败：', err);
+    }
+
+    /* ★ 启动循环 */
     visible = true;
     clock.getDelta();
     rafId = requestAnimationFrame(animate);
 
+    /* IO 只负责暂停/恢复 */
     let io = null;
     if (typeof IntersectionObserver !== 'undefined') {
         io = new IntersectionObserver((entries) => {
@@ -661,20 +668,13 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       ⑱  自适应
+       ⑰  自适应
        ============================================================ */
-    const onResize = () => {
-        const w = container.clientWidth  || window.innerWidth;
-        const h = container.clientHeight || 450;
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-        labelRenderer.setSize(w, h);
-    };
+    const onResize = () => syncSize();
     window.addEventListener('resize', onResize);
 
     /* ============================================================
-       ⑲  对外接口
+       ⑱  对外接口
        ============================================================ */
     return {
         destroy() {
