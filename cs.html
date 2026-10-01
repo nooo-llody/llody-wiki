@@ -17,40 +17,19 @@
 <div id="msg">正在初始化…</div>
 <canvas id="c"></canvas>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-  }
-}
-</script>
-
 <script type="module">
-import * as THREE from 'three';
+import * as THREE from 'https://esm.sh/three@0.160.0';
 
 const msg = document.getElementById('msg');
 const canvas = document.getElementById('c');
 
-/* 1. 检查 WebGL 支持 */
-const testGL = document.createElement('canvas');
-const gl = testGL.getContext('webgl2') || testGL.getContext('webgl');
-
-if (!gl) {
-    msg.textContent = '❌ 不支持 WebGL';
-    msg.style.background = 'red';
-    msg.style.color = 'white';
-} else {
-    const version = testGL.getContext('webgl2') ? 'WebGL2' : 'WebGL1';
-    msg.textContent = `✓ ${version} 支持中…`;
-}
+msg.textContent = '✓ three.js 已加载，正在创建场景…';
 
 try {
-    /* 2. 创建渲染器 */
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
-    renderer.setPixelRatio(1);   // 用 1 测试
+    renderer.setPixelRatio(1);
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
-    /* 3. 场景 */
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x88ccff);
 
@@ -63,7 +42,6 @@ try {
     );
     scene.add(cube);
 
-    /* 4. 渲染循环 */
     let frames = 0;
     function animate() {
         requestAnimationFrame(animate);
@@ -72,15 +50,14 @@ try {
         renderer.render(scene, camera);
         frames++;
         if (frames === 60) {
-            msg.textContent = `✓ 运行中 (${gl.getParameter ? gl.getParameter(gl.VERSION) : '?'})`;
+            msg.textContent = '✓ 运行中';
             msg.style.background = 'lightgreen';
-            setTimeout(() => msg.style.display = 'none', 3000);
         }
     }
     animate();
 
 } catch (err) {
-    msg.textContent = '❌ 创建失败: ' + err.message;
+    msg.textContent = '❌ ' + err.message;
     msg.style.background = 'red';
     msg.style.color = 'white';
     console.error(err);
