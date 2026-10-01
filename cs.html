@@ -151,9 +151,9 @@
                 <span>劳埃德大师</span>
             </div>
             <ul class="navbar-links">
-                <li><a href="/index.html">首页</a></li>
+                <li><a href="/index.html" class="active">首页</a></li>
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
-                <li><a href="/navigation_bar/art.html" class="active">艺术展示</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
                 <li><a href="/navigation_bar/contact.html">联系我们</a></li>
             </ul>
             <div class="nav-actions">
@@ -283,11 +283,13 @@
     <p>暂未收入…</p>
 
     <!-- ==========================================
-         脚本
+         脚本（顺序很重要）
          ========================================== -->
 
+    <!-- 1. GSAP -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
+    <!-- 2. Three.js importmap -->
     <script type="importmap">
     {
       "imports": {
@@ -297,202 +299,13 @@
     }
     </script>
 
+    <!-- 3. 主题 / 搜索 -->
     <script src="/js/theme.js"></script>
     <script src="/pagefind/pagefind-ui.js"></script>
     <script>new PagefindUI({ element: "#search" });</script>
 
-    <script type="module">
-        import { createEmbedGallery } from '/galaxy-gallery/embed-gallery.js';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-        import * as THREE from 'three';
-
-        /* ============================================================
-           ①  GLB 加载（含 DRACO 解压支持）
-           ============================================================ */
-
-        /* --- Draco 解码器（压缩模型必需） --- */
-        const dracoLoader = new DRACOLoader();
-
-        /* 解码器从 CDN 加载，版本要和 importmap 一致 */
-        dracoLoader.setDecoderPath(
-            'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/'
-        );
-        /* 预加载，加速首次解压 */
-        dracoLoader.preload();
-
-        /* --- GLTF 加载器 + 挂上 Draco --- */
-        const gltfLoader = new GLTFLoader();
-        gltfLoader.setDRACOLoader(dracoLoader);
-
-        /* --- 统一加载函数（自动归一化） --- */
-        async function loadGLB(url) {
-            const gltf = await gltfLoader.loadAsync(url);
-            const model = gltf.scene;
-
-            /* 材质独立，透明度动画才能生效 */
-            model.traverse((o) => {
-                if (o.isMesh) {
-                    o.material = o.material.clone();
-                    o.material.transparent = true;
-                }
-            });
-
-            /* 归一化：最大边统一到 1.6 世界单位 */
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3());
-            const s = 1.6 / Math.max(size.x, size.y, size.z);
-            model.scale.setScalar(s);
-
-            /* 原点移到几何中心 */
-            const box2 = new THREE.Box3().setFromObject(model);
-            const center = box2.getCenter(new THREE.Vector3());
-            model.position.sub(center);
-
-            const wrap = new THREE.Group();
-            wrap.add(model);
-            return wrap;
-        }
-
-
-        /* ============================================================
-           ②  尺寸参数
-           容器宽 < 768px 视为移动端，所有尺寸缩小
-           ============================================================ */
-        const isMobile = window.innerWidth < 768;
-
-        /* ★ 移动端缩放系数：改小 → 移动端更小；改大 → 移动端更大 */
-        const MOBILE_SCALE = 0.7;
-
-        const sizeOpts = isMobile
-            ? {
-                starScale:   1.6 * MOBILE_SCALE,
-                planetScale: 0.6 * MOBILE_SCALE,
-                orbitRadius: 2.2 * MOBILE_SCALE,
-                spacing:     8   * MOBILE_SCALE,
-            }
-            : {
-                starScale:   1.6,
-                planetScale: 0.6,
-                orbitRadius: 2.2,
-                spacing:     8,
-            };
-
-
-        /* ============================================================
-           ③  星系数据  ── ★★★★★ 你要改的就是这一段 ★★★★★
-           ============================================================ */
-        const EMBED_DATA = {
-
-            /* ============ solo-小型地图 ============ */
-            'solo-小型地图': [
-                {
-                    name: 'solo',
-                    color: 0x59c39a,
-                    starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
-                    starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
-                    models: [
-                        {
-                            label: 'solo',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_snow_field',
-                            model: '/modle/build/bedwars/solo/bw_solo_snow_field/base.glb',
-                        },
-                        {
-                            label: 'bw_solo_machine_chinampa',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa',
-                            model: '/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb',
-                        },
-                        {
-                            label: 'bw_solo_flesh_reforged',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged',
-                            model: '/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb',
-                        },
-                    ],
-                },
-            ],
-
-            /* ============ 4v4v4v4 ============ */
-            '4v4v4v4': [
-                {
-                    name: '4v4v4v4',
-                    color: 0x59c39a,
-                    starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_speedrun',
-                    starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun/base.glb',
-                    models: [
-                        {
-                            label: 'bw_4v4v4v4_pale_dwelling',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_pale_dwelling',
-                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb',
-                        },
-                        {
-                            label: 'bw_4v4v4v4_basement',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
-                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
-                        },
-                        {
-                            label: 'bw_4v4v4v4_desert_castle',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
-                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb',
-                        },
-                    ],
-                },
-            ],
-
-            /* ============ 钻石环岛 4 队 ============ */
-            'diamond-ring-4': [
-                {
-                    name: '钻石环岛 4 队',
-                    color: 0x9b6bd1,
-                    starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
-                    starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb',
-                    models: [
-                        {
-                            label: 'bw_4v4v4v4_desert_castle',
-                            url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
-                            model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/all.glb',
-                        },
-                    ],
-                },
-            ],
-
-        };
-
-
-        /* ============================================================
-           ④  初始化所有容器
-           ============================================================ */
-        const embeds = document.querySelectorAll('.galaxy-embed');
-        const instances = [];
-
-        for (const el of embeds) {
-            const key = el.dataset.galaxySet;
-            const data = EMBED_DATA[key];
-            if (!data) {
-                console.warn(`未找到 data-galaxy-set="${key}" 的星系数据`);
-                continue;
-            }
-            try {
-                const inst = await createEmbedGallery(el, {
-                    galaxies: data,
-                    loadModel: loadGLB,
-                    blockHeightMul: 1,
-
-                    /* ★ 桌面 / 移动自适应尺寸 */
-                    starScale:   sizeOpts.starScale,
-                    planetScale: sizeOpts.planetScale,
-                    orbitRadius: sizeOpts.orbitRadius,
-                    spacing:     sizeOpts.spacing,
-                });
-                instances.push(inst);
-            } catch (err) {
-                console.error(`初始化 "${key}" 失败：`, err);
-            }
-        }
-
-        window.addEventListener('beforeunload', () => {
-            instances.forEach((i) => i.destroy());
-        });
-    </script>
+    <!-- 4. ★ 主逻辑（外部 JS） -->
+    <script type="module" src="/galaxy-gallery/mcmeta.js"></script>
 
 </body>
 </html>
