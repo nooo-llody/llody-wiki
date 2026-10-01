@@ -1,10 +1,11 @@
 // /galaxy-gallery/mcmeta.js
 // 起床战争 3D 画廊 — 主逻辑 + Minecraft 动态纹理 + 实时颜色更新
+// ★ 使用 esm.sh 完整 URL，兼容 iOS 16.3
 
 import { createEmbedGallery } from '/galaxy-gallery/embed-gallery.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import * as THREE from 'three';
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { GLTFLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/DRACOLoader.js';
 
 
 /* ============================================================
@@ -13,11 +14,8 @@ import * as THREE from 'three';
 
 const animatedTextures = [];
 const animatedTextureIds = new Set();
-
-/* ★ 所有画廊实例（用于主题变化时重建） */
 let galleryInstances = [];
 
-/* ★ 多帧贴图存放目录 */
 const ANIMATED_TEXTURE_DIR = '/image/minecraft/mcmeta/';
 
 /* ============================================================
@@ -133,9 +131,7 @@ async function loadAnimatedTexture(resourceName) {
    ============================================================ */
 
 const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath(
-    'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/'
-);
+dracoLoader.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
 dracoLoader.preload();
 
 const gltfLoader = new GLTFLoader();
@@ -175,9 +171,7 @@ async function loadGLB(url) {
                     const resourceName = extractAnimatedResourceName(texName);
                     const fps = matchFps(resourceName);
 
-                    console.log(
-                        `[mcmeta] 检测到动态纹理: ${texName} → 资源名 "${resourceName}" @ ${fps}fps`
-                    );
+                    console.log(`[mcmeta] 检测到动态纹理: ${texName} → "${resourceName}" @ ${fps}fps`);
 
                     asyncTasks.push((async () => {
                         const newMap = await loadAnimatedTexture(resourceName);
@@ -196,16 +190,10 @@ async function loadGLB(url) {
                         child.material.emissiveMap = newMap;
                         child.material.needsUpdate = true;
 
-                        const frames = Math.round(
-                            newMap.image.height / newMap.image.width
-                        );
+                        const frames = Math.round(newMap.image.height / newMap.image.width);
                         if (frames > 1) {
-                            console.log(
-                                `[mcmeta] ★ 注册动画: ${resourceName} ${newMap.image.width}×${newMap.image.height} → ${frames} 帧 @ ${fps}fps`
-                            );
-                            animatedTextures.push(
-                                createAnimatedTexture(newMap, frames, fps)
-                            );
+                            console.log(`[mcmeta] ★ 注册动画: ${resourceName} ${newMap.image.width}×${newMap.image.height} → ${frames} 帧`);
+                            animatedTextures.push(createAnimatedTexture(newMap, frames, fps));
                         }
                     })());
                 } else {
@@ -235,9 +223,7 @@ async function loadGLB(url) {
         await Promise.all(asyncTasks);
     }
 
-    console.log(
-        `[mcmeta] 模型 ${url.split('/').pop()} 处理完成：${processedCount}/${meshCount} mesh`
-    );
+    console.log(`[mcmeta] 模型 ${url.split('/').pop()} 处理完成：${processedCount}/${meshCount} mesh`);
 
     try {
         const box = new THREE.Box3().setFromObject(model);
@@ -266,7 +252,7 @@ async function loadGLB(url) {
 /* ============================================================
    ⑤  尺寸参数
    ============================================================ */
-const isMobile = window.innerWidth < 768;
+const isMobile = window.matchMedia('(max-width: 767px)').matches;
 const MOBILE_SCALE = 0.7;
 
 const sizeOpts = isMobile
@@ -293,7 +279,6 @@ function parseColor(c, fallback = 0x5b8def) {
     if (typeof c === 'string') {
         const s = c.trim();
 
-        /* ★ 支持 CSS 变量：var(--accent) / --accent / accent */
         let varName = '';
         if (s.startsWith('var(')) {
             varName = s.slice(4, -1).trim();
@@ -303,28 +288,19 @@ function parseColor(c, fallback = 0x5b8def) {
 
         if (varName) {
             const cssValue = getComputedStyle(document.documentElement)
-                .getPropertyValue(varName)
-                .trim();
-
-            if (cssValue) {
-                return parseColor(cssValue, fallback);
-            }
-            console.warn(`[mcmeta] CSS 变量 ${varName} 未定义，使用默认色`);
+                .getPropertyValue(varName).trim();
+            if (cssValue) return parseColor(cssValue, fallback);
+            console.warn(`[mcmeta] CSS 变量 ${varName} 未定义`);
             return fallback;
         }
 
-        /* #xxxxxx 和 0xxxxx */
         if (s.startsWith('0x') || s.startsWith('0X')) return parseInt(s.slice(2), 16);
         if (s.startsWith('#')) return parseInt(s.slice(1), 16);
 
-        /* rgb() / rgba() */
         if (s.startsWith('rgb')) {
-            try {
-                return new THREE.Color(s).getHex();
-            } catch (e) {}
+            try { return new THREE.Color(s).getHex(); } catch (e) {}
         }
 
-        /* 尝试十六进制 */
         const n = parseInt(s, 16);
         if (!isNaN(n)) return n;
     }
@@ -347,7 +323,7 @@ function normalizeGalaxyData(data) {
 function readGalaxyDataFromContainer(el) {
     const scriptEl = el.querySelector('script[type="application/json"]');
     if (!scriptEl) {
-        console.warn(`[mcmeta] 容器内找不到 <script type="application/json">`);
+        console.warn('[mcmeta] 容器内找不到 JSON');
         return null;
     }
 
@@ -358,7 +334,7 @@ function readGalaxyDataFromContainer(el) {
         const data = JSON.parse(text);
         return normalizeGalaxyData(data);
     } catch (err) {
-        console.error(`[mcmeta] JSON 解析失败：`, err);
+        console.error('[mcmeta] JSON 解析失败：', err);
         return null;
     }
 }
@@ -401,46 +377,37 @@ async function initAllGalleries() {
 
 
 /* ============================================================
-   ⑨  ★ 主题变化 → 重建所有画廊
+   ⑨  主题变化 → 重建所有画廊
    ============================================================ */
 async function rebuildAllGalleries() {
     console.log('[mcmeta] 主题变化，重建所有画廊…');
 
-    /* 销毁旧的 */
     galleryInstances.forEach((inst) => {
         try { inst.destroy(); } catch (e) {}
     });
     galleryInstances = [];
 
-    /* 清空动态纹理 */
     animatedTextures.length = 0;
     animatedTextureIds.clear();
 
-    /* 重新初始化 */
     try {
         await initAllGalleries();
-        console.log('[mcmeta] ✓ 主题更新完成，动态纹理数量:', animatedTextures.length);
+        console.log('[mcmeta] ✓ 主题更新完成');
     } catch (err) {
         console.error('[mcmeta] ✗ 主题更新失败：', err);
     }
 }
 
-/* 防抖计时器 */
 let themeChangeTimer = null;
-
-/* 监听 :root 上的 style 属性变化 */
 const themeObserver = new MutationObserver((mutations) => {
     for (const m of mutations) {
         if (m.type === 'attributes' && m.attributeName === 'style') {
             clearTimeout(themeChangeTimer);
-            /* 350ms 防抖：如果用户拖动颜色选择器，不会每帧都重建 */
             themeChangeTimer = setTimeout(rebuildAllGalleries, 350);
             return;
         }
     }
 });
-
-/* 开始监听 */
 themeObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['style'],
@@ -461,9 +428,7 @@ function startAnimatedTextureLoop() {
             for (let i = 0; i < animatedTextures.length; i++) {
                 try {
                     animatedTextures[i](dt);
-                } catch (e) {
-                    console.warn(`[mcmeta] 动态纹理 tick 失败:`, e);
-                }
+                } catch (e) {}
             }
         }
     }

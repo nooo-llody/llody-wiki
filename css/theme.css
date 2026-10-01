@@ -962,3 +962,229 @@ html {
         display: none;
     }
 }
+/* ============================================================
+   3D 星系画廊样式
+   ============================================================ */
+
+/* 嵌入式 3D 容器 */
+.galaxy-embed {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    margin: 24px 0 32px;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: var(--bg);
+}
+.galaxy-embed canvas { display: block; }
+.galaxy-embed script[type="application/json"] { display: none; }
+
+/* 容器内返回按钮 */
+.galaxy-embed-back {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: all 0.3s;
+}
+.galaxy-embed-back.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.galaxy-embed-back:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.galaxy-embed-back:active { transform: translateY(0) scale(0.95); }
+
+/* 移动端切换星系按钮 ‹ › */
+.galaxy-embed-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 15;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: var(--text);
+    font-size: 1.5rem;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0 0 10px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+}
+.galaxy-embed-nav.show { display: flex; }
+.galaxy-embed-nav-prev { left: 10px; }
+.galaxy-embed-nav-next { right: 10px; }
+.galaxy-embed-nav:hover,
+.galaxy-embed-nav:active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.galaxy-embed-nav:active { transform: translateY(-50%) scale(0.94); }
+
+/* 移动端"选择恒星"按钮 */
+.galaxy-embed-star-btn {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.galaxy-embed-star-btn.show { display: inline-flex; }
+.galaxy-embed-star-btn:hover,
+.galaxy-embed-star-btn:active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.galaxy-embed-star-btn:active { transform: scale(0.95); }
+
+/* 恒星选择菜单 */
+.galaxy-embed-star-menu {
+    position: absolute;
+    right: 14px;
+    bottom: 58px;
+    z-index: 25;
+    display: none;
+    flex-direction: column;
+    min-width: 180px;
+    max-width: 260px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 6px;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--text);
+}
+.galaxy-embed-star-menu.show { display: flex; }
+.galaxy-embed-star-item {
+    padding: 8px 12px;
+    border-radius: calc(var(--border-radius) - 2px);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.galaxy-embed-star-item:hover,
+.galaxy-embed-star-item:active {
+    background: var(--primary);
+    color: #fff;
+}
+.galaxy-embed-star-item.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+    cursor: default;
+}
+.galaxy-embed-star-menu::-webkit-scrollbar { width: 4px; }
+.galaxy-embed-star-menu::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+/* 星系文字标签 */
+.galaxy-label {
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-family: inherit;
+    letter-spacing: 0.12em;
+    padding: 4px 12px 4px 10px;
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--label-color, var(--primary));
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* 小屏适配 */
+@media (max-width: 600px) {
+    .galaxy-embed {
+        height: 450px;
+        margin: 18px 0 24px;
+    }
+    .galaxy-embed-back {
+        left: 10px;
+        bottom: 10px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    .galaxy-embed-nav {
+        width: 36px;
+        height: 36px;
+        font-size: 1.3rem;
+        padding: 0 0 8px;
+    }
+    .galaxy-embed-nav-prev { left: 8px; }
+    .galaxy-embed-nav-next { right: 8px; }
+    .galaxy-embed-star-btn {
+        right: 10px;
+        bottom: 10px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    .galaxy-embed-star-menu {
+        right: 10px;
+        bottom: 50px;
+        min-width: 160px;
+        max-width: 220px;
+    }
+}

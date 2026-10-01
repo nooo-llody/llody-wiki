@@ -1,15 +1,13 @@
 // /galaxy-gallery/embed-gallery.js
-// 嵌入式 3D 画廊 — iPhone 真机专版修复
+// 嵌入式 3D 画廊 — 含 iOS 兼容 + 移动端拖动 + 恒星选择
 
-import * as THREE from 'three';
-import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { CSS2DRenderer } from 'https://esm.sh/three@0.160.0/examples/jsm/renderers/CSS2DRenderer.js';
 import { makeBuilding, fadeAll, findAncestor, isDescendant } from './utils.js';
 import { createGalaxyLabel } from './labels.js';
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-/* 全局 WebGL 上下文计数（Safari 有硬上限） */
 let globalContextCount = 0;
 const MAX_CONTEXTS = 8;
 
@@ -26,12 +24,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
         window.matchMedia('(max-width: 767px)').matches ||
         container.clientWidth < 768;
 
-    console.log(`[embed] 初始化 | iOS=${isIOS} Safari=${isSafari} 移动端=${isMobile} 星系数=${total}`);
-    console.log(`[embed] 当前 WebGL 上下文数：${globalContextCount}/${MAX_CONTEXTS}`);
+    console.log(`[embed] 初始化 | iOS=${isIOS} 移动端=${isMobile} 星系数=${total}`);
 
-    /* ============================================================
-       ①  参数
-       ============================================================ */
+    /* 参数 */
     const orbitRadius    = userOptions.orbitRadius    ?? (isMobile ? 1.5 : 2.2);
     const starScale      = userOptions.starScale      ?? (isMobile ? 1.1 : 1.6);
     const planetScale    = userOptions.planetScale    ?? (isMobile ? 0.42 : 0.6);
@@ -61,20 +56,19 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const swapEase      = userOptions.swapEase      ?? 'sine.inOut';
     const loadModel     = userOptions.loadModel || null;
 
-    /* ============================================================
-       ②  背景色 & 场景
-       ============================================================ */
+    /* 背景色 */
     const backgroundColor =
         userOptions.backgroundColor ||
         getComputedStyle(document.documentElement)
             .getPropertyValue('--bg').trim() || '#f7f9fc';
 
+    /* 场景 */
     const scene = new THREE.Scene();
     const bgColor = new THREE.Color(backgroundColor);
     scene.background = bgColor;
     scene.fog = new THREE.Fog(bgColor, 24, 55);
 
-    const getW = () => Math.max(1, container.clientWidth  || window.innerWidth  || 375);
+    const getW = () => Math.max(1, container.clientWidth || window.innerWidth || 375);
     const getH = () => Math.max(1, container.clientHeight || 450);
 
     const camera = new THREE.PerspectiveCamera(50, getW() / getH(), 0.1, 100);
@@ -89,27 +83,25 @@ export async function createEmbedGallery(container, userOptions = {}) {
     rimLight.position.set(-8, 4, -6);
     scene.add(rimLight);
 
-    /* ============================================================
-       ③  ★ 渲染器（iOS 关键修复）
-       ============================================================ */
+    /* 上下文上限 */
     if (globalContextCount >= MAX_CONTEXTS) {
-        console.error(`[embed] ✗ WebGL 上下文数达到上限 ${MAX_CONTEXTS}，跳过创建`);
-        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.5;font-size:0.9rem;">3D 视图数量已达上限</div>';
+        console.error(`[embed] WebGL 上下文数达上限`);
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.5;">3D 视图数量已达上限</div>';
         return { destroy() {} };
     }
 
+    /* 渲染器 */
     let renderer;
     try {
-        /* ★ iOS 上降低 DPR、关闭部分特性，减小显存占用 */
         const dprCap = isIOS ? 1.25 : (isMobile ? 1.5 : 2);
 
         renderer = new THREE.WebGLRenderer({
-            antialias: !isIOS,                     // iOS 关抗锯齿，用 DPR 弥补
+            antialias: !isIOS,
             alpha: false,
             powerPreference: 'default',
             failIfMajorPerformanceCaveat: false,
-            preserveDrawingBuffer: false,          // 关，省内存
-            stencil: false,                        // 关，省内存
+            preserveDrawingBuffer: false,
+            stencil: false,
             depth: true,
         });
 
@@ -117,8 +109,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         renderer.setSize(getW(), getH());
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
-
-        /* ★ 清除色 = 背景色，避免黑屏 */
         renderer.setClearColor(bgColor, 1);
 
     } catch (err) {
@@ -131,27 +121,19 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.cursor = 'grab';
+    renderer.domElement.style.touchAction = 'none';
     container.appendChild(renderer.domElement);
 
-    console.log(`[embed] ✓ WebGL 已创建 | canvas 属性尺寸=${renderer.domElement.width}×${renderer.domElement.height} | CSS 尺寸=${getW()}×${getH()} | DPR=${renderer.getPixelRatio()}`);
+    console.log(`[embed] ✓ WebGL 已创建 | ${renderer.domElement.width}×${renderer.domElement.height} | DPR=${renderer.getPixelRatio()}`);
 
-    /* ★ WebGL 上下文丢失处理 —— iPhone 的核心问题 */
+    /* 上下文丢失监听 */
     let contextLost = false;
-    const onContextLost = (e) => {
-        e.preventDefault();
-        contextLost = true;
-        console.warn('[embed] ⚠ WebGL 上下文丢失');
-    };
-    const onContextRestored = () => {
-        contextLost = false;
-        console.log('[embed] ✓ WebGL 上下文已恢复');
-    };
+    const onContextLost = (e) => { e.preventDefault(); contextLost = true; console.warn('[embed] ⚠ 上下文丢失'); };
+    const onContextRestored = () => { contextLost = false; console.log('[embed] ✓ 上下文恢复'); };
     renderer.domElement.addEventListener('webglcontextlost', onContextLost, false);
     renderer.domElement.addEventListener('webglcontextrestored', onContextRestored, false);
 
-    /* ============================================================
-       ④  CSS2D 渲染器
-       ============================================================ */
+    /* CSS2D */
     const labelRenderer = new CSS2DRenderer();
     labelRenderer.setSize(getW(), getH());
     Object.assign(labelRenderer.domElement.style, {
@@ -161,9 +143,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     });
     container.appendChild(labelRenderer.domElement);
 
-    /* ============================================================
-       ⑤  世界 & 模型工厂
-       ============================================================ */
+    /* 世界 */
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
@@ -179,18 +159,14 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     async function getModel(color, seed, url) {
         if (loadModel && url) {
-            try {
-                return await loadModel(url);
-            } catch (err) {
-                console.warn(`[embed] GLB 加载失败，回退到方块: ${url}`, err);
+            try { return await loadModel(url); } catch (err) {
+                console.warn(`[embed] GLB 失败，回退方块: ${url}`, err);
             }
         }
         return makeTallBuilding(color, seed);
     }
 
-    /* ============================================================
-       ⑥  构建星系
-       ============================================================ */
+    /* 构建星系 */
     const galaxyList = [];
     const offsets = [];
     for (let i = 0; i < total; i++) {
@@ -210,7 +186,16 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         const star = await getModel(data.color, gi * 100 + 7, data.starModel);
         star.scale.setScalar(starScale);
-        star.userData = { type: 'star', galaxyIndex: gi, url: data.starUrl };
+
+        /* ★ 恒星自己的名字：优先 starLabel，其次 name，最后 "恒星" */
+        const starLabel = data.starLabel || data.name || '恒星';
+
+        star.userData = {
+            type: 'star',
+            galaxyIndex: gi,
+            url: data.starUrl,
+            label: starLabel,
+        };
         galaxyGroup.add(star);
 
         const orbitRing = new THREE.Group();
@@ -248,15 +233,10 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     console.log(`[embed] 星系构建完成，共 ${galaxyList.length} 个`);
 
-    /* ============================================================
-       ⑦  状态
-       ============================================================ */
     let state = 'overview';
     let activeGalaxyIndex = 0;
 
-    /* ============================================================
-       ⑧  返回按钮
-       ============================================================ */
+    /* 返回按钮 */
     const backBtn = document.createElement('button');
     backBtn.className = 'galaxy-embed-back';
     backBtn.type = 'button';
@@ -267,9 +247,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
         if (state === 'galaxy') revertOverview();
     });
 
-    /* ============================================================
-       ⑨  移动端 ‹ › 按钮
-       ============================================================ */
+    /* 移动端 ‹ › 切换星系 */
     const navPrev = document.createElement('button');
     navPrev.className = 'galaxy-embed-nav galaxy-embed-nav-prev';
     navPrev.type = 'button';
@@ -288,6 +266,55 @@ export async function createEmbedGallery(container, userOptions = {}) {
         switchMobileGalaxy(+1);
     });
 
+    /* 恒星选择菜单 */
+    const starMenu = document.createElement('div');
+    starMenu.className = 'galaxy-embed-star-menu';
+    container.appendChild(starMenu);
+
+    /* 恒星选择按钮 */
+    const starMenuBtn = document.createElement('button');
+    starMenuBtn.className = 'galaxy-embed-star-btn';
+    starMenuBtn.type = 'button';
+    starMenuBtn.textContent = '选择恒星';        /* ★ 去掉 ⭐ 符号 */
+    container.appendChild(starMenuBtn);
+    starMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        starMenu.classList.toggle('show');
+    });
+
+    /**
+     * 刷新恒星选择菜单
+     * - 当前的恒星名字高亮，不可点
+     * - 其他行星可点，点了就交换
+     */
+    function refreshStarMenu() {
+        const galaxy = galaxyList[activeGalaxyIndex];
+        if (!galaxy) return;
+
+        starMenu.innerHTML = '';
+
+        /* 当前恒星（高亮、不可点） */
+        const currentStarItem = document.createElement('div');
+        currentStarItem.className = 'galaxy-embed-star-item active';
+        currentStarItem.textContent = galaxy.star.userData.label || '恒星';
+        starMenu.appendChild(currentStarItem);
+
+        /* 所有行星 */
+        galaxy.planets.forEach((planet) => {
+            const item = document.createElement('div');
+            item.className = 'galaxy-embed-star-item';
+            item.textContent = planet.userData.label || ('行星 ' + (planet.userData.modelIndex + 1));
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                swapStarPlanet(galaxy, planet);
+                starMenu.classList.remove('show');
+                setTimeout(refreshStarMenu, swapDuration * 1000 + 100);
+            });
+            starMenu.appendChild(item);
+        });
+    }
+
+    /* 初始化显示 */
     if (isMobile && total > 1) {
         container.appendChild(navPrev);
         container.appendChild(navNext);
@@ -302,6 +329,8 @@ export async function createEmbedGallery(container, userOptions = {}) {
             gsap.set(worldGroup.position, { x: -galaxyList[0].baseX });
         });
     }
+
+    /* ★ 注意：不再在初始化时显示 starMenuBtn —— 只在进入星系后显示 */
 
     function switchMobileGalaxy(dir) {
         if (state !== 'overview') return;
@@ -318,15 +347,15 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         activeGalaxyIndex = newIdx;
 
+        /* 切换星系时收起菜单 */
+        starMenu.classList.remove('show');
+
         gsap.to(worldGroup.position, {
             x: -galaxyList[newIdx].baseX, y: 0, z: 0,
             duration: 0.8, ease: 'power3.inOut',
         });
     }
 
-    /* ============================================================
-       ⑩  进入 / 返回星系
-       ============================================================ */
     function enterGalaxy(index) {
         state = 'galaxy';
         activeGalaxyIndex = index;
@@ -337,13 +366,18 @@ export async function createEmbedGallery(container, userOptions = {}) {
             navNext.classList.remove('show');
         }
 
+        /* ★ 进入星系后显示"选择恒星"按钮（和返回按钮一样） */
+        if (isMobile) {
+            starMenuBtn.classList.add('show');
+            refreshStarMenu();
+        }
+
         const target = galaxyList[index];
 
         gsap.to(worldGroup.position, {
             x: -target.baseX, y: -target.baseY, z: 0,
             duration: 1.2, ease: 'power3.inOut',
         });
-
         gsap.to(target.group.scale, {
             x: zoomFactor, y: zoomFactor, z: zoomFactor,
             duration: 1.2, ease: 'power3.inOut',
@@ -378,6 +412,10 @@ export async function createEmbedGallery(container, userOptions = {}) {
             navNext.classList.add('show');
         }
 
+        /* ★ 返回总览时隐藏"选择恒星"按钮和菜单 */
+        starMenuBtn.classList.remove('show');
+        starMenu.classList.remove('show');
+
         gsap.to(worldGroup.position, {
             x: (isMobile && total > 1) ? -galaxyList[activeGalaxyIndex].baseX : 0,
             y: 0, z: 0,
@@ -402,9 +440,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
-    /* ============================================================
-       ⑪  行星 ⇄ 恒星 交换
-       ============================================================ */
     function swapStarPlanet(galaxy, planet) {
         const oldStar = galaxy.star;
         const planetSlot = planet.position.clone();
@@ -435,9 +470,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
         galaxy.planets.push(oldStar);
     }
 
-    /* ============================================================
-       ⑫  输入
-       ============================================================ */
+    /* 输入 */
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const mouseNDC = new THREE.Vector2(0, 0);
@@ -468,8 +501,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         lastY = e.clientY;
         if (Math.abs(dx) > 1 || Math.abs(dy) > 1) dragMoved = true;
 
-        if (isMobile && total > 1) return;
-
         const affected = state === 'overview'
             ? galaxyList
             : (activeGalaxyIndex >= 0 ? [galaxyList[activeGalaxyIndex]] : []);
@@ -498,6 +529,11 @@ export async function createEmbedGallery(container, userOptions = {}) {
         if (state === 'jumping') return;
         if (dragMoved) return;
 
+        /* ★ 点击空白处关闭菜单 */
+        if (!starMenu.contains(e.target) && e.target !== starMenuBtn) {
+            starMenu.classList.remove('show');
+        }
+
         const rect = container.getBoundingClientRect();
         pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -516,7 +552,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
             const galaxy = galaxyList[activeGalaxyIndex];
             if (!galaxy) return;
 
-            if (!hits.length) { revertOverview(); return; }
+            if (!hits.length) return;   /* 点了空白不返回了（避免和菜单冲突） */
             const hit = hits[0].object;
 
             if (isDescendant(hit, galaxy.star)) {
@@ -531,10 +567,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
             const planet = galaxy.planets.find((p) => isDescendant(hit, p));
             if (planet) {
                 swapStarPlanet(galaxy, planet);
+                if (isMobile) setTimeout(refreshStarMenu, swapDuration * 1000 + 100);
                 return;
             }
-
-            revertOverview();
         }
     };
 
@@ -544,9 +579,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     container.addEventListener('pointerleave', onPointerLeave);
     container.addEventListener('click', onClick);
 
-    /* ============================================================
-       ⑬  渲染循环
-       ============================================================ */
+    /* 渲染循环 */
     const clock = new THREE.Clock();
     const _starWorld = new THREE.Vector3();
     const _starNDC = new THREE.Vector3();
@@ -570,20 +603,13 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     function animate() {
         if (!visible) { rafId = null; return; }
-
-        /* ★ 上下文丢失时跳过渲染 */
-        if (contextLost) {
-            rafId = requestAnimationFrame(animate);
-            return;
-        }
+        if (contextLost) { rafId = requestAnimationFrame(animate); return; }
 
         const dt = Math.min(clock.getDelta(), 0.05);
         syncSize();
 
         const activeList = state === 'overview'
-            ? (isMobile && total > 1
-                ? [galaxyList[activeGalaxyIndex]]
-                : galaxyList)
+            ? (isMobile && total > 1 ? [galaxyList[activeGalaxyIndex]] : galaxyList)
             : (activeGalaxyIndex >= 0 ? [galaxyList[activeGalaxyIndex]] : []);
 
         activeList.forEach((g) => {
@@ -591,12 +617,16 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
             if (isMobile) {
                 g.orbitRing.rotation.y += 0.4 * dt;
-                g.star.rotation.y += (0 - g.star.rotation.y) * 0.03;
-                g.star.rotation.x += (0 - g.star.rotation.x) * 0.03;
+
+                if (!isDragging) {
+                    g.star.rotation.y += (0 - g.star.rotation.y) * 0.03;
+                    g.star.rotation.x += (0 - g.star.rotation.x) * 0.03;
+                }
                 g.group.rotation.x += (g.targetTilt - g.group.rotation.x) * 0.1;
                 return;
             }
 
+            /* 桌面端 */
             if (isDragging) {
                 g.spinVel *= 0.75;
             } else if (mouseActive) {
@@ -617,9 +647,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
                 const dx = mouseNDC.x - _starNDC.x;
                 const dy = mouseNDC.y - _starNDC.y;
 
-                const desiredYaw = THREE.MathUtils.clamp(
-                    dx * starYawGain, -starYawMax, starYawMax
-                );
+                const desiredYaw = THREE.MathUtils.clamp(dx * starYawGain, -starYawMax, starYawMax);
                 const curYaw = g.group.rotation.y + g.star.rotation.y;
                 g.star.rotation.y += (desiredYaw - curYaw) * starTurnEase;
 
@@ -645,13 +673,12 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         frameCount++;
         if (frameCount === 1 || frameCount === 60) {
-            console.log(`[embed] 第 ${frameCount} 帧 | canvas=${renderer.domElement.width}×${renderer.domElement.height} | 上下文丢失=${contextLost}`);
+            console.log(`[embed] 第 ${frameCount} 帧`);
         }
 
         rafId = requestAnimationFrame(animate);
     }
 
-    /* ★ 首帧直接渲染 */
     syncSize();
     try {
         renderer.render(scene, camera);
@@ -665,7 +692,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     clock.getDelta();
     rafId = requestAnimationFrame(animate);
 
-    /* IO 只负责暂停/恢复 */
     let io = null;
     if (typeof IntersectionObserver !== 'undefined') {
         io = new IntersectionObserver((entries) => {
@@ -680,7 +706,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         io.observe(container);
     }
 
-    /* 页面切回前台时恢复渲染 */
     const onVisibilityChange = () => {
         if (!document.hidden && visible && !rafId) {
             clock.getDelta();
@@ -689,15 +714,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
 
-    /* ============================================================
-       ⑭  自适应
-       ============================================================ */
     const onResize = () => syncSize();
     window.addEventListener('resize', onResize);
 
-    /* ============================================================
-       ⑮  对外接口
-       ============================================================ */
     return {
         destroy() {
             if (rafId) cancelAnimationFrame(rafId);
@@ -714,13 +733,12 @@ export async function createEmbedGallery(container, userOptions = {}) {
             backBtn.remove();
             navPrev.remove();
             navNext.remove();
-
-            /* ★ 释放 WebGL 上下文（关键！否则 iPhone 会累积耗尽） */
+            starMenuBtn.remove();
+            starMenu.remove();
             try {
                 renderer.dispose();
                 renderer.forceContextLoss();
             } catch (e) {}
-
             if (renderer.domElement.parentNode) {
                 renderer.domElement.parentNode.removeChild(renderer.domElement);
             }

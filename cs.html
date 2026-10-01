@@ -1,67 +1,262 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    html, body { margin: 0; padding: 0; background: #88ccff; }
-    #c { width: 100vw; height: 100vh; display: block; }
-    #msg {
-        position: fixed; top: 10px; left: 10px;
-        background: white; padding: 8px 12px; border-radius: 6px;
-        font-family: monospace; font-size: 14px; z-index: 999;
-    }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki · 起床战争地图</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
 </head>
 <body>
-<div id="msg">正在初始化…</div>
-<canvas id="c"></canvas>
 
-<script type="module">
-import * as THREE from 'https://esm.sh/three@0.160.0';
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
+            id="backToTop" class="back-top-btn">↑ 顶部</button>
 
-const msg = document.getElementById('msg');
-const canvas = document.getElementById('c');
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()">
+                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
+                </a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+                <li><a href="/index.html" class="active">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
 
-msg.textContent = '✓ three.js 已加载，正在创建场景…';
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色 <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
 
-try {
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
-    renderer.setPixelRatio(1);
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    <main id="main-content">
+        <br>
+        <h1>劳埃德大师wiki</h1>
+        <p>起床战争地图展示</p>
+        <br>
+    </main>
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x88ccff);
+    <hr>
+    <br>
 
-    const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    camera.position.z = 3;
+    <div class="toc">
+        <h2>目录</h2>
+        <ul>
+            <li><a href="#build-1">起床战争-大厅</a></li>
+            <li><a href="#build-2">起床战争-solo</a></li>
+            <li><a href="#build-3">起床战争-4v4v4v4</a></li>
+            <li><a href="#build-4">起床战争-4队-钻石环岛</a></li>
+            <li><a href="#build-5">起床战争-8队-钻石环岛</a></li>
+            <li><a href="#build-6">起床战争-4队-无虚空</a></li>
+            <li><a href="#build-7">起床战争-8队-无虚空</a></li>
+            <li><a href="#build-8">起床战争-4队-中钻合并</a></li>
+            <li><a href="#build-9">起床战争-8队-中钻合并</a></li>
+            <li><a href="#build-10">起床战争-RBW</a></li>
+        </ul>
+    </div>
 
-    const cube = new THREE.Mesh(
-        new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshBasicMaterial({ color: 0xff0000 })
-    );
-    scene.add(cube);
+    <h2 id="build-1">起床战争-大厅</h2>
+    <hr>
+    <p>起床战争的加入大厅</p>
+    <p>暂未收入…</p>
 
-    let frames = 0;
-    function animate() {
-        requestAnimationFrame(animate);
-        cube.rotation.y += 0.01;
-        cube.rotation.x += 0.005;
-        renderer.render(scene, camera);
-        frames++;
-        if (frames === 60) {
-            msg.textContent = '✓ 运行中';
-            msg.style.background = 'lightgreen';
-        }
-    }
-    animate();
+    <h2 id="build-2">起床战争-solo</h2>
+    <hr>
+    <p>八支队伍的起床战争地图，主要用于 solo。</p>
 
-} catch (err) {
-    msg.textContent = '❌ ' + err.message;
-    msg.style.background = 'red';
-    msg.style.color = 'white';
-    console.error(err);
-}
-</script>
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "solo-小型地图",
+                "color": "var(--accent)",
+                "starLabel": "bw_4v4v4v4_basement",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement",
+                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb",
+                "models": [
+                    {
+                        "label": "bw_solo_snow_field",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_snow_field",
+                        "model": "/modle/build/bedwars/solo/bw_solo_snow_field/base.glb"
+                    },
+                    {
+                        "label": "bw_solo_machine_chinampa",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa",
+                        "model": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb"
+                    },
+                    {
+                        "label": "bw_solo_flesh_reforged",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged",
+                        "model": "/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb"
+                    }
+                ]
+            },
+            {
+                "name": "solo-只是展示一下。",
+                "starLabel": "bw_solo_machine_chinampa",
+                "color": "var(--accent)",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa",
+                "starModel": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb",
+                "models": [
+                    {
+                        "label": "bw_solo_machine_chinampa",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa",
+                        "model": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb"
+                    },
+                    {
+                        "label": "bw_solo_flesh_reforged",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged",
+                        "model": "/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb"
+                    }
+                ]
+            }
+        ]
+        </script>
+    </div>
+
+    <h2 id="build-3">起床战争-4v4v4v4</h2>
+    <hr>
+    <p>四支队伍的起床战争地图，主要用于 4v4v4v4。</p>
+
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "4v4v4v4",
+                "color": "var(--accent)",
+                "starLabel": "bw_4v4v4v4_speedrun",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_speedrun",
+                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun/base.glb",
+                "models": [
+                    {
+                        "label": "bw_4v4v4v4_pale_dwelling",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_pale_dwelling",
+                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb"
+                    },
+                    {
+                        "label": "bw_4v4v4v4_basement",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement",
+                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb"
+                    }
+                ]
+            }
+        ]
+        </script>
+    </div>
+
+    <h2 id="build-4">起床战争-4队-钻石环岛</h2>
+    <hr>
+    <p>四个钻岛相互连接组成环岛</p>
+
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "4队-钻石环岛",
+                "color": "var(--accent)",
+                "starLabel": "bw_4v4v4v4_desert_castle",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle",
+                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb",
+                "models": [
+                    {
+                        "label": "bw_4v4v4v4_desert_castle-完整",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle",
+                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/all.glb"
+                    }
+                ]
+            }
+        ]
+        </script>
+    </div>
+
+    <h2 id="build-5">起床战争-8队-钻石环岛</h2>
+    <hr>
+    <p>四个钻岛相互连接组成环岛</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-6">起床战争-4队-无虚空</h2>
+    <hr>
+    <p>这里的地图将不再有虚空</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-7">起床战争-8队-无虚空</h2>
+    <hr>
+    <p>这里的地图将不再有虚空</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-8">起床战争-4队-中钻合并</h2>
+    <hr>
+    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-9">起床战争-8队-中钻合并</h2>
+    <hr>
+    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-10">起床战争-RBW</h2>
+    <hr>
+    <p>用于 RBW 的 4V4 地图，有时也用于 1v1</p>
+    <p>暂未收入…</p>
+
+    <hr>
+    <br>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <script src="/js/theme.js"></script>
+    <script src="/pagefind/pagefind-ui.js"></script>
+    <script>new PagefindUI({ element: "#search" });</script>
+
+    <script type="module" src="/galaxy-gallery/mcmeta.js"></script>
+
 </body>
 </html>
