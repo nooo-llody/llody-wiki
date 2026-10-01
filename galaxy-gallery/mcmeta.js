@@ -1,5 +1,5 @@
 // /galaxy-gallery/mcmeta.js
-// 起床战争 3D 画廊 — 主逻辑 + Minecraft 动态纹理（外部加载版）
+// 起床战争 3D 画廊 — 主逻辑 + Minecraft 动态纹理 + 实时颜色更新
 
 import { createEmbedGallery } from '/galaxy-gallery/embed-gallery.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -8,11 +8,14 @@ import * as THREE from 'three';
 
 
 /* ============================================================
-   ①  动态纹理系统
+   ①  全局状态
    ============================================================ */
 
 const animatedTextures = [];
 const animatedTextureIds = new Set();
+
+/* ★ 所有画廊实例（用于主题变化时重建） */
+let galleryInstances = [];
 
 /* ★ 多帧贴图存放目录 */
 const ANIMATED_TEXTURE_DIR = '/image/minecraft/mcmeta/';
@@ -44,10 +47,6 @@ const FPS_CONFIG = [
     { keys: ['lantern'],             fps: 20 },
 ];
 
-/**
- * 从名字里提取资源名
- * 例："minecraft_block_fire_0_animated_000" → "fire_0"
- */
 function extractAnimatedResourceName(textureName) {
     if (!textureName) return '';
     let name = textureName.toLowerCase();
@@ -73,9 +72,9 @@ function matchFps(resourceName) {
     return 20;
 }
 
+
 /* ============================================================
-   ★ 动态纹理播放器
-   flipY = false 时，UV 的 y 方向是从下往上，offset 从 0 递增
+   ②  动态纹理播放器
    ============================================================ */
 function createAnimatedTexture(texture, frameCount, fps = 20) {
     let currentFrame = 0;
@@ -102,9 +101,9 @@ function createAnimatedTexture(texture, frameCount, fps = 20) {
     };
 }
 
+
 /* ============================================================
-   ★ 加载外部多帧贴图
-   flipY = false 是关键 —— 和 GLB 内部贴图保持一致，防止上下颠倒
+   ③  加载外部多帧贴图
    ============================================================ */
 async function loadAnimatedTexture(resourceName) {
     const url = ANIMATED_TEXTURE_DIR + resourceName + '.png';
@@ -113,9 +112,7 @@ async function loadAnimatedTexture(resourceName) {
     try {
         const texture = await loader.loadAsync(url);
 
-        /* ★ 和 GLB 内部贴图一致，防止上下颠倒 */
         texture.flipY = false;
-
         texture.magFilter = THREE.NearestFilter;
         texture.minFilter = THREE.NearestFilter;
         texture.generateMipmaps = false;
@@ -132,7 +129,7 @@ async function loadAnimatedTexture(resourceName) {
 
 
 /* ============================================================
-   ②  GLB 加载
+   ④  GLB 加载
    ============================================================ */
 
 const dracoLoader = new DRACOLoader();
@@ -186,13 +183,11 @@ async function loadGLB(url) {
                         const newMap = await loadAnimatedTexture(resourceName);
                         if (!newMap) return;
 
-                        /* 替换贴图 */
                         child.material.map = newMap;
                         if (child.material.emissiveMap === originalMap) {
                             child.material.emissiveMap = newMap;
                         }
 
-                        /* 动态纹理材质设置 */
                         child.material.side = THREE.DoubleSide;
                         child.material.alphaTest = 0.5;
                         child.material.depthWrite = false;
@@ -201,7 +196,6 @@ async function loadGLB(url) {
                         child.material.emissiveMap = newMap;
                         child.material.needsUpdate = true;
 
-                        /* 注册动画 */
                         const frames = Math.round(
                             newMap.image.height / newMap.image.width
                         );
@@ -215,7 +209,6 @@ async function loadGLB(url) {
                         }
                     })());
                 } else {
-                    /* 非动态纹理：像素化 */
                     try {
                         originalMap.magFilter = THREE.NearestFilter;
                         originalMap.minFilter = THREE.NearestFilter;
@@ -226,7 +219,6 @@ async function loadGLB(url) {
                 }
             }
 
-            /* Z-fighting 处理 */
             try {
                 child.material.polygonOffset = true;
                 child.material.polygonOffsetFactor = 1;
@@ -240,7 +232,6 @@ async function loadGLB(url) {
     });
 
     if (asyncTasks.length > 0) {
-        console.log(`[mcmeta] 等待 ${asyncTasks.length} 张多帧贴图加载…`);
         await Promise.all(asyncTasks);
     }
 
@@ -248,7 +239,6 @@ async function loadGLB(url) {
         `[mcmeta] 模型 ${url.split('/').pop()} 处理完成：${processedCount}/${meshCount} mesh`
     );
 
-    /* 归一化 */
     try {
         const box = new THREE.Box3().setFromObject(model);
         if (!box.isEmpty()) {
@@ -274,7 +264,7 @@ async function loadGLB(url) {
 
 
 /* ============================================================
-   ③  尺寸参数
+   ⑤  尺寸参数
    ============================================================ */
 const isMobile = window.innerWidth < 768;
 const MOBILE_SCALE = 0.7;
@@ -295,94 +285,100 @@ const sizeOpts = isMobile
 
 
 /* ============================================================
-   ④  星系数据
+   ⑥  颜色解析（支持 CSS 变量）
    ============================================================ */
-const EMBED_DATA = {
+function parseColor(c, fallback = 0x5b8def) {
+    if (typeof c === 'number') return c;
 
-    'solo-小型地图': [
-        {
-            name: 'solo',
-            color: 0x59c39a,
-            starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
-            starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
-            models: [
-                {
-                    label: 'solo',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_snow_field',
-                    model: '/modle/build/bedwars/solo/bw_solo_snow_field/base.glb',
-                },
-                {
-                    label: 'bw_solo_machine_chinampa',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa',
-                    model: '/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb',
-                },
-                {
-                    label: 'bw_solo_flesh_reforged',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged',
-                    model: '/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb',
-                },
-            ],
-        },
-    ],
+    if (typeof c === 'string') {
+        const s = c.trim();
 
-    '4v4v4v4': [
-        {
-            name: '4v4v4v4',
-            color: 0x59c39a,
-            starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_speedrun',
-            starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun/base.glb',
-            models: [
-                {
-                    label: 'bw_4v4v4v4_pale_dwelling',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_pale_dwelling',
-                    model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb',
-                },
-                {
-                    label: 'bw_4v4v4v4_basement',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
-                    model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
-                },
-                {
-                    label: 'bw_4v4v4v4_desert_castle',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
-                    model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb',
-                },
-            ],
-        },
-    ],
+        /* ★ 支持 CSS 变量：var(--accent) / --accent / accent */
+        let varName = '';
+        if (s.startsWith('var(')) {
+            varName = s.slice(4, -1).trim();
+        } else if (s.startsWith('--')) {
+            varName = s;
+        }
 
-    'diamond-ring-4': [
-        {
-            name: '钻石环岛 4 队',
-            color: 0x9b6bd1,
-            starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
-            starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb',
-            models: [
-                {
-                    label: 'bw_4v4v4v4_desert_castle',
-                    url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle',
-                    model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/all.glb',
-                },
-            ],
-        },
-    ],
+        if (varName) {
+            const cssValue = getComputedStyle(document.documentElement)
+                .getPropertyValue(varName)
+                .trim();
 
-};
+            if (cssValue) {
+                return parseColor(cssValue, fallback);
+            }
+            console.warn(`[mcmeta] CSS 变量 ${varName} 未定义，使用默认色`);
+            return fallback;
+        }
+
+        /* #xxxxxx 和 0xxxxx */
+        if (s.startsWith('0x') || s.startsWith('0X')) return parseInt(s.slice(2), 16);
+        if (s.startsWith('#')) return parseInt(s.slice(1), 16);
+
+        /* rgb() / rgba() */
+        if (s.startsWith('rgb')) {
+            try {
+                return new THREE.Color(s).getHex();
+            } catch (e) {}
+        }
+
+        /* 尝试十六进制 */
+        const n = parseInt(s, 16);
+        if (!isNaN(n)) return n;
+    }
+
+    return fallback;
+}
 
 
 /* ============================================================
-   ⑤  初始化所有容器
+   ⑦  从 HTML 里的 JSON 读取星系数据
+   ============================================================ */
+function normalizeGalaxyData(data) {
+    if (!Array.isArray(data)) return [];
+    return data.map((g) => ({
+        ...g,
+        color: parseColor(g.color, 0x5b8def),
+    }));
+}
+
+function readGalaxyDataFromContainer(el) {
+    const scriptEl = el.querySelector('script[type="application/json"]');
+    if (!scriptEl) {
+        console.warn(`[mcmeta] 容器内找不到 <script type="application/json">`);
+        return null;
+    }
+
+    const text = scriptEl.textContent.trim();
+    if (!text) return null;
+
+    try {
+        const data = JSON.parse(text);
+        return normalizeGalaxyData(data);
+    } catch (err) {
+        console.error(`[mcmeta] JSON 解析失败：`, err);
+        return null;
+    }
+}
+
+
+/* ============================================================
+   ⑧  初始化所有容器
    ============================================================ */
 async function initAllGalleries() {
     const embeds = document.querySelectorAll('.galaxy-embed');
-    const instances = [];
 
+    console.log(`[mcmeta] 找到 ${embeds.length} 个 .galaxy-embed 容器`);
+
+    let index = 0;
     for (const el of embeds) {
-        const key = el.dataset.galaxySet;
-        const data = EMBED_DATA[key];
+        index++;
+        const data = readGalaxyDataFromContainer(el);
 
-        if (!data) {
-            console.warn(`[mcmeta] 未找到 data-galaxy-set="${key}" 的数据`);
+        if (!data || data.length === 0) {
+            console.warn(`[mcmeta] 第 ${index} 个容器数据无效，跳过`);
             continue;
         }
 
@@ -396,22 +392,63 @@ async function initAllGalleries() {
                 orbitRadius: sizeOpts.orbitRadius,
                 spacing:     sizeOpts.spacing,
             });
-            instances.push(inst);
+            galleryInstances.push(inst);
         } catch (err) {
-            console.error(`[mcmeta] ✗ 初始化 "${key}" 失败：`, err);
+            console.error(`[mcmeta] ✗ 第 ${index} 个容器初始化失败：`, err);
         }
     }
-
-    window.addEventListener('beforeunload', () => {
-        instances.forEach((i) => {
-            try { i.destroy(); } catch (e) {}
-        });
-    });
 }
 
 
 /* ============================================================
-   ⑥  动态纹理主循环
+   ⑨  ★ 主题变化 → 重建所有画廊
+   ============================================================ */
+async function rebuildAllGalleries() {
+    console.log('[mcmeta] 主题变化，重建所有画廊…');
+
+    /* 销毁旧的 */
+    galleryInstances.forEach((inst) => {
+        try { inst.destroy(); } catch (e) {}
+    });
+    galleryInstances = [];
+
+    /* 清空动态纹理 */
+    animatedTextures.length = 0;
+    animatedTextureIds.clear();
+
+    /* 重新初始化 */
+    try {
+        await initAllGalleries();
+        console.log('[mcmeta] ✓ 主题更新完成，动态纹理数量:', animatedTextures.length);
+    } catch (err) {
+        console.error('[mcmeta] ✗ 主题更新失败：', err);
+    }
+}
+
+/* 防抖计时器 */
+let themeChangeTimer = null;
+
+/* 监听 :root 上的 style 属性变化 */
+const themeObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+        if (m.type === 'attributes' && m.attributeName === 'style') {
+            clearTimeout(themeChangeTimer);
+            /* 350ms 防抖：如果用户拖动颜色选择器，不会每帧都重建 */
+            themeChangeTimer = setTimeout(rebuildAllGalleries, 350);
+            return;
+        }
+    }
+});
+
+/* 开始监听 */
+themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['style'],
+});
+
+
+/* ============================================================
+   ⑩  动态纹理主循环
    ============================================================ */
 function startAnimatedTextureLoop() {
     const clock = new THREE.Clock();
@@ -435,7 +472,7 @@ function startAnimatedTextureLoop() {
 
 
 /* ============================================================
-   ⑦  启动
+   ⑪  启动
    ============================================================ */
 (async function main() {
     console.log('[mcmeta] ★ 模块已加载');
@@ -451,6 +488,12 @@ function startAnimatedTextureLoop() {
     } catch (err) {
         console.error('[mcmeta] 动态纹理循环启动失败：', err);
     }
+
+    window.addEventListener('beforeunload', () => {
+        galleryInstances.forEach((i) => {
+            try { i.destroy(); } catch (e) {}
+        });
+    });
 
     console.log('[mcmeta] ★ 初始化完成，动态纹理数量:', animatedTextures.length);
 })();
