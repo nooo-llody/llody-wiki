@@ -241,7 +241,6 @@
     <hr>
     <p>八支队伍的起床战争地图，主要用于 solo。</p>
     <div class="galaxy-embed" data-galaxy-set="solo-小型地图"></div>
-    <div class="galaxy-embed" data-galaxy-set="solo-大型地图"></div>
 
     <h2 id="build-3">起床战争-4v4v4v4</h2>
     <hr>
@@ -305,17 +304,33 @@
     <script type="module">
         import { createEmbedGallery } from '/galaxy-gallery/embed-gallery.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
         import * as THREE from 'three';
 
         /* ============================================================
-           ①  GLB 加载函数（不用改）
+           ①  GLB 加载（含 DRACO 解压支持）
            ============================================================ */
-        const gltfLoader = new GLTFLoader();
 
+        /* --- Draco 解码器（压缩模型必需） --- */
+        const dracoLoader = new DRACOLoader();
+
+        /* 解码器从 CDN 加载，版本要和 importmap 一致 */
+        dracoLoader.setDecoderPath(
+            'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/'
+        );
+        /* 预加载，加速首次解压 */
+        dracoLoader.preload();
+
+        /* --- GLTF 加载器 + 挂上 Draco --- */
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
+
+        /* --- 统一加载函数（自动归一化） --- */
         async function loadGLB(url) {
             const gltf = await gltfLoader.loadAsync(url);
             const model = gltf.scene;
 
+            /* 材质独立，透明度动画才能生效 */
             model.traverse((o) => {
                 if (o.isMesh) {
                     o.material = o.material.clone();
@@ -323,11 +338,13 @@
                 }
             });
 
+            /* 归一化：最大边统一到 1.6 世界单位 */
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
             const s = 1.6 / Math.max(size.x, size.y, size.z);
             model.scale.setScalar(s);
 
+            /* 原点移到几何中心 */
             const box2 = new THREE.Box3().setFromObject(model);
             const center = box2.getCenter(new THREE.Vector3());
             model.position.sub(center);
@@ -339,28 +356,44 @@
 
 
         /* ============================================================
-           ②  星系数据  ── ★★★★★ 你只需要改这一段的文件名 ★★★★★
+           ②  尺寸参数
+           容器宽 < 768px 视为移动端，所有尺寸缩小
+           ============================================================ */
+        const isMobile = window.innerWidth < 768;
 
-           ⚠️ 模型路径的文件夹是 /modle/build/bedwars/
-              （你写的是 modle 不是 model，所以下面用 modle）
+        /* ★ 移动端缩放系数：改小 → 移动端更小；改大 → 移动端更大 */
+        const MOBILE_SCALE = 0.7;
 
-           文件放在这里：
-             你的网站/modle/build/bedwars/xxx.glb
+        const sizeOpts = isMobile
+            ? {
+                starScale:   1.6 * MOBILE_SCALE,
+                planetScale: 0.6 * MOBILE_SCALE,
+                orbitRadius: 2.2 * MOBILE_SCALE,
+                spacing:     8   * MOBILE_SCALE,
+            }
+            : {
+                starScale:   1.6,
+                planetScale: 0.6,
+                orbitRadius: 2.2,
+                spacing:     8,
+            };
 
-           把下面所有 xxx.glb 改成你的实际 GLB 文件名。
+
+        /* ============================================================
+           ③  星系数据  ── ★★★★★ 你要改的就是这一段 ★★★★★
            ============================================================ */
         const EMBED_DATA = {
 
             /* ============ solo-小型地图 ============ */
             'solo-小型地图': [
-            {
+                {
                     name: 'solo',
                     color: 0x59c39a,
                     starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
                     starModel: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
                     models: [
-                    {
-                            label: 'solo', 
+                        {
+                            label: 'solo',
                             url: '/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_snow_field',
                             model: '/modle/build/bedwars/solo/bw_solo_snow_field/base.glb',
                         },
@@ -378,28 +411,6 @@
                 },
             ],
 
-            /* ============ solo-大型地图 ============ */
-            // 'solo-大型地图': [
-            //     {
-            //         name: 'solo-大型地图',
-            //         color: 0x5b8def,
-            //         starUrl: '/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo',
-            //         starModel: '',
-            //         models: [
-            //             {
-            //                 label: '中心',
-            //                 url: '/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo',
-            //                 model: '',
-            //             },
-            //             {
-            //                 label: '钻岛',
-            //                 url: '/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo',
-            //                 model: '',
-            //             },
-            //         ],
-            //     },
-            // ],
-
             /* ============ 4v4v4v4 ============ */
             '4v4v4v4': [
                 {
@@ -414,7 +425,7 @@
                             model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb',
                         },
                         {
-                            label: 'bw_4v4v4v4_desert_castle',
+                            label: 'bw_4v4v4v4_basement',
                             url: '/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement',
                             model: '/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb',
                         },
@@ -448,7 +459,7 @@
 
 
         /* ============================================================
-           ③  初始化所有容器（不用改）
+           ④  初始化所有容器
            ============================================================ */
         const embeds = document.querySelectorAll('.galaxy-embed');
         const instances = [];
@@ -465,6 +476,12 @@
                     galaxies: data,
                     loadModel: loadGLB,
                     blockHeightMul: 1,
+
+                    /* ★ 桌面 / 移动自适应尺寸 */
+                    starScale:   sizeOpts.starScale,
+                    planetScale: sizeOpts.planetScale,
+                    orbitRadius: sizeOpts.orbitRadius,
+                    spacing:     sizeOpts.spacing,
                 });
                 instances.push(inst);
             } catch (err) {
