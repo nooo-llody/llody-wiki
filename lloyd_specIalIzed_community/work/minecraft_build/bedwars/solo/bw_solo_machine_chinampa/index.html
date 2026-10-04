@@ -7,36 +7,34 @@
     <link rel="stylesheet" href="/css/theme.css" />
     <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
     <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/css/timeline.css" />
-    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
 </head>
 <body>
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
-        ↑ 顶部
-    </button>    
+
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
+            id="backToTop" class="back-top-btn">↑ 顶部</button>
+
     <div id="fixed-nav-wrapper">
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
-                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                <a href="javascript:history.back()">
+                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
+                </a>
                 <span>劳埃德大师</span>
             </div>
             <ul class="navbar-links">
-
                 <li><a href="/index.html" class="active">首页</a></li>
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
                 <li><a href="/navigation_bar/art.html">艺术展示</a></li>
                 <li><a href="/navigation_bar/contact.html">联系我们</a></li>
             </ul>
-            </ul>
             <div class="nav-actions">
                 <div id="search"></div>
-
                 <button class="customize-btn" id="togglePanel">
                     <span>个性化页面</span>
                 </button>
             </div>
         </nav>
+
         <div class="customize-panel" id="customPanel">
             <h3>
                 个性化设置
@@ -55,7 +53,7 @@
                 <input type="color" id="headingColor" value="#0a1220" />
             </div>
             <div class="ctrl-group">
-                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <label>主色 <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
                 <input type="color" id="primaryColor" value="#3b7fbd" />
             </div>
             <div class="ctrl-group">
@@ -79,126 +77,201 @@
         </div>
     </div>
 
-    <!-- 这里写全部的内容。知道吧，。 -->
     <main id="main-content">
         <br>
-        <h1> 劳埃德大师 Wiki</h1>
-        <p>劳埃德大师24年的第一个人模</p>
+        <h1>劳埃德大师wiki</h1>
+        <p>起床战争地图展示</p>
+        <br>
     </main>
 
-    <br>
     <hr>
     <br>
-    <p>项目制作组：</p>
-    <ul>
 
-        <li>
-            <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
-            <p>其他</p>
-        </li>
+    <div class="toc">
+        <h2>目录</h2>
+        <ul>
+            <li><a href="#build-1">起床战争-大厅</a></li>
+            <li><a href="#build-2">起床战争-solo</a></li>
+            <li><a href="#build-3">起床战争-4v4v4v4</a></li>
+            <li><a href="#build-4">起床战争-4队-钻石环岛</a></li>
+            <li><a href="#build-5">起床战争-8队-钻石环岛</a></li>
+            <li><a href="#build-6">起床战争-4队-无虚空</a></li>
+            <li><a href="#build-7">起床战争-8队-无虚空</a></li>
+            <li><a href="#build-8">起床战争-4队-中钻合并</a></li>
+            <li><a href="#build-9">起床战争-8队-中钻合并</a></li>
+            <li><a href="#build-10">起床战争-RBW</a></li>
+        </ul>
+    </div>
 
-    </ul>
-
-<br><br><br>
-
-
-    <h2>前言</h2>
+    <h2 id="build-1">起床战争-大厅</h2>
     <hr>
-    <p>这是项目组第一次对模型的尝试。</p>
-    <p>(模型为独立创作,使用了社区以外的纹理作为纹理贴图)</p>
-    <br>
-    <p>由于模型仅用于制作封面</p>
-    <p>最初版的模型仅绘制了正面的形象</p>
-    <br>
-    <p>此页面展示的模型纹理为26年后背补丁版</p>
-    <p>由于时间关系。纹理不完善</p>
+    <p>起床战争的加入大厅</p>
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "大厅",
+                "color": "var(--accent)",
+                "starLabel": "bw_lobby",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/lobby/bw_lobby",
+                "starModel": "/modle/build/bedwars/lobby/lobby-1.glb",
+                "models": [
 
-
-    <model-viewer 
-    id="model-viewer"
-    src="/modle/llody/character_model/muscle_llody_v1.0.glb"
-    environment-image="neutral"
-    exposure="0.26"
-    tone-mapping="aces"
-    camera-orbit="-150deg 120deg 30m"
-    camera-controls
-    alpha
-    animation-name="1"
-    animation-loop
-    style="width: 100%; height: 800px; background-color: transparent;"
-    emissive-factor="200 200 200"
->
-</model-viewer>
-
-    <!-- ===== 动画切换按钮 ===== -->
-    <div id="animControls" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 0 4px;"></div>
-</div>
-
-<!-- ===== 控制脚本（放在这里，紧跟在模型和按钮之后） ===== -->
-<script>
-    (function() {
-        const viewer = document.getElementById('model-viewer');
-        const controls = document.getElementById('animControls');
-
-        // ===== 动画名称映射表（数字 → 显示名称） =====
-        const nameMap = {
-            '1': '待机',   // 根据实际数字调整
-            '2': '飞行',
-            '3': '掉落物',
-            '4': '幻影旋转',
-            '5': '战斗姿态'
-            // 继续添加...
-        };
-
-        function getDisplayName(animName) {
-            return nameMap[animName] || `▶ ${animName}`;
-        }
-
-        if (!viewer || !controls) return;
-
-        viewer.addEventListener('load', function() {
-            const anims = this.availableAnimations || [];
-            console.log('可用动画:', anims);
-
-            controls.innerHTML = '';
-            
-            if (anims.length === 0) {
-                controls.innerHTML = '<span style="opacity:0.6;">无可用动画</span>';
-                return;
+                ]
             }
+        ]
+        </script>
+    </div>
 
-            anims.forEach(animName => {
-                const btn = document.createElement('button');
-                btn.textContent = getDisplayName(animName);
-                btn.className = 'card-btn';
-                btn.style.margin = '0';
-                btn.dataset.anim = animName;
-                btn.addEventListener('click', function() {
-                    viewer.animationName = animName;
-                    viewer.play();
-                    console.log(`✅ 切换动画: ${animName}`);
-                });
-                controls.appendChild(btn);
-            });
+    <h2 id="build-2">起床战争-solo</h2>
+    <hr>
+    <p>八支队伍的起床战争地图，主要用于 solo。</p>
 
-            if (this.animationName && this.paused) {
-                this.play();
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "solo-小型地图",
+                "color": "var(--accent)",
+                "starLabel": "bw_4v4v4v4_basement",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement",
+                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb",
+                "models": [
+                    {
+                        "label": "bw_solo_snow_field",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_snow_field",
+                        "model": "/modle/build/bedwars/solo/bw_solo_snow_field/base.glb"
+                    },
+                    {
+                        "label": "bw_solo_machine_chinampa",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa",
+                        "model": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb"
+                    },
+                    {
+                        "label": "bw_solo_flesh_reforged",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged",
+                        "model": "/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb"
+                    }
+                ]
+            },
+            {
+                "name": "solo-只是展示一下。",
+                "starLabel": "bw_solo_machine_chinampa",
+                "color": "var(--accent)",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa",
+                "starModel": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb",
+                "models": [
+                    {
+                        "label": "bw_solo_machine_chinampa",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_machine_chinampa",
+                        "model": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb"
+                    },
+                    {
+                        "label": "bw_solo_flesh_reforged",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/solo/bw_solo_flesh_reforged",
+                        "model": "/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb"
+                    }
+                ]
             }
-        });
+        ]
+        </script>
+    </div>
 
-        viewer.addEventListener('error', (e) => {
-            console.error('❌ 模型加载失败:', e.detail);
-            controls.innerHTML = '<span style="color:#e74c3c;">加载失败，请检查路径</span>';
-        });
-    })();
-</script>
+    <h2 id="build-3">起床战争-4v4v4v4</h2>
+    <hr>
+    <p>四支队伍的起床战争地图，主要用于 4v4v4v4。</p>
+
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "4v4v4v4",
+                "color": "var(--accent)",
+                "starLabel": "bw_4v4v4v4_speedrun",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_speedrun",
+                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun/base.glb",
+                "models": [
+                    {
+                        "label": "bw_4v4v4v4_pale_dwelling",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_pale_dwelling",
+                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb"
+                    },
+                    {
+                        "label": "bw_4v4v4v4_basement",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_basement",
+                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb"
+                    }
+                ]
+            }
+        ]
+        </script>
+    </div>
+
+    <h2 id="build-4">起床战争-4队-钻石环岛</h2>
+    <hr>
+    <p>四个钻岛相互连接组成环岛</p>
+
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "4队-钻石环岛",
+                "color": "var(--accent)",
+                "starLabel": "bw_4v4v4v4_desert_castle",
+                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle",
+                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb",
+                "models": [
+                    {
+                        "label": "bw_4v4v4v4_desert_castle-完整",
+                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/4v4v4v4/bw_4v4v4v4_desert_castle",
+                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/all.glb"
+                    }
+                ]
+            }
+        ]
+        </script>
+    </div>
+
+    <h2 id="build-5">起床战争-8队-钻石环岛</h2>
+    <hr>
+    <p>四个钻岛相互连接组成环岛</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-6">起床战争-4队-无虚空</h2>
+    <hr>
+    <p>这里的地图将不再有虚空</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-7">起床战争-8队-无虚空</h2>
+    <hr>
+    <p>这里的地图将不再有虚空</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-8">起床战争-4队-中钻合并</h2>
+    <hr>
+    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-9">起床战争-8队-中钻合并</h2>
+    <hr>
+    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
+    <p>暂未收入…</p>
+
+    <h2 id="build-10">起床战争-RBW</h2>
+    <hr>
+    <p>用于 RBW 的 4V4 地图，有时也用于 1v1</p>
+    <p>暂未收入…</p>
+
+    <hr>
+    <br>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
     <script src="/js/theme.js"></script>
     <script src="/pagefind/pagefind-ui.js"></script>
-    <script>
-        new PagefindUI({ 
-            element: "#search",
-        });
-    </script>
-    <script src="/js/timeline.js"></script>
+    <script>new PagefindUI({ element: "#search" });</script>
+
+    <script type="module" src="/galaxy-gallery/mcmeta.js"></script>
+
 </body>
 </html>

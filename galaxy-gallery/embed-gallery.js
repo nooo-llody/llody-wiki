@@ -45,9 +45,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     const hoverSpeed    = userOptions.hoverSpeed    ?? 0.5;
     const hoverEase     = userOptions.hoverEase     ?? 0.06;
-    const dragSpeedX    = userOptions.dragSpeedX    ?? 0.006;
-    const tiltSpeedY    = userOptions.tiltSpeedY    ?? 0.0015;
-    const maxTilt       = userOptions.maxTilt       ?? 0.45;
+    const dragSpeedX    = userOptions.dragSpeedX    ?? (isMobile ? 0.006 : 0.003);
+    const tiltSpeedY    = userOptions.tiltSpeedY    ?? (isMobile ? 0.0015 : 0.0008);
+    const maxTilt       = userOptions.maxTilt       ?? (isMobile ? 0.9 : 0.45);
 
     const starYawGain   = userOptions.starYawGain   ?? 2.0;
     const starYawMax    = THREE.MathUtils.degToRad(userOptions.starYawMaxDeg ?? 75);
@@ -60,8 +60,21 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const swapEase      = userOptions.swapEase      ?? 'sine.inOut';
     const loadModel     = userOptions.loadModel || null;
 
-    const PINCH_MIN = userOptions.pinchMin ?? 0.4;
-    const PINCH_MAX = userOptions.pinchMax ?? 3.0;
+    const PINCH_MIN = userOptions.pinchMin ?? (isMobile ? 0.2 : 0.4);
+    const PINCH_MAX = userOptions.pinchMax ?? (isMobile ? 5.0 : 3.0);
+
+    /* ============================================================
+       ★ UI 元素判断（提前定义，供所有事件处理使用）
+       ============================================================ */
+    function isUIElement(target) {
+        if (!target || typeof target.closest !== 'function') return false;
+        return !!(
+            target.closest('.galaxy-embed-back') ||
+            target.closest('.galaxy-embed-nav') ||
+            target.closest('.galaxy-embed-star-btn') ||
+            target.closest('.galaxy-embed-star-menu')
+        );
+    }
 
     /* ============================================================
        背景色 & 场景
@@ -80,17 +93,17 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const getH = () => Math.max(1, container.clientHeight || 450);
 
     /* ============================================================
-       ★ 相机状态（用 target + distance 描述）
+       相机状态
        ============================================================ */
     const baseDist = isMobile ? 10 : 11;
 
     const camState = {
-        target: new THREE.Vector3(0, 0, 0),    /* 相机看向的点 */
-        dist: baseDist,                         /* 相机到 target 的距离 */
-        offsetY: 2.2,                           /* 相机相对 target 的 Y 偏移 */
+        target: new THREE.Vector3(0, 0, 0),
+        dist: baseDist,
+        offsetY: 2.2,
         baseDist: baseDist,
-        minDist: baseDist / PINCH_MAX,          /* 最近（放大到最大） */
-        maxDist: baseDist / PINCH_MIN,          /* 最远（缩小到最小） */
+        minDist: baseDist / PINCH_MAX,
+        maxDist: baseDist / PINCH_MIN,
     };
 
     const camera = new THREE.PerspectiveCamera(50, getW() / getH(), 0.1, 100);
@@ -161,7 +174,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     console.log(`[embed] ✓ WebGL 已创建 | ${renderer.domElement.width}×${renderer.domElement.height} | DPR=${renderer.getPixelRatio()}`);
 
-    /* 上下文丢失监听 */
     let contextLost = false;
     const onContextLost = (e) => { e.preventDefault(); contextLost = true; console.warn('[embed] ⚠ 上下文丢失'); };
     const onContextRestored = () => { contextLost = false; console.log('[embed] ✓ 上下文恢复'); };
@@ -289,6 +301,10 @@ export async function createEmbedGallery(container, userOptions = {}) {
     backBtn.type = 'button';
     backBtn.innerHTML = '‹ 返回';
     container.appendChild(backBtn);
+
+    /* ★ 阻止 pointerdown 冒泡到 container */
+    backBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+    backBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     backBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (state === 'galaxy') revertOverview();
@@ -301,6 +317,8 @@ export async function createEmbedGallery(container, userOptions = {}) {
     navPrev.className = 'galaxy-embed-nav galaxy-embed-nav-prev';
     navPrev.type = 'button';
     navPrev.innerHTML = '‹';
+    navPrev.addEventListener('pointerdown', (e) => e.stopPropagation());
+    navPrev.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     navPrev.addEventListener('click', (e) => {
         e.stopPropagation();
         switchMobileGalaxy(-1);
@@ -310,6 +328,8 @@ export async function createEmbedGallery(container, userOptions = {}) {
     navNext.className = 'galaxy-embed-nav galaxy-embed-nav-next';
     navNext.type = 'button';
     navNext.innerHTML = '›';
+    navNext.addEventListener('pointerdown', (e) => e.stopPropagation());
+    navNext.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     navNext.addEventListener('click', (e) => {
         e.stopPropagation();
         switchMobileGalaxy(+1);
@@ -320,17 +340,21 @@ export async function createEmbedGallery(container, userOptions = {}) {
        ============================================================ */
     const starMenu = document.createElement('div');
     starMenu.className = 'galaxy-embed-star-menu';
+    starMenu.addEventListener('pointerdown', (e) => e.stopPropagation());
+    starMenu.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     container.appendChild(starMenu);
 
     const starMenuBtn = document.createElement('button');
     starMenuBtn.className = 'galaxy-embed-star-btn';
     starMenuBtn.type = 'button';
-    starMenuBtn.textContent = '选择恒星';
-    container.appendChild(starMenuBtn);
+    starMenuBtn.textContent = '选择地图';
+    starMenuBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+    starMenuBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     starMenuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         starMenu.classList.toggle('show');
     });
+    container.appendChild(starMenuBtn);
 
     function refreshStarMenu() {
         const galaxy = galaxyList[activeGalaxyIndex];
@@ -530,7 +554,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     let dragMoved = false;
     let lastX = 0, lastY = 0;
 
-    /* ★ 双指手势状态 */
     const pinchState = {
         active: false,
         startDist: 0,
@@ -538,11 +561,15 @@ export async function createEmbedGallery(container, userOptions = {}) {
         startMidY: 0,
         startCamTarget: new THREE.Vector3(),
         startCamDist: 0,
-        focalPoint: new THREE.Vector3(),   /* 手指中点对应的世界空间焦点 */
+        focalPoint: new THREE.Vector3(),
     };
 
     const onPointerDown = (e) => {
         if (pinchState.active) return;
+
+        /* ★ 点在按钮/菜单上 → 不进入拖动、不 capture */
+        if (isUIElement(e.target)) return;
+
         isDragging = true;
         dragMoved = false;
         lastX = e.clientX;
@@ -595,6 +622,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
         if (dragMoved) return;
         if (pinchState.active) return;
 
+        /* ★ 点击 UI 元素直接跳过 */
+        if (isUIElement(e.target)) return;
+
         if (!starMenu.contains(e.target) && e.target !== starMenuBtn) {
             starMenu.classList.remove('show');
         }
@@ -645,23 +675,16 @@ export async function createEmbedGallery(container, userOptions = {}) {
     container.addEventListener('click', onClick);
 
     /* ============================================================
-       ★ 双指缩放 + 平移
+       双指缩放 + 平移
        ============================================================ */
-
-    /**
-     * 计算 NDC 坐标对应的世界空间焦点
-     * 焦点位于「过 camTarget 且垂直于相机视线」的平面上
-     */
     function computeFocalPoint(ndcX, ndcY) {
         const r = new THREE.Raycaster();
         r.setFromCamera({ x: ndcX, y: ndcY }, camera);
 
-        /* 相机视线方向 */
         const viewDir = new THREE.Vector3()
             .subVectors(camState.target, camera.position)
             .normalize();
 
-        /* 过 camTarget 的平面 */
         const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
             viewDir, camState.target
         );
@@ -669,14 +692,18 @@ export async function createEmbedGallery(container, userOptions = {}) {
         const out = new THREE.Vector3();
         r.ray.intersectPlane(plane, out);
 
-        /* 如果射线与平面平行（极少见），退化到 camTarget */
         if (!out) return camState.target.clone();
         return out;
     }
 
+    let isPinching = false;
+
     const onTouchStart = (e) => {
+        /* ★ 点在按钮/菜单上 → 交给按钮处理 */
+        if (isUIElement(e.target)) return;
+
         if (e.touches.length === 2) {
-            isPinching = true;      /* 用于兼容旧代码，实际状态用 pinchState */
+            isPinching = true;
             isDragging = false;
             dragMoved = true;
 
@@ -697,13 +724,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
             pinchState.startMidY = midY;
             pinchState.startCamTarget.copy(camState.target);
             pinchState.startCamDist = camState.dist;
-            /* 起始状态计算焦点（此时相机还没变） */
             pinchState.focalPoint.copy(computeFocalPoint(ndcX, ndcY));
         }
     };
-
-    /* 兼容变量（沿用旧名字） */
-    let isPinching = false;
 
     const onTouchMove = (e) => {
         if (!pinchState.active || e.touches.length !== 2) return;
@@ -717,14 +740,10 @@ export async function createEmbedGallery(container, userOptions = {}) {
         const midY = (t0.clientY + t1.clientY) / 2;
         const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
 
-        /* ---------- 1. 计算缩放比例 ---------- */
         const ratio = dist / pinchState.startDist;
-        /* 手指张开（ratio > 1）→ 相机靠近 → 视觉放大 */
         let newDist = pinchState.startCamDist / ratio;
         newDist = Math.max(camState.minDist, Math.min(camState.maxDist, newDist));
 
-        /* ---------- 2. 以手指中点为焦点的缩放 ---------- */
-        /* t = 0 时 target 不变；t → 1 时 target 移向焦点 */
         const t = newDist / pinchState.startCamDist;
         const fp = pinchState.focalPoint;
 
@@ -732,17 +751,13 @@ export async function createEmbedGallery(container, userOptions = {}) {
         const baseY = fp.y + (pinchState.startCamTarget.y - fp.y) * t;
         const baseZ = fp.z + (pinchState.startCamTarget.z - fp.z) * t;
 
-        /* ---------- 3. 双指平移 ---------- */
         const dpx = midX - pinchState.startMidX;
         const dpy = midY - pinchState.startMidY;
 
-        /* 屏幕像素 → 世界距离 */
         const fovRad = camera.fov * Math.PI / 180;
         const screenH = Math.max(1, container.clientHeight);
         const worldPerPixel = 2 * Math.tan(fovRad / 2) * newDist / screenH;
 
-        /* 手指右移 → 内容右移 → 相机左移 → target.x 减小
-           手指下移 → 内容下移 → 相机上移 → target.y 增大 */
         const offsetX = -dpx * worldPerPixel;
         const offsetY =  dpy * worldPerPixel;
 
@@ -760,7 +775,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         if (e.touches.length < 2) {
             pinchState.active = false;
             isPinching = false;
-            /* 抬起后短时间不响应 click */
             setTimeout(() => { dragMoved = false; }, 50);
         }
     };
@@ -865,7 +879,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         frameCount++;
         if (frameCount === 1 || frameCount === 60) {
-            console.log(`[embed] 第 ${frameCount} 帧 | camDist=${camState.dist.toFixed(2)} target=(${camState.target.x.toFixed(2)},${camState.target.y.toFixed(2)},${camState.target.z.toFixed(2)})`);
+            console.log(`[embed] 第 ${frameCount} 帧 | camDist=${camState.dist.toFixed(2)}`);
         }
 
         rafId = requestAnimationFrame(animate);
@@ -909,9 +923,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const onResize = () => syncSize();
     window.addEventListener('resize', onResize);
 
-    /* ============================================================
-       对外接口
-       ============================================================ */
     return {
         destroy() {
             if (rafId) cancelAnimationFrame(rafId);
