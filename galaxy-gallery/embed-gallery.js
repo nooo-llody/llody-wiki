@@ -1,5 +1,5 @@
 // /galaxy-gallery/embed-gallery.js
-// 嵌入式 3D 画廊 — iOS 兼容 + 双指缩放/平移 + 恒星选择
+// 嵌入式 3D 画廊 — iOS 兼容 + 双指缩放/平移 + 恒星选择 + 缓动动画
 
 import * as THREE from 'https://esm.sh/three@0.160.0';
 import { CSS2DRenderer } from 'https://esm.sh/three@0.160.0/examples/jsm/renderers/CSS2DRenderer.js';
@@ -54,17 +54,26 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const starPitchGain = userOptions.starPitchGain ?? 1.2;
     const starPitchMax  = THREE.MathUtils.degToRad(userOptions.starPitchMaxDeg ?? 25);
     const starFollow    = userOptions.starFollowTilt ?? 1.0;
-    const starTurnEase  = userOptions.starTurnEase  ?? 0.09;
 
-    const swapDuration  = userOptions.swapDuration  ?? 1.4;
-    const swapEase      = userOptions.swapEase      ?? 'sine.inOut';
+    /* ★ 缓动参数（用于渲染循环里的基于时间的 lerp） */
+    const EASE_TILT      = userOptions.easeTilt      ?? 6.0;   /* 倾斜恢复速度 */
+    const EASE_HOVER     = userOptions.easeHover     ?? 5.0;   /* 悬停速度响应 */
+    const EASE_STAR_TURN = userOptions.easeStarTurn  ?? 5.0;   /* 恒星跟随鼠标 */
+    const EASE_STAR_HOME = userOptions.easeStarHome  ?? 3.0;   /* 恒星归位 */
+    const EASE_SPIN_DRAG = userOptions.easeSpinDrag  ?? 10.0;  /* 拖动时旋转减速 */
+    const EASE_SPIN_IDLE = userOptions.easeSpinIdle  ?? 3.0;   /* 松手后旋转衰减 */
+
+    /* ★ 恒星切换动画（更有弹性） */
+    const swapDuration  = userOptions.swapDuration  ?? 1.6;
+    const swapEase      = userOptions.swapEase      ?? 'power3.inOut';
+
     const loadModel     = userOptions.loadModel || null;
 
     const PINCH_MIN = userOptions.pinchMin ?? (isMobile ? 0.2 : 0.4);
     const PINCH_MAX = userOptions.pinchMax ?? (isMobile ? 5.0 : 3.0);
 
     /* ============================================================
-       ★ UI 元素判断（提前定义，供所有事件处理使用）
+       UI 元素判断
        ============================================================ */
     function isUIElement(target) {
         if (!target || typeof target.closest !== 'function') return false;
@@ -74,6 +83,43 @@ export async function createEmbedGallery(container, userOptions = {}) {
             target.closest('.galaxy-embed-star-btn') ||
             target.closest('.galaxy-embed-star-menu')
         );
+    }
+
+    /* ============================================================
+       URL 有效性
+       ============================================================ */
+    function isValidUrl(url) {
+        if (!url) return false;
+        if (typeof url !== 'string') return false;
+        const u = url.trim();
+        if (u === '') return false;
+        if (u === '#') return false;
+        const lower = u.toLowerCase();
+        if (lower === 'null' || lower === 'undefined' || lower === 'none') return false;
+        return true;
+    }
+
+    /* ============================================================
+       恒星抖动反馈（用 GSAP 缓动）
+       ============================================================ */
+    function playStarShake(star) {
+        const s = star.scale.x;
+
+        gsap.killTweensOf(star.scale);
+
+        const tl = gsap.timeline();
+        tl.to(star.scale, {
+            x: s * 1.08, y: s * 1.08, z: s * 1.08,
+            duration: 0.1, ease: 'power2.out',
+        });
+        tl.to(star.scale, {
+            x: s * 0.94, y: s * 0.94, z: s * 0.94,
+            duration: 0.1, ease: 'power2.inOut',
+        });
+        tl.to(star.scale, {
+            x: s, y: s, z: s,
+            duration: 0.16, ease: 'power2.out',
+        });
     }
 
     /* ============================================================
@@ -302,7 +348,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     backBtn.innerHTML = '‹ 返回';
     container.appendChild(backBtn);
 
-    /* ★ 阻止 pointerdown 冒泡到 container */
     backBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
     backBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     backBtn.addEventListener('click', (e) => {
@@ -416,7 +461,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         gsap.to(worldGroup.position, {
             x: -galaxyList[newIdx].baseX, y: 0, z: 0,
-            duration: 0.8, ease: 'power3.inOut',
+            duration: 1.0, ease: 'power3.inOut',
         });
     }
 
@@ -438,30 +483,30 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         gsap.to(worldGroup.position, {
             x: -target.baseX, y: -target.baseY, z: 0,
-            duration: 1.2, ease: 'power3.inOut',
+            duration: 1.4, ease: 'power3.inOut',
         });
         gsap.to(target.group.scale, {
             x: zoomFactor, y: zoomFactor, z: zoomFactor,
-            duration: 1.2, ease: 'power3.inOut',
+            duration: 1.4, ease: 'power3.inOut',
         });
-        fadeAll(target.group, 1, 0.5, gsap);
-        gsap.to(target.labelEl.style, { opacity: 0, duration: 0.4 });
+        fadeAll(target.group, 1, 0.6, gsap);
+        gsap.to(target.labelEl.style, { opacity: 0, duration: 0.5, ease: 'power2.out' });
 
         galaxyList.forEach((g, i) => {
             if (i === index) return;
             if (isMobile && total > 1) return;
 
-            fadeAll(g.group, 0, 0.9, gsap);
+            fadeAll(g.group, 0, 1.0, gsap);
             gsap.to(g.group.scale, {
                 x: 0.3, y: 0.3, z: 0.3,
-                duration: 1.0, ease: 'power3.in',
+                duration: 1.2, ease: 'power3.in',
             });
             const dir = Math.sign(g.baseX - target.baseX) || 1;
             gsap.to(g.group.position, {
                 x: g.baseX + dir * 5, z: 5,
-                duration: 1.0, ease: 'power3.in',
+                duration: 1.2, ease: 'power3.in',
             });
-            if (g.labelEl) gsap.to(g.labelEl.style, { opacity: 0, duration: 0.6 });
+            if (g.labelEl) gsap.to(g.labelEl.style, { opacity: 0, duration: 0.7, ease: 'power2.out' });
         });
     }
 
@@ -480,27 +525,42 @@ export async function createEmbedGallery(container, userOptions = {}) {
         gsap.to(worldGroup.position, {
             x: (isMobile && total > 1) ? -galaxyList[activeGalaxyIndex].baseX : 0,
             y: 0, z: 0,
-            duration: 1.0, ease: 'power3.inOut',
+            duration: 1.2, ease: 'power3.inOut',
         });
 
         galaxyList.forEach((g, i) => {
-            gsap.to(g.group.scale, { x: 1, y: 1, z: 1, duration: 1.0, ease: 'power3.inOut' });
+            gsap.to(g.group.scale, {
+                x: 1, y: 1, z: 1,
+                duration: 1.2, ease: 'power3.inOut',
+            });
             gsap.to(g.group.position, {
                 x: g.baseX, y: g.baseY, z: 0,
-                duration: 1.0, ease: 'power3.inOut',
+                duration: 1.2, ease: 'power3.inOut',
             });
-            fadeAll(g.group, 1, 0.8, gsap);
+            fadeAll(g.group, 1, 1.0, gsap);
 
             if (isMobile && total > 1) {
                 const show = (i === activeGalaxyIndex);
                 g.group.visible = show;
-                if (g.labelEl) gsap.to(g.labelEl.style, { opacity: show ? 1 : 0, duration: 0.6 });
+                if (g.labelEl) {
+                    gsap.to(g.labelEl.style, {
+                        opacity: show ? 1 : 0,
+                        duration: 0.7, ease: 'power2.out',
+                    });
+                }
             } else {
-                if (g.labelEl) gsap.to(g.labelEl.style, { opacity: 1, duration: 0.6, delay: 0.2 });
+                if (g.labelEl) {
+                    gsap.to(g.labelEl.style, {
+                        opacity: 1, duration: 0.7, delay: 0.2, ease: 'power2.out',
+                    });
+                }
             }
         });
     }
 
+    /* ============================================================
+       ★ 恒星切换（带缓动）
+       ============================================================ */
     function swapStarPlanet(galaxy, planet) {
         const oldStar = galaxy.star;
         const planetSlot = planet.position.clone();
@@ -515,22 +575,34 @@ export async function createEmbedGallery(container, userOptions = {}) {
             ? starScale * lonelyStarMul
             : starScale;
 
-        gsap.to(planet.position, { x: 0, y: 0, z: 0, duration: D, ease: E });
+        /* ★ 行星 → 中心（位置、缩放、旋转各自用稍不同的缓动） */
+
+        gsap.to(planet.position, {
+            x: 0, y: 0, z: 0,
+            duration: D, ease: 'power3.inOut',
+        });
         gsap.to(planet.scale, {
             x: targetStarScale, y: targetStarScale, z: targetStarScale,
-            duration: D, ease: E,
+            duration: D, ease: 'back.out(1.4)',
         });
-        gsap.to(planet.rotation, { x: 0, z: 0, duration: D, ease: E });
+        gsap.to(planet.rotation, {
+            x: 0, z: 0,
+            duration: D, ease: 'power2.out',
+        });
 
+        /* ★ 旧恒星 → 行星槽位 */
         gsap.to(oldStar.position, {
             x: planetSlot.x, y: planetSlot.y, z: planetSlot.z,
-            duration: D, ease: E,
+            duration: D, ease: 'power3.inOut',
         });
         gsap.to(oldStar.scale, {
             x: planetScale, y: planetScale, z: planetScale,
-            duration: D, ease: E,
+            duration: D, ease: 'back.in(1.4)',
         });
-        gsap.to(oldStar.rotation, { x: 0, z: 0, duration: D, ease: E });
+        gsap.to(oldStar.rotation, {
+            x: 0, z: 0,
+            duration: D, ease: 'power2.out',
+        });
 
         planet.userData.type = 'star';
         planet.userData.isLonely = willBeLonely;
@@ -544,7 +616,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       输入：单指拖动 + 双指缩放/平移
+       输入
        ============================================================ */
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -566,8 +638,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     const onPointerDown = (e) => {
         if (pinchState.active) return;
-
-        /* ★ 点在按钮/菜单上 → 不进入拖动、不 capture */
         if (isUIElement(e.target)) return;
 
         isDragging = true;
@@ -621,8 +691,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         if (state === 'jumping') return;
         if (dragMoved) return;
         if (pinchState.active) return;
-
-        /* ★ 点击 UI 元素直接跳过 */
         if (isUIElement(e.target)) return;
 
         if (!starMenu.contains(e.target) && e.target !== starMenuBtn) {
@@ -651,10 +719,14 @@ export async function createEmbedGallery(container, userOptions = {}) {
             const hit = hits[0].object;
 
             if (isDescendant(hit, galaxy.star)) {
+                playStarShake(galaxy.star);
+
                 const url = galaxy.star.userData.url;
-                if (url) {
-                    state = 'jumping';
-                    window.location.href = url;
+                if (isValidUrl(url)) {
+                    setTimeout(() => {
+                        state = 'jumping';
+                        window.location.href = url;
+                    }, 360);
                 }
                 return;
             }
@@ -699,7 +771,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     let isPinching = false;
 
     const onTouchStart = (e) => {
-        /* ★ 点在按钮/菜单上 → 交给按钮处理 */
         if (isUIElement(e.target)) return;
 
         if (e.touches.length === 2) {
@@ -785,7 +856,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     container.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
     /* ============================================================
-       渲染循环
+       ★ 渲染循环 — 所有 lerp 改为基于时间的指数缓动
        ============================================================ */
     const clock = new THREE.Clock();
     const _starWorld = new THREE.Vector3();
@@ -808,6 +879,16 @@ export async function createEmbedGallery(container, userOptions = {}) {
         }
     }
 
+    /**
+     * ★ 基于时间的指数缓动系数
+     * 无论帧率是多少，运动速度保持一致
+     * @param {number} speed 速度（越大越快）
+     * @param {number} dt 帧间隔
+     */
+    function easeFactor(speed, dt) {
+        return 1 - Math.exp(-speed * dt);
+    }
+
     function animate() {
         if (!visible) { rafId = null; return; }
         if (contextLost) { rafId = requestAnimationFrame(animate); return; }
@@ -823,29 +904,48 @@ export async function createEmbedGallery(container, userOptions = {}) {
             if (!g.group.visible) return;
 
             if (isMobile) {
+                /* ★ 行星环绕：匀速（这是持续转动，不需要缓动） */
                 g.orbitRing.rotation.y += 0.4 * dt;
 
+                /* ★ 恒星归位：缓动 */
                 if (!isDragging && !pinchState.active) {
-                    g.star.rotation.y += (0 - g.star.rotation.y) * 0.03;
-                    g.star.rotation.x += (0 - g.star.rotation.x) * 0.03;
+                    const k = easeFactor(EASE_STAR_HOME, dt);
+                    g.star.rotation.y += (0 - g.star.rotation.y) * k;
+                    g.star.rotation.x += (0 - g.star.rotation.x) * k;
                 }
-                g.group.rotation.x += (g.targetTilt - g.group.rotation.x) * 0.1;
+
+                /* ★ 倾斜缓动 */
+                const tiltK = easeFactor(EASE_TILT, dt);
+                g.group.rotation.x += (g.targetTilt - g.group.rotation.x) * tiltK;
                 return;
             }
 
+            /* ============================================================
+               桌面端
+               ============================================================ */
+
+            /* ★ 拖动时旋转速度衰减（缓动） */
             if (isDragging) {
-                g.spinVel *= 0.75;
+                const k = easeFactor(EASE_SPIN_DRAG, dt);
+                g.spinVel += (0 - g.spinVel) * k;
             } else if (mouseActive) {
+                /* ★ 悬停速度缓动接近目标 */
                 const targetVel = mouseNDC.x * hoverSpeed;
-                g.spinVel += (targetVel - g.spinVel) * hoverEase;
+                const k = easeFactor(EASE_HOVER, dt);
+                g.spinVel += (targetVel - g.spinVel) * k;
                 g.group.rotation.y += g.spinVel * dt;
             } else {
-                g.spinVel *= 0.92;
+                /* ★ 鼠标离开：旋转缓慢衰减 */
+                const k = easeFactor(EASE_SPIN_IDLE, dt);
+                g.spinVel += (0 - g.spinVel) * k;
                 g.group.rotation.y += g.spinVel * dt;
             }
 
-            g.group.rotation.x += (g.targetTilt - g.group.rotation.x) * 0.1;
+            /* ★ 倾斜缓动 */
+            const tiltK = easeFactor(EASE_TILT, dt);
+            g.group.rotation.x += (g.targetTilt - g.group.rotation.x) * tiltK;
 
+            /* ★ 恒星朝向鼠标（缓动） */
             if (mouseActive) {
                 g.star.getWorldPosition(_starWorld);
                 _starNDC.copy(_starWorld).project(camera);
@@ -853,20 +953,24 @@ export async function createEmbedGallery(container, userOptions = {}) {
                 const dx = mouseNDC.x - _starNDC.x;
                 const dy = mouseNDC.y - _starNDC.y;
 
+                const starK = easeFactor(EASE_STAR_TURN, dt);
+
                 const desiredYaw = THREE.MathUtils.clamp(dx * starYawGain, -starYawMax, starYawMax);
                 const curYaw = g.group.rotation.y + g.star.rotation.y;
-                g.star.rotation.y += (desiredYaw - curYaw) * starTurnEase;
+                g.star.rotation.y += (desiredYaw - curYaw) * starK;
 
                 const desiredPitch = THREE.MathUtils.clamp(
                     -dy * starPitchGain + g.group.rotation.x * starFollow,
                     -starPitchMax * 2, starPitchMax * 2
                 );
                 const curPitch = g.group.rotation.x + g.star.rotation.x;
-                g.star.rotation.x += (desiredPitch - curPitch) * starTurnEase;
+                g.star.rotation.x += (desiredPitch - curPitch) * starK;
             } else {
+                /* ★ 鼠标离开：恒星缓慢归位（缓动） */
+                const homeK = easeFactor(EASE_STAR_HOME, dt);
                 const tY = 0, cY = g.group.rotation.y + g.star.rotation.y;
-                g.star.rotation.y += (tY - cY) * 0.05;
-                g.star.rotation.x += (0 - g.star.rotation.x) * 0.05;
+                g.star.rotation.y += (tY - cY) * homeK;
+                g.star.rotation.x += (0 - g.star.rotation.x) * homeK;
             }
         });
 

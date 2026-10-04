@@ -300,3 +300,87 @@
     });
     // 其他按钮同理...
 })();
+
+// 全兼容复制功能
+async function copyToClipboard(textToCopy) {
+    // 现代 API 尝试
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            return true;
+        } catch (err) {
+            console.warn('Clipboard API 失败，准备降级', err);
+        }
+    }
+
+    // 传统 API 降级方案
+    return new Promise((resolve) => {
+        const textArea = document.createElement('textarea');
+        textArea.value = textToCopy;
+
+        // 视觉隐藏但保留在 DOM 中，防止页面抖动
+        textArea.style.position = 'fixed';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        textArea.style.opacity = '0';
+        textArea.style.zIndex = '-1';
+
+        document.body.appendChild(textArea);
+
+        // 兼容性选中处理
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, 999999);
+
+        let success = false;
+        try {
+            success = document.execCommand('copy', false, null);
+        } catch (err) {
+            console.error('execCommand 复制失败', err);
+        }
+
+        document.body.removeChild(textArea);
+
+        if (success) {
+            resolve(true);
+        } else {
+            // 终极降级：弹窗提示手动复制
+            window.prompt('您的浏览器不支持自动复制，请按 Ctrl+C / Cmd+C 复制以下内容：', textToCopy);
+            resolve(false);
+        }
+    });
+}
+
+// 绑定所有带 .copy-btn 类的按钮
+document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.copy-btn');
+    if (!btn) return;
+
+    const textToCopy = btn.getAttribute('data-copy-text');
+    if (!textToCopy) return;
+
+    const originalText = btn.textContent;
+    
+    // 执行复制
+    const success = await copyToClipboard(textToCopy);
+
+    // 视觉反馈
+    if (success) {
+        btn.textContent = '已复制';
+        btn.style.opacity = '0.7';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.opacity = '';
+            btn.disabled = false;
+        }, 2000);
+    }
+});
