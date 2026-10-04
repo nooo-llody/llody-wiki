@@ -1,5 +1,5 @@
 // /galaxy-gallery/embed-gallery.js
-// 嵌入式 3D 画廊 — iOS 兼容 + 移动端拖动 + 恒星选择 + 双指缩放
+// 嵌入式 3D 画廊 — iOS 兼容 + 双指缩放/平移 + 恒星选择
 
 import * as THREE from 'https://esm.sh/three@0.160.0';
 import { CSS2DRenderer } from 'https://esm.sh/three@0.160.0/examples/jsm/renderers/CSS2DRenderer.js';
@@ -36,7 +36,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const zoomFactor     = userOptions.zoomFactor     ?? 1.8;
     const blockHeightMul = userOptions.blockHeightMul ?? 1;
 
-    /* ★ 只有恒星时的放大倍数 */
     const lonelyStarMul  = userOptions.lonelyStarMul  ?? 1.6;
 
     const initialTiltDeg = userOptions.initialTiltDeg ?? 15;
@@ -61,7 +60,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const swapEase      = userOptions.swapEase      ?? 'sine.inOut';
     const loadModel     = userOptions.loadModel || null;
 
-    /* ★ 双指缩放范围 */
     const PINCH_MIN = userOptions.pinchMin ?? 0.4;
     const PINCH_MAX = userOptions.pinchMax ?? 3.0;
 
@@ -81,18 +79,31 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const getW = () => Math.max(1, container.clientWidth || window.innerWidth || 375);
     const getH = () => Math.max(1, container.clientHeight || 450);
 
-    /* ★ 相机基础 Z 位置（双指缩放会在此基础上变化） */
-    const CAMERA_BASE_Z = isMobile ? 10 : 11;
-    let pinchScale = 1.0;
+    /* ============================================================
+       ★ 相机状态（用 target + distance 描述）
+       ============================================================ */
+    const baseDist = isMobile ? 10 : 11;
+
+    const camState = {
+        target: new THREE.Vector3(0, 0, 0),    /* 相机看向的点 */
+        dist: baseDist,                         /* 相机到 target 的距离 */
+        offsetY: 2.2,                           /* 相机相对 target 的 Y 偏移 */
+        baseDist: baseDist,
+        minDist: baseDist / PINCH_MAX,          /* 最近（放大到最大） */
+        maxDist: baseDist / PINCH_MIN,          /* 最远（缩小到最小） */
+    };
 
     const camera = new THREE.PerspectiveCamera(50, getW() / getH(), 0.1, 100);
-    camera.position.set(0, 2.2, CAMERA_BASE_Z);
-    camera.lookAt(0, 0, 0);
 
-    /* ★ 应用双指缩放：pinchScale 越大，相机越近，模型看起来越大 */
-    function applyPinchZoom() {
-        camera.position.z = CAMERA_BASE_Z / pinchScale;
+    function updateCamera() {
+        camera.position.set(
+            camState.target.x,
+            camState.target.y + camState.offsetY,
+            camState.target.z + camState.dist
+        );
+        camera.lookAt(camState.target);
     }
+    updateCamera();
 
     scene.add(new THREE.AmbientLight(0xffffff, 1.8));
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
@@ -144,25 +155,20 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
     renderer.domElement.style.display = 'block';
     renderer.domElement.style.cursor = 'grab';
-    /* ★ touch-action: none 允许我们完全接管触摸手势（含双指缩放） */
     renderer.domElement.style.touchAction = 'none';
     container.style.touchAction = 'none';
     container.appendChild(renderer.domElement);
 
     console.log(`[embed] ✓ WebGL 已创建 | ${renderer.domElement.width}×${renderer.domElement.height} | DPR=${renderer.getPixelRatio()}`);
 
-    /* ============================================================
-       上下文丢失监听
-       ============================================================ */
+    /* 上下文丢失监听 */
     let contextLost = false;
     const onContextLost = (e) => { e.preventDefault(); contextLost = true; console.warn('[embed] ⚠ 上下文丢失'); };
     const onContextRestored = () => { contextLost = false; console.log('[embed] ✓ 上下文恢复'); };
     renderer.domElement.addEventListener('webglcontextlost', onContextLost, false);
     renderer.domElement.addEventListener('webglcontextrestored', onContextRestored, false);
 
-    /* ============================================================
-       CSS2D 渲染器
-       ============================================================ */
+    /* CSS2D */
     const labelRenderer = new CSS2DRenderer();
     labelRenderer.setSize(getW(), getH());
     Object.assign(labelRenderer.domElement.style, {
@@ -172,9 +178,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     });
     container.appendChild(labelRenderer.domElement);
 
-    /* ============================================================
-       世界 & 模型工厂
-       ============================================================ */
+    /* 世界 */
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
@@ -217,11 +221,9 @@ export async function createEmbedGallery(container, userOptions = {}) {
         galaxyGroup.userData = { type: 'galaxy', index: gi };
         worldGroup.add(galaxyGroup);
 
-        /* ★ 判断这个星系是否只有恒星 */
         const models = data.models || [];
         const isLonely = models.length === 0;
 
-        /* ★ 恒星大小：lonely 星系放大 */
         const thisStarScale = isLonely ? starScale * lonelyStarMul : starScale;
 
         const star = await getModel(data.color, gi * 100 + 7, data.starModel);
@@ -234,7 +236,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
             galaxyIndex: gi,
             url: data.starUrl,
             label: starLabel,
-            isLonely,   /* ★ 记录标记 */
+            isLonely,
         };
         galaxyGroup.add(star);
 
@@ -259,8 +261,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         }
 
         const label = createGalaxyLabel(data.name || `星系 ${gi + 1}`, data.color);
-
-        /* ★ lonely 星系的标签往下挪一点，避免和放大的恒星重叠 */
         const labelY = isLonely
             ? -(orbitRadius + 1.6) * 1.4
             : -(orbitRadius + 1.6);
@@ -272,7 +272,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
             baseX: offsetX, baseY: 0,
             targetTilt: initialTilt, spinVel: 0,
             label, labelEl: label.userData.labelEl,
-            isLonely,   /* ★ 保存到对象上，方便其他地方用 */
+            isLonely,
         });
     }
 
@@ -338,13 +338,11 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         starMenu.innerHTML = '';
 
-        /* 当前恒星（高亮、不可点） */
         const currentStarItem = document.createElement('div');
         currentStarItem.className = 'galaxy-embed-star-item active';
         currentStarItem.textContent = galaxy.star.userData.label || '恒星';
         starMenu.appendChild(currentStarItem);
 
-        /* 所有行星 */
         galaxy.planets.forEach((planet) => {
             const item = document.createElement('div');
             item.className = 'galaxy-embed-star-item';
@@ -359,9 +357,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
-    /* ============================================================
-       初始化显示
-       ============================================================ */
+    /* 初始化显示 */
     if (isMobile && total > 1) {
         container.appendChild(navPrev);
         container.appendChild(navNext);
@@ -377,9 +373,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
-    /* ============================================================
-       移动端切换星系
-       ============================================================ */
     function switchMobileGalaxy(dir) {
         if (state !== 'overview') return;
         if (total <= 1) return;
@@ -403,9 +396,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
-    /* ============================================================
-       进入星系视图
-       ============================================================ */
     function enterGalaxy(index) {
         state = 'galaxy';
         activeGalaxyIndex = index;
@@ -415,8 +405,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
             navPrev.classList.remove('show');
             navNext.classList.remove('show');
         }
-
-        /* ★ 进入星系后显示"选择恒星"按钮 */
         if (isMobile) {
             starMenuBtn.classList.add('show');
             refreshStarMenu();
@@ -453,9 +441,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
-    /* ============================================================
-       返回总览
-       ============================================================ */
     function revertOverview() {
         state = 'overview';
         backBtn.classList.remove('show');
@@ -492,9 +477,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
         });
     }
 
-    /* ============================================================
-       行星 ⇄ 恒星 交换
-       ============================================================ */
     function swapStarPlanet(galaxy, planet) {
         const oldStar = galaxy.star;
         const planetSlot = planet.position.clone();
@@ -504,8 +486,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         const D = swapDuration, E = swapEase;
 
-        /* ★ 判断目标恒星大小：如果交换后星系不再 lonely，就用普通尺寸 */
-        const willBeLonely = galaxy.planets.length === 0; /* 交换后会变成0个行星 */
+        const willBeLonely = galaxy.planets.length === 0;
         const targetStarScale = willBeLonely
             ? starScale * lonelyStarMul
             : starScale;
@@ -539,7 +520,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     }
 
     /* ============================================================
-       输入：单指拖动 + 双指缩放
+       输入：单指拖动 + 双指缩放/平移
        ============================================================ */
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
@@ -549,13 +530,19 @@ export async function createEmbedGallery(container, userOptions = {}) {
     let dragMoved = false;
     let lastX = 0, lastY = 0;
 
-    /* ★ 双指缩放状态 */
-    let isPinching = false;
-    let pinchStartDist = 0;
-    let pinchStartScale = 1.0;
+    /* ★ 双指手势状态 */
+    const pinchState = {
+        active: false,
+        startDist: 0,
+        startMidX: 0,
+        startMidY: 0,
+        startCamTarget: new THREE.Vector3(),
+        startCamDist: 0,
+        focalPoint: new THREE.Vector3(),   /* 手指中点对应的世界空间焦点 */
+    };
 
     const onPointerDown = (e) => {
-        if (isPinching) return;   /* 双指缩放时不响应单指拖动 */
+        if (pinchState.active) return;
         isDragging = true;
         dragMoved = false;
         lastX = e.clientX;
@@ -564,7 +551,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     };
 
     const onPointerMove = (e) => {
-        if (isPinching) return;
+        if (pinchState.active) return;
 
         const rect = container.getBoundingClientRect();
         mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -606,7 +593,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
     const onClick = (e) => {
         if (state === 'jumping') return;
         if (dragMoved) return;
-        if (isPinching) return;
+        if (pinchState.active) return;
 
         if (!starMenu.contains(e.target) && e.target !== starMenuBtn) {
             starMenu.classList.remove('show');
@@ -658,44 +645,122 @@ export async function createEmbedGallery(container, userOptions = {}) {
     container.addEventListener('click', onClick);
 
     /* ============================================================
-       ★ 双指缩放（Touch 事件）
+       ★ 双指缩放 + 平移
        ============================================================ */
+
+    /**
+     * 计算 NDC 坐标对应的世界空间焦点
+     * 焦点位于「过 camTarget 且垂直于相机视线」的平面上
+     */
+    function computeFocalPoint(ndcX, ndcY) {
+        const r = new THREE.Raycaster();
+        r.setFromCamera({ x: ndcX, y: ndcY }, camera);
+
+        /* 相机视线方向 */
+        const viewDir = new THREE.Vector3()
+            .subVectors(camState.target, camera.position)
+            .normalize();
+
+        /* 过 camTarget 的平面 */
+        const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+            viewDir, camState.target
+        );
+
+        const out = new THREE.Vector3();
+        r.ray.intersectPlane(plane, out);
+
+        /* 如果射线与平面平行（极少见），退化到 camTarget */
+        if (!out) return camState.target.clone();
+        return out;
+    }
+
     const onTouchStart = (e) => {
         if (e.touches.length === 2) {
-            isPinching = true;
-            isDragging = false;   /* 取消单指拖动状态 */
-            dragMoved = true;     /* 防止双指抬起时误触发 click */
+            isPinching = true;      /* 用于兼容旧代码，实际状态用 pinchState */
+            isDragging = false;
+            dragMoved = true;
 
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            pinchStartDist = Math.hypot(dx, dy);
-            pinchStartScale = pinchScale;
+            const t0 = e.touches[0];
+            const t1 = e.touches[1];
+
+            const midX = (t0.clientX + t1.clientX) / 2;
+            const midY = (t0.clientY + t1.clientY) / 2;
+            const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+
+            const rect = container.getBoundingClientRect();
+            const ndcX = ((midX - rect.left) / rect.width) * 2 - 1;
+            const ndcY = -((midY - rect.top) / rect.height) * 2 + 1;
+
+            pinchState.active = true;
+            pinchState.startDist = dist;
+            pinchState.startMidX = midX;
+            pinchState.startMidY = midY;
+            pinchState.startCamTarget.copy(camState.target);
+            pinchState.startCamDist = camState.dist;
+            /* 起始状态计算焦点（此时相机还没变） */
+            pinchState.focalPoint.copy(computeFocalPoint(ndcX, ndcY));
         }
     };
 
-    const onTouchMove = (e) => {
-        if (!isPinching || e.touches.length !== 2) return;
+    /* 兼容变量（沿用旧名字） */
+    let isPinching = false;
 
-        /* 阻止页面默认手势（如浏览器自带缩放） */
+    const onTouchMove = (e) => {
+        if (!pinchState.active || e.touches.length !== 2) return;
+
         e.preventDefault();
 
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        const dist = Math.hypot(dx, dy);
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
 
-        if (pinchStartDist > 0) {
-            const ratio = dist / pinchStartDist;
-            let newScale = pinchStartScale * ratio;
-            newScale = Math.max(PINCH_MIN, Math.min(PINCH_MAX, newScale));
-            pinchScale = newScale;
-            applyPinchZoom();
-        }
+        const midX = (t0.clientX + t1.clientX) / 2;
+        const midY = (t0.clientY + t1.clientY) / 2;
+        const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+
+        /* ---------- 1. 计算缩放比例 ---------- */
+        const ratio = dist / pinchState.startDist;
+        /* 手指张开（ratio > 1）→ 相机靠近 → 视觉放大 */
+        let newDist = pinchState.startCamDist / ratio;
+        newDist = Math.max(camState.minDist, Math.min(camState.maxDist, newDist));
+
+        /* ---------- 2. 以手指中点为焦点的缩放 ---------- */
+        /* t = 0 时 target 不变；t → 1 时 target 移向焦点 */
+        const t = newDist / pinchState.startCamDist;
+        const fp = pinchState.focalPoint;
+
+        const baseX = fp.x + (pinchState.startCamTarget.x - fp.x) * t;
+        const baseY = fp.y + (pinchState.startCamTarget.y - fp.y) * t;
+        const baseZ = fp.z + (pinchState.startCamTarget.z - fp.z) * t;
+
+        /* ---------- 3. 双指平移 ---------- */
+        const dpx = midX - pinchState.startMidX;
+        const dpy = midY - pinchState.startMidY;
+
+        /* 屏幕像素 → 世界距离 */
+        const fovRad = camera.fov * Math.PI / 180;
+        const screenH = Math.max(1, container.clientHeight);
+        const worldPerPixel = 2 * Math.tan(fovRad / 2) * newDist / screenH;
+
+        /* 手指右移 → 内容右移 → 相机左移 → target.x 减小
+           手指下移 → 内容下移 → 相机上移 → target.y 增大 */
+        const offsetX = -dpx * worldPerPixel;
+        const offsetY =  dpy * worldPerPixel;
+
+        camState.target.set(
+            baseX + offsetX,
+            baseY + offsetY,
+            baseZ
+        );
+        camState.dist = newDist;
+
+        updateCamera();
     };
 
     const onTouchEnd = (e) => {
         if (e.touches.length < 2) {
+            pinchState.active = false;
             isPinching = false;
-            /* 抬起后稍等一点时间再允许 click */
+            /* 抬起后短时间不响应 click */
             setTimeout(() => { dragMoved = false; }, 50);
         }
     };
@@ -746,7 +811,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
             if (isMobile) {
                 g.orbitRing.rotation.y += 0.4 * dt;
 
-                if (!isDragging) {
+                if (!isDragging && !pinchState.active) {
                     g.star.rotation.y += (0 - g.star.rotation.y) * 0.03;
                     g.star.rotation.x += (0 - g.star.rotation.x) * 0.03;
                 }
@@ -754,7 +819,6 @@ export async function createEmbedGallery(container, userOptions = {}) {
                 return;
             }
 
-            /* 桌面端 */
             if (isDragging) {
                 g.spinVel *= 0.75;
             } else if (mouseActive) {
@@ -801,7 +865,7 @@ export async function createEmbedGallery(container, userOptions = {}) {
 
         frameCount++;
         if (frameCount === 1 || frameCount === 60) {
-            console.log(`[embed] 第 ${frameCount} 帧 | pinch=${pinchScale.toFixed(2)}`);
+            console.log(`[embed] 第 ${frameCount} 帧 | camDist=${camState.dist.toFixed(2)} target=(${camState.target.x.toFixed(2)},${camState.target.y.toFixed(2)},${camState.target.z.toFixed(2)})`);
         }
 
         rafId = requestAnimationFrame(animate);
