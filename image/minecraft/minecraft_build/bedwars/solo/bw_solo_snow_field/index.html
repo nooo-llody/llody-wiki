@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劳埃德大师wiki</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+</head>
+<body>
+
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
+            id="backToTop" class="back-top-btn">↑ 顶部</button>
+
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()">
+                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
+                </a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+                <li><a href="/index.html" class="active">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+                <button class="customize-btn" id="togglePanel">
+                    <span>个性化页面</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="customize-panel" id="customPanel">
+            <h3>
+                个性化设置
+                <button class="close-panel-btn" id="closePanelBtn">✕</button>
+            </h3>
+            <div class="ctrl-group">
+                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
+                <input type="color" id="bgColor" value="#f7f9fc" />
+            </div>
+            <div class="ctrl-group">
+                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
+                <input type="color" id="textColor" value="#1a2332" />
+            </div>
+            <div class="ctrl-group">
+                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
+                <input type="color" id="headingColor" value="#0a1220" />
+            </div>
+            <div class="ctrl-group">
+                <label>主色 <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <input type="color" id="primaryColor" value="#3b7fbd" />
+            </div>
+            <div class="ctrl-group">
+                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
+                <input type="color" id="accentColor" value="#1f5a8e" />
+            </div>
+            <div class="ctrl-group">
+                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
+                <input type="color" id="borderColor" value="#c0cfde" />
+            </div>
+            <div class="ctrl-group">
+                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
+                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
+            </div>
+            <div class="ctrl-group">
+                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
+                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
+            </div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;">💡 设置会自动保存到浏览器</p>
+        </div>
+    </div>
+
+    <main id="main-content">
+        <br>
+        <h1>劳埃德大师wiki</h1>
+        <p>起床战争地图-寒霜高原</p>
+        <br>
+    </main>
+
+    <br>
+    <hr>
+    <br>
+    <p>项目制作组：</p>
+    <ul>
+
+        <li>
+            <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+        </li>
+
+    </ul>
+
+<br><br><br>
+
+    <div class="toc">
+        <h2>目录</h2>
+        <ul>
+            <li><a href="#bw_solo_snow_field-1">开发信息</a></li>
+            <li><a href="#bw_solo_snow_field-2">参数一览</a></li>
+            <li><a href="#bw_solo_snow_field-3">地图介绍</a></li>
+            <li><a href="#bw_solo_snow_field-4">地图展示</a></li>
+            <li><a href="#bw_solo_snow_field-5">建筑说明</a></li>
+            <li><a href="#bw_solo_snow_field-6">地图下载</a></li>
+        </ul>
+    </div>
+
+    <h2 id="bw_solo_snow_field-1">开发信息</h2>
+    <hr>
+    <table border="1">
+        <tr>
+            <th>
+                项目
+            </th>
+            <th>
+                内容
+            </th>
+        </tr>
+        <tr>
+            <td>
+                名称
+            </td>
+            <td>
+                寒霜高原
+            </td>
+        </tr>
+        <tr>
+            <td>
+                英文
+            </td>
+            <td>
+                [BW_solo] Snowfield
+                <br>
+                bw_solo_snow_field
+            </td>
+        </tr>
+        <tr>
+            <td>
+                完成于
+            </td>
+            <td>
+                2026/6/23/22:47
+            </td>
+        </tr>
+        <tr>
+            <td>
+                开发周期
+            </td>
+            <td>
+                2day
+            </td>
+        </tr>
+        <tr>
+            <td>
+                版本[开发版本]
+            </td>
+            <td>
+                java-1.20.1 [开发版本]
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                建筑使用mod
+            </td>
+            <td>
+                <a href="https://modrinth.com/mod/axiom">axiom</a>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                建筑师
+            </td>
+            <td>
+                <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+            </td>
+        </tr>
+
+    </table>
+
+
+    <h2 id="bw_solo_snow_field-2">参数一览</h2>
+    <hr>
+    <table border="1">
+        <tr>
+            <th>
+                项目
+            </th>
+            <th>
+                内容
+            </th>
+        </tr>
+
+        <tr>
+            <td>
+                钻石点
+            </td>
+            <td>
+                4
+            </td>
+        </tr>
+        <tr>
+            <td>
+                绿宝石点
+            </td>
+            <td>
+                4
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                队伍
+            </td>
+            <td>
+                8
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                钻岛位置
+            </td>
+            <td>
+                环形钻岛
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                版本[理论支持版本]
+            </td>
+            <td>
+                java-1.8+ [支持版本]
+            </td>
+        </tr>
+    </table>
+
+    
+
+    <h2 id="bw_solo_snow_field-3">地图介绍</h2>
+    <hr>
+    <p>
+        这是一张质量较低的中小型8队地图。
+        <br><br>
+        该地图创作周期短，包含多项缺陷。
+        <br><br>
+        地图在制作时完全没有规划和设想，导致地图场地严重偏小。
+        <br><br>
+        为了加快进度，该地图的"钻石岛"较小，在游玩时不太方便
+        <br><br>
+        地图中心岛资源点较集中，易于收集资源。不建议使用环岛打法。
+    </p>
+
+
+    <h2 id="bw_solo_snow_field-4">地图展示</h2>
+    <hr>
+    <p>地图的3D模型</p>
+
+    <div class="galaxy-embed">
+        <script type="application/json">
+        [
+            {
+                "name": "地图部件",
+                "color": "var(--accent)",
+                "starLabel": "等候区",
+                "starModel": "/modle/build/bedwars/solo/bw_solo_snow_field/pregame.glb",
+                "models": [
+                    {
+                        "label": "钻石点",
+                        "model": "/modle/build/bedwars/solo/bw_solo_snow_field/diamond.glb"
+                    },
+                    {
+                        "label": "绿宝石点",
+                        "model": "/modle/build/bedwars/solo/bw_solo_snow_field/mid.glb"
+                    },
+                    {
+                        "label": "队伍",
+                        "model": "/modle/build/bedwars/solo/bw_solo_snow_field/base.glb"
+                    }
+                ]
+            },
+            {
+                "name": "地图全部[等候区除外]",
+                "starLabel": "全部",
+                "color": "var(--accent)",
+                "starModel": "/modle/build/bedwars/solo/bw_solo_snow_field/all.glb",
+                "models": [
+
+                ]
+            }
+        ] 
+        </script>
+    </div>
+
+    <h2 id="bw_solo_snow_field-5">建筑说明</h2>
+    <hr>
+    <h3>内容</h3>
+    <p>
+    中央是一座体量庞大的核心空岛，四周均匀散布着六座小型外围空岛。
+    <br><br>
+    岛屿基座由白色与浅灰色方块构成，呈现出积雪或石英的质感。
+    <br><br>
+    中心区域耸立着多根蓝青相间的尖塔结构，并向四周蔓延出大量离散的方块簇，
+    <br><br>
+    这些方块簇组成了巨大的环形轨道以及连接各个外围岛屿的桥梁。
+    <br><br>
+</p>
+    <h3>手法</h3>
+    <p>
+建造者大量运用了点阵与渐变技巧。
+<br><br>
+通过离散放置蓝色和青色方块来模拟粒子的扩散与流动，
+<br><br>
+打破传统建筑的实体堆叠感，赋予静态建筑强烈的动态与虚幻效果。
+<br><br>
+采用严格的中心对称与环形放射状布局，强化了视觉上的秩序与庄重。
+<br><br>
+色彩运用上，冷冽的白蓝青主体与背景的暖色调天空形成鲜明对比，
+<br><br>
+配合画面中的青色结构线，使得建筑主体极具视觉冲击力。
+<br><br>
+几何体块的堆叠精准塑造出冰锥与陨石的轮廓，展现了极高的体素造型控制力。
+    </p>
+
+    <h2 id="bw_solo_snow_field-6">下载地图</h2>
+    <hr>
+<br>
+
+    <div class="card">
+        <div class="card-body">
+            <h3>地图ZIP压缩文件</h3>
+            <p>版本:1.20.1</p>
+            <a href="/download/download_file/minecraft_build/bedwars/solo/bw_solo_snow_field/bw_solo_snow_field.zip" class="card-btn" download="bw_solo_snow_field.zip">单击此处(.zip)</a>
+        </div>
+    </div>
+<br>
+<div class="card">
+    <div class="card-body">
+        <h3>地图slime文件</h3>
+        <p>版本:1.8.8</p>
+        <a href="/download/download_file/minecraft_build/bedwars/solo/bw_solo_snow_field/bw_solo_snow_field.slime" class="card-btn" download="bw_solo_snow_field.slime">单击此处(.slime)</a>
+    </div>
+</div>
+<br>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+    <script src="/js/theme.js"></script>
+    <script src="/pagefind/pagefind-ui.js"></script>
+    <script>new PagefindUI({ element: "#search" });</script>
+
+    <script type="module" src="/galaxy-gallery/mcmeta.js"></script>
+
+</body>
+</html>

@@ -11,8 +11,8 @@
 :root {
     /* 默认颜色（亮色主题） */
     --bg: #f7f9fc;
-    --text: #1a2332;
-    --heading: #0a1220;
+    --text: #10203b;
+    --heading: #10203b;
     --primary: #3b7fbd;
     --accent: #1f5a8e;
     --border: #c0cfde;
@@ -1187,4 +1187,199 @@ html {
         min-width: 160px;
         max-width: 220px;
     }
+}
+
+/* ==========================================
+   卡片 Card-2：图片铺满整卡 + 左端渐变遮罩
+   ========================================== */
+
+   .card-2 {
+    /* 每张卡片通过这个变量指定背景图 */
+    --card-2-img: none;
+    /* 渐变从哪个位置开始完全透明 */
+    --card-2-fade: 100%;
+    /* 核心：使用完全不透明的实色，默认取 --table-bg (纯白) */
+    --card-2-solid-bg: var(--table-bg);
+
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+
+    /* 卡片本体的底色也换成实色，避免边缘透底 */
+    background: var(--card-2-solid-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.3s ease, border-color 0.2s;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    height: 100%;
+}
+
+.card-2:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary);
+}
+
+/* ---- 第 1 层：图片铺满整卡 ---- */
+.card-2::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: var(--card-2-img);
+    background-size: cover;
+    /* 建议靠右，确保主体在右侧不被遮住 */
+    background-position: right center; 
+    background-repeat: no-repeat;
+    transition: transform 0.4s ease;
+}
+
+.card-2:hover::before {
+    transform: scale(1.04);
+}
+
+/* ---- 第 2 层：纯实色遮罩 + 模糊 ---- */
+.card-2::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+
+    /* 
+       纯实色压缩到 15%，后续按比例平滑过渡：
+       0-15%    : 纯实色（完全遮挡）
+       15-30%   : 缓入
+       30-45%   : 中段（模糊最明显）
+       45-60%   : 缓出
+       60-80%   : 几乎完全透明
+       80%+     : 完全透明
+    */
+    background: linear-gradient(
+        to right,
+        var(--card-2-solid-bg) 0%,
+        var(--card-2-solid-bg) 10%,
+        color-mix(in srgb, var(--card-2-solid-bg) 85%, transparent) 30%,
+        color-mix(in srgb, var(--card-2-solid-bg) 55%, transparent) 45%,
+        color-mix(in srgb, var(--card-2-solid-bg) 25%, transparent) 60%,
+        transparent 80%
+    );
+
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+
+    /* mask 的节点与渐变严格对齐 */
+    -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0%,
+        #000 15%,
+        rgba(0, 0, 0, 0.85) 30%,
+        rgba(0, 0, 0, 0.55) 45%,
+        rgba(0, 0, 0, 0.25) 60%,
+        transparent 80%
+    );
+    mask-image: linear-gradient(
+        to right,
+        #000 0%,
+        #000 15%,
+        rgba(0, 0, 0, 0.85) 30%,
+        rgba(0, 0, 0, 0.55) 45%,
+        rgba(0, 0, 0, 0.25) 60%,
+        transparent 80%
+    );
+}
+
+/* ---- 第 3 层：文字内容浮在最上面 ---- */
+.card-2 .card-body {
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 24px 28px;
+    background: transparent; /* 确保不会盖住下方渐变 */
+}
+
+/* ---- 小屏适配：改为从上往下渐变 ---- */
+/* ---- 小屏适配：改为从上往下渐变，纯实色占 20% ---- */
+@media (max-width: 600px) {
+    .card-2 {
+        min-height: 300px;
+    }
+    .card-2::after {
+        background: linear-gradient(
+            to bottom,
+            var(--card-2-solid-bg) 0%,
+            var(--card-2-solid-bg) 15%,      /* 纯实色占 20% */
+            color-mix(in srgb, var(--card-2-solid-bg) 85%, transparent) 35%,
+            color-mix(in srgb, var(--card-2-solid-bg) 55%, transparent) 50%,
+            color-mix(in srgb, var(--card-2-solid-bg) 25%, transparent) 65%,
+            transparent 85%                  /* 85% 之后完全透明 */
+        );
+        -webkit-mask-image: linear-gradient(
+            to bottom, 
+            #000 0%, 
+            #000 20%, 
+            rgba(0, 0, 0, 0.85) 35%, 
+            rgba(0, 0, 0, 0.55) 50%, 
+            rgba(0, 0, 0, 0.25) 65%, 
+            transparent 85%
+        );
+        mask-image: linear-gradient(
+            to bottom, 
+            #000 0%, 
+            #000 20%, 
+            rgba(0, 0, 0, 0.85) 35%, 
+            rgba(0, 0, 0, 0.55) 50%, 
+            rgba(0, 0, 0, 0.25) 65%, 
+            transparent 85%
+        );
+    }
+}
+
+/* ==========================================
+   标题发光效果（叠层模糊）
+   ========================================== */
+
+   h1, h2, h3, h4, h5, h6, p, a {
+    text-shadow:
+        0 0 8px  color-mix(in srgb, var(--primary) 20%, transparent),
+        0 0 20px color-mix(in srgb, var(--primary) 10%, transparent),
+        0 0 40px color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+/* 按钮本身需要相对定位 */
+.card-body .card-btn {
+    position: relative;
+    z-index: 1; /* 保证文字在光晕之上 */
+    /* 原有样式保持不变 */
+}
+
+/* 背后的模糊光晕 */
+.card-body .card-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0; /* 与按钮同宽高 */
+    background: var(--primary);
+    border-radius: inherit; /* 继承按钮圆角 */
+    z-index: -1; /* 放在按钮文字底层 */
+    filter: blur(5px); /* 模糊度，数字越大越晕开 */
+    opacity: 0.8; /* 透明度，控制光晕强度 */
+    transition: opacity 0.3s ease, filter 0.3s ease;
+    pointer-events: none;
+}
+
+/* 悬停时光晕变大、变亮 */
+.card-body .card-btn:hover::before {
+    opacity: 0.9;
+    filter: blur(10px);
+}
+
+.card-body .card-btn {
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
 }
