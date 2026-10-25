@@ -11,8 +11,8 @@
 :root {
     /* 默认颜色（亮色主题） */
     --bg: #f7f9fc;
-    --text: #10203b;
-    --heading: #10203b;
+    --text: #1d345a;
+    --heading: #1d345a;
     --primary: #3b7fbd;
     --accent: #1f5a8e;
     --border: #c0cfde;
@@ -1308,40 +1308,68 @@ html {
 /* ---- 小屏适配：改为从上往下渐变 ---- */
 /* ---- 小屏适配：改为从上往下渐变，纯实色占 20% ---- */
 @media (max-width: 600px) {
-    .card-2 {
-        min-height: 300px;
+    .card-2 .card-body p {
+        /* 70% 白色 + 30% 主题色混合，你可以根据喜好调整比例 */
+        color: color-mix(in srgb, #fff 80%, var(--primary));
+        text-shadow: 
+            0 0 4px color-mix(in srgb, var(--primary) 80%, transparent),
+            0 0 10px color-mix(in srgb, var(--primary) 60%, transparent),
+            0 0 20px color-mix(in srgb, var(--primary) 40%, transparent),
+            0 0 40px color-mix(in srgb, var(--primary) 20%, transparent);
     }
+    .card-2 .card-body h1,
+.card-2 .card-body h2,
+.card-2 .card-body h3,
+.card-2 .card-body h4,
+.card-2 .card-body h5,
+.card-2 .card-body h6{
+    /* 基础发光：使用主题色和白色叠加 */
+color: color-mix(in srgb, #000000 15%, var(--primary)); /* 稍微提亮了文字 */
+text-shadow: 
+    /* 核心光：30%的白色 + 主题色，然后再赋予 90% 的不透明度 */
+    
+    0 0 1px color-mix(in srgb, color-mix(in srgb, #ffffff 80%, var(--primary)) 90%, transparent),
+    0 0 3px color-mix(in srgb, color-mix(in srgb, #ffffff 30%, var(--primary)) 90%, transparent),
+    0 0 10px color-mix(in srgb, var(--primary) 70%, transparent),
+    0 0 20px color-mix(in srgb, var(--primary) 40%, transparent),
+    0 0 35px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+.card-2 {
+    min-height: 300px;
+}
     .card-2::after {
+        /* 
+           从上到下的纯渐变，取消 100% 实色：
+           0%   : 90% 不透明度（非常厚重，保证文字清晰，但图片已能隐约透出）
+           25%  : 70% 不透明度
+           50%  : 40% 不透明度
+           70%+ : 完全透明
+        */
         background: linear-gradient(
             to bottom,
-            var(--card-2-solid-bg) 0%,
-            var(--card-2-solid-bg) 15%,      /* 纯实色占 20% */
-            color-mix(in srgb, var(--card-2-solid-bg) 85%, transparent) 35%,
-            color-mix(in srgb, var(--card-2-solid-bg) 55%, transparent) 50%,
-            color-mix(in srgb, var(--card-2-solid-bg) 25%, transparent) 65%,
-            transparent 85%                  /* 85% 之后完全透明 */
+            color-mix(in srgb, var(--card-2-solid-bg) 90%, transparent) 0%,
+            color-mix(in srgb, var(--card-2-solid-bg) 70%, transparent) 25%,
+            color-mix(in srgb, var(--card-2-solid-bg) 40%, transparent) 50%,
+            transparent 70%
         );
+        
+        /* mask 的衰减与背景色保持完全一致 */
         -webkit-mask-image: linear-gradient(
-            to bottom, 
-            #000 0%, 
-            #000 20%, 
-            rgba(0, 0, 0, 0.85) 35%, 
-            rgba(0, 0, 0, 0.55) 50%, 
-            rgba(0, 0, 0, 0.25) 65%, 
-            transparent 85%
+            to bottom,
+            rgba(0, 0, 0, 0.90) 0%,
+            rgba(0, 0, 0, 0.70) 25%,
+            rgba(0, 0, 0, 0.40) 50%,
+            transparent 70%
         );
         mask-image: linear-gradient(
-            to bottom, 
-            #000 0%, 
-            #000 20%, 
-            rgba(0, 0, 0, 0.85) 35%, 
-            rgba(0, 0, 0, 0.55) 50%, 
-            rgba(0, 0, 0, 0.25) 65%, 
-            transparent 85%
+            to bottom,
+            rgba(0, 0, 0, 0.90) 0%,
+            rgba(0, 0, 0, 0.70) 25%,
+            rgba(0, 0, 0, 0.40) 50%,
+            transparent 70%
         );
     }
 }
-
 /* ==========================================
    标题发光效果（叠层模糊）
    ========================================== */
@@ -1383,3 +1411,6 @@ html {
 .card-body .card-btn {
     text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
 }
+
+
+
