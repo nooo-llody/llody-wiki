@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>林俊杰的音乐人生 - 白底金主色版</title>
+    <style>
+        /* =========================================
+           1. 配色与全局变量 (白底 + 金色主色)
+           ========================================= */
+        :root {
+            /* 背景主色：纯白 */
+            --bg-color: #ffffff; 
+            
+            /* 主标题颜色：深灰（比纯黑柔和） */
+            --title-color: #222222; 
+            
+            /* 强调色/高亮色：高级金 */
+            --accent-color: #D4AF37; 
+            
+            /* 正文颜色：中灰 */
+            --text-color: #666666; 
+            
+            /* 卡片背景色：非常浅的灰，增加层次感 */
+            --card-bg: #fafafa; 
+            /* 卡片边框：淡淡的金色 */
+            --card-border: rgba(212, 175, 55, 0.3);
+            
+            /* 阴影颜色 */
+            --shadow: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 基础重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden; /* 禁止滚动 */
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* =========================================
+           2. 页面容器与翻页动画控制
+           ========================================= */
+        .presentation-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 5% 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(40px);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        /* =========================================
+           3. 内部元素通用样式
+           ========================================= */
+        h1 {
+            font-size: clamp(3rem, 6vw, 5rem);
+            color: var(--title-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--accent-color);
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+        }
+        
+        /* 标题下方加个金色小短横线 */
+        h2::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--accent-color);
+            margin: 15px auto 0;
+        }
+
+        h3 {
+            color: var(--title-color);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        p {
+            line-height: 1.8;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        strong {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* 卡片布局 */
+        .cards-wrapper {
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 2.5rem;
+            border-radius: 12px;
+            flex: 1;
+            min-width: 280px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 数字高亮 */
+        .highlight-num {
+            display: block;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            font-family: monospace;
+            margin-bottom: 1rem;
+            line-height: 1;
+        }
+
+        /* 时间线特殊样式 */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 2rem;
+            position: relative;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background: var(--card-border);
+            z-index: 1;
+        }
+        .time-node {
+            position: relative;
+            z-index: 2;
+            background: var(--bg-color);
+            border: 2px solid var(--accent-color);
+            padding: 1.5rem;
+            border-radius: 50%;
+            text-align: center;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+        .time-node h4 { color: var(--title-color); font-size: 1.1rem; margin: 5px 0; }
+
+        /* =========================================
+           4. 入场动画
+           ========================================= */
+        .anim-item {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .slide.active .anim-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide.active .delay-1 { transition-delay: 0.2s; }
+        .slide.active .delay-2 { transition-delay: 0.4s; }
+        .slide.active .delay-3 { transition-delay: 0.6s; }
+
+        /* =========================================
+           5. 隐形点击热区 (替换可见按钮)
+           ========================================= */
+        .click-zone {
+            position: absolute;
+            top: 0;
+            width: 15%; /* 屏幕两侧 15% 宽度为隐形热区 */
+            height: 100%;
+            z-index: 50;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .click-zone.left { left: 0; }
+        .click-zone.right { right: 0; }
+
+        /* 鼠标移入时，给出非常轻微的提示，不破坏整体美观 */
+        .click-zone.left:hover { background: linear-gradient(90deg, rgba(212,175,55,0.05), transparent); }
+        .click-zone.right:hover { background: linear-gradient(-90deg, rgba(212,175,55,0.05), transparent); }
+
+        /* 底部进度指示器 */
+        .progress-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--accent-color);
+            transform: scale(1.5);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        
+        <!-- 左右隐形点击热区 -->
+        <div class="click-zone left" onclick="changeSlide(-1)" title="上一页"></div>
+        <div class="click-zone right" onclick="changeSlide(1)" title="下一页"></div>
+
+        <!-- 页面 1：封面 -->
+        <section class="slide active">
+            <h1 class="anim-item">林俊杰的音乐人生</h1>
+            <p class="anim-item delay-1" style="font-size: 1.5rem; letter-spacing: 5px; color: var(--accent-color);">
+                用音乐照亮人生的华语天王
+            </p>
+        </section>
+
+        <!-- 页面 2：江南 -->
+        <section class="slide">
+            <h2 class="anim-item">《江南》一曲火遍两岸三地</h2>
+            <div class="cards-wrapper">
+                <div class="card anim-item delay-1">
+                    <h3>争议与坚持</h3>
+                    <p><strong>选歌阶段：</strong>差点被公司毙掉，林俊杰力排众议保下。</p>
+                    <p><strong>创作构思：</strong>写歌时从未去过江南，全凭想象构建烟雨意境。</p>
+                </div>
+                <div class="card anim-item delay-2">
+                    <h3>市场反响</h3>
+                    <p><strong>编曲创新：</strong>国风旋律混搭现代流行编曲。</p>
+                    <p><strong>记忆符号：</strong>「圈圈圆圆圈圈」成为街头巷尾的集体记忆。</p>
+                    <p><strong>行业影响：</strong>带动华语国风流行浪潮。</p>
+                </div>
+            </div>
+            <p class="anim-item delay-3" style="margin-top: 2rem; font-size: 1.2rem; color: var(--title-color); text-align: center;">
+                凭借这首歌，他彻底站稳乐坛，完成从新人到实力派的转型。
+            </p>
+        </section>
+
+        <!-- 页面 3：春晚与转型 -->
+        <section class="slide">
+            <h2 class="anim-item">登上春晚 · 同年转身</h2>
+            <div class="cards-wrapper">
+                <div class="card anim-item delay-1">
+                    <h3>2006 年 登上春晚</h3>
+                    <p>首登央视春晚，献唱《一千年以后》。</p>
+                    <p>以 <strong>33.3%</strong> 支持率当选当晚最受观众喜爱明星。</p>
+                </div>
+                <div class="card anim-item delay-2">
+                    <h3>摇滚转型与破圈</h3>
+                    <p><strong>《曹操》：</strong>首次尝试摇滚曲风，把三国故事唱进流行乐，打破刻板标签。</p>
+                    <p><strong>彩铃霸榜：</strong>《小酒窝》《背对背拥抱》长期霸占榜单，成为青春记忆。</p>
+                </div>
+            </div>
+            <p class="anim-item delay-3" style="margin-top: 2rem; font-size: 1.2rem; color: var(--title-color); text-align: center;">
+                从爆红金曲到风格体系的进阶
+            </p>
+        </section>
+
+        <!-- 页面 4：JJ20巡演 -->
+        <section class="slide">
+            <h2 class="anim-item">JJ20 巡演：104场收官鸟巢</h2>
+            <p class="anim-item delay-1" style="margin-bottom: 2rem; color: var(--title-color);">三年 · 45城 · 104场 世界巡回演唱会完整航迹</p>
+            
+            <div class="timeline anim-item delay-2">
+                <div class="time-node">
+                    <p>起点</p>
+                    <h4>2022.11.04</h4>
+                    <p>新加坡启航</p>
+                </div>
+                <div class="time-node">
+                    <p>终点</p>
+                    <h4>2025.07.13</h4>
+                    <p>北京鸟巢收官</p>
+                </div>
+            </div>
+            <p class="anim-item delay-3" style="margin-top: 3rem; font-size: 1.1rem; text-align: center; color: var(--title-color);">
+                终场数次硬咽，返场以《谢幕》完成冲线。
+            </p>
+        </section>
+
+        <!-- 页面 5：未来展望 -->
+        <section class="slide">
+            <h2 class="anim-item">F1 压轴与新专辑蓄势待发</h2>
+            <div class="cards-wrapper">
+                <div class="card anim-item delay-1">
+                    <h3>新加坡 F1 压轴演出</h3>
+                    <span class="highlight-num">5.5万 名观众</span>
+                    <p>原定 75 分钟延长至 <strong>90 分钟</strong>，22首连唱曲目。</p>
+                    <p>全球首唱英文新单《Rise Without A Sound》。</p>
+                </div>
+                <div class="card anim-item delay-2">
+                    <h3>新专辑蓄势待发</h3>
+                    <p>与方文山七年再合作《我对缘分小心翼翼》。</p>
+                    <p>2026年2月上线，3天播放量破 <strong>862万</strong>。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 底部指示点 -->
+        <div class="progress-container" id="progress"></div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const progressContainer = document.getElementById('progress');
+        let currentIndex = 0;
+
+        // 初始化底部指示点
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (index === 0) dot.classList.add('active');
+            dot.onclick = (e) => {
+                e.stopPropagation(); // 阻止事件冒泡到热区
+                goToSlide(index);
+            };
+            progressContainer.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.dot');
+
+        // 核心翻页函数
+        function goToSlide(index) {
+            if (index < 0) index = 0;
+            if (index >= slides.length) index = slides.length - 1;
+            if (index === currentIndex) return;
+
+            slides.forEach(slide => {
+                slide.classList.remove('active');
+                if (index > currentIndex) {
+                    slide.classList.add('prev');
+                } else {
+                    slide.classList.remove('prev');
+                }
+            });
+
+            slides[index].classList.add('active');
+            slides[index].classList.remove('prev');
+
+            dots.forEach(dot => dot.classList.remove('active'));
+            dots[index].classList.add('active');
+
+            currentIndex = index;
+        }
+
+        // 点击热区控制翻页
+        function changeSlide(step) {
+            goToSlide(currentIndex + step);
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+    </script>
+</body>
+</html>
