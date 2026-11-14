@@ -3,47 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>林俊杰的音乐人生 - 白底金主色版</title>
+    <title>林俊杰的音乐人生</title>
     <style>
         /* =========================================
-           1. 配色与全局变量 (白底 + 金色主色)
+           1. 配色与全局变量 (完美还原PPT配色)
            ========================================= */
         :root {
-            /* 背景主色：纯白 */
-            --bg-color: #ffffff; 
-            
-            /* 主标题颜色：深灰（比纯黑柔和） */
-            --title-color: #222222; 
-            
-            /* 强调色/高亮色：高级金 */
-            --accent-color: #D4AF37; 
-            
-            /* 正文颜色：中灰 */
-            --text-color: #666666; 
-            
-            /* 卡片背景色：非常浅的灰，增加层次感 */
-            --card-bg: #fafafa; 
-            /* 卡片边框：淡淡的金色 */
-            --card-border: rgba(212, 175, 55, 0.3);
-            
-            /* 阴影颜色 */
-            --shadow: rgba(0, 0, 0, 0.05);
+            --bg-color: #ffffff;           /* 纯白背景 */
+            --title-color: #222222;        /* 深灰标题 */
+            --text-color: #555555;         /* 正文中灰 */
+            --accent-gold: #c89d43;        /* 主金色 */
+            --accent-gold-dark: #b88a2f;   /* 深金色(横幅用) */
+            --card-bg: #fdfaf3;            /* 淡米黄卡片底色 */
+            --item-bg: #f7f2e6;            /* 卡片内小方块底色 */
+            --border-light: #f0e8d5;       /* 极淡的边框 */
         }
 
-        /* 基础重置 */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            overflow: hidden; /* 禁止滚动 */
+            overflow: hidden;
             height: 100vh;
             width: 100vw;
         }
 
         /* =========================================
-           2. 页面容器与翻页动画控制
+           2. 页面容器与翻页动画
            ========================================= */
         .presentation-container {
             position: relative;
@@ -57,7 +45,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            padding: 5% 10%;
+            padding: 4% 8%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -65,7 +53,7 @@
             
             opacity: 0;
             visibility: hidden;
-            transform: translateX(40px);
+            transform: translateX(30px);
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
@@ -78,136 +66,210 @@
 
         .slide.prev {
             opacity: 0;
-            transform: translateX(-40px);
+            transform: translateX(-30px);
         }
 
         /* =========================================
-           3. 内部元素通用样式
+           3. 排版与通用组件
            ========================================= */
+        .header-area {
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 2rem;
+        }
+
         h1 {
-            font-size: clamp(3rem, 6vw, 5rem);
+            font-size: clamp(2.5rem, 5vw, 4rem);
             color: var(--title-color);
-            margin-bottom: 1rem;
-            text-align: center;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
         }
 
-        h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--accent-color);
-            margin-bottom: 3rem;
-            text-align: center;
-            position: relative;
-        }
-        
-        /* 标题下方加个金色小短横线 */
-        h2::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 3px;
-            background: var(--accent-color);
-            margin: 15px auto 0;
-        }
-
-        h3 {
-            color: var(--title-color);
-            font-size: 1.4rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--accent-color);
-            padding-left: 10px;
-        }
-
-        p {
-            line-height: 1.8;
-            margin-bottom: 0.8rem;
+        .subtitle {
             font-size: 1.1rem;
+            color: var(--text-color);
+            font-weight: normal;
+            margin-top: 0.5rem;
+        }
+
+        /* 标题下方的总结句 */
+        .intro-line {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            color: var(--title-color);
+        }
+        .intro-line .icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 28px;
+            height: 28px;
+            background: #fceabb;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 14px;
         }
 
         strong {
-            color: var(--accent-color);
+            color: var(--accent-gold);
             font-weight: bold;
         }
 
-        /* 卡片布局 */
-        .cards-wrapper {
-            display: flex;
-            gap: 2rem;
-            width: 100%;
-            max-width: 1100px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
+        /* 网格布局 */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; width: 100%; max-width: 1200px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; width: 100%; max-width: 1200px; }
+        
+        /* 卡片基础样式 */
         .card {
             background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            padding: 2.5rem;
-            border-radius: 12px;
-            flex: 1;
-            min-width: 280px;
-            box-shadow: 0 10px 30px var(--shadow);
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        /* 数字高亮 */
-        .highlight-num {
-            display: block;
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--accent-color);
-            font-family: monospace;
-            margin-bottom: 1rem;
-            line-height: 1;
-        }
-
-        /* 时间线特殊样式 */
-        .timeline {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 900px;
-            margin-top: 2rem;
-            position: relative;
-        }
-        .timeline::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background: var(--card-border);
-            z-index: 1;
-        }
-        .time-node {
-            position: relative;
-            z-index: 2;
-            background: var(--bg-color);
-            border: 2px solid var(--accent-color);
-            padding: 1.5rem;
-            border-radius: 50%;
-            text-align: center;
-            width: 150px;
-            height: 150px;
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            box-shadow: 0 5px 15px var(--shadow);
         }
-        .time-node h4 { color: var(--title-color); font-size: 1.1rem; margin: 5px 0; }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--title-color);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-badge {
+            background: #fdf5e2;
+            color: var(--accent-gold-dark);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid #eedab1;
+        }
+
+        /* 卡片内的小方块条目 */
+        .item-box {
+            background: var(--item-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            border-left: 4px solid var(--accent-gold);
+        }
+        .item-box:last-child { margin-bottom: 0; }
+
+        .item-box h4 {
+            color: var(--title-color);
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .item-box p {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        /* 底部高亮条 */
+        .bottom-banner {
+            width: 100%;
+            max-width: 1200px;
+            background: #fdf5e2;
+            border-radius: 8px;
+            padding: 1rem 2rem;
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            color: var(--title-color);
+            display: flex;
+            align-items: center;
+        }
+        .bottom-banner::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 20px;
+            background: var(--accent-gold);
+            margin-right: 15px;
+            border-radius: 2px;
+        }
+
+        /* 特殊：深金底白字横幅 (用于春晚) */
+        .dark-banner {
+            width: 100%;
+            background: var(--accent-gold-dark);
+            color: #ffffff;
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(184, 138, 47, 0.2);
+        }
+
+        /* 特殊：标签 (破圈、霸榜、进化) */
+        .tag-list {
+            display: flex;
+            gap: 10px;
+            margin-top: auto; /* 推到底部 */
+            padding-top: 1rem;
+        }
+        .tag {
+            background: #fdf5e2;
+            color: var(--accent-gold-dark);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        /* 特殊：大数字 */
+        .large-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--title-color);
+            font-family: 'DIN Alternate', 'Arial Black', sans-serif;
+            margin: 10px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+        .large-number span { font-size: 1.2rem; font-weight: normal; color: var(--text-color); }
+
+        /* 特殊：胶囊状横条 (JJ20巡演) */
+        .capsule-bar {
+            background: #fdf5e2;
+            border-radius: 30px;
+            padding: 0.8rem 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+        .capsule-bar strong {
+            font-size: 1.2rem;
+            margin-right: 15px;
+            color: var(--title-color);
+        }
 
         /* =========================================
            4. 入场动画
            ========================================= */
         .anim-item {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s ease;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         .slide.active .anim-item {
@@ -215,17 +277,18 @@
             transform: translateY(0);
         }
 
-        .slide.active .delay-1 { transition-delay: 0.2s; }
-        .slide.active .delay-2 { transition-delay: 0.4s; }
-        .slide.active .delay-3 { transition-delay: 0.6s; }
+        .slide.active .delay-1 { transition-delay: 0.15s; }
+        .slide.active .delay-2 { transition-delay: 0.3s; }
+        .slide.active .delay-3 { transition-delay: 0.45s; }
+        .slide.active .delay-4 { transition-delay: 0.6s; }
 
         /* =========================================
-           5. 隐形点击热区 (替换可见按钮)
+           5. 隐形热区与进度点
            ========================================= */
         .click-zone {
             position: absolute;
             top: 0;
-            width: 15%; /* 屏幕两侧 15% 宽度为隐形热区 */
+            width: 15%;
             height: 100%;
             z-index: 50;
             cursor: pointer;
@@ -233,15 +296,12 @@
         }
         .click-zone.left { left: 0; }
         .click-zone.right { right: 0; }
+        .click-zone.left:hover { background: linear-gradient(90deg, rgba(200,157,67,0.05), transparent); }
+        .click-zone.right:hover { background: linear-gradient(-90deg, rgba(200,157,67,0.05), transparent); }
 
-        /* 鼠标移入时，给出非常轻微的提示，不破坏整体美观 */
-        .click-zone.left:hover { background: linear-gradient(90deg, rgba(212,175,55,0.05), transparent); }
-        .click-zone.right:hover { background: linear-gradient(-90deg, rgba(212,175,55,0.05), transparent); }
-
-        /* 底部进度指示器 */
         .progress-container {
             position: absolute;
-            bottom: 30px;
+            bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -257,11 +317,13 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-
         .dot.active {
-            background: var(--accent-color);
-            transform: scale(1.5);
+            background: var(--accent-gold);
+            transform: scale(1.4);
         }
+
+        /* 小图标占位 */
+        .icon-emoji { font-size: 1.2rem; }
 
     </style>
 </head>
@@ -269,95 +331,249 @@
 
     <div class="presentation-container">
         
-        <!-- 左右隐形点击热区 -->
-        <div class="click-zone left" onclick="changeSlide(-1)" title="上一页"></div>
-        <div class="click-zone right" onclick="changeSlide(1)" title="下一页"></div>
+        <div class="click-zone left" onclick="changeSlide(-1)"></div>
+        <div class="click-zone right" onclick="changeSlide(1)"></div>
 
         <!-- 页面 1：封面 -->
         <section class="slide active">
-            <h1 class="anim-item">林俊杰的音乐人生</h1>
-            <p class="anim-item delay-1" style="font-size: 1.5rem; letter-spacing: 5px; color: var(--accent-color);">
-                用音乐照亮人生的华语天王
-            </p>
+            <h1 class="anim-item" style="font-size: clamp(3rem, 7vw, 6rem); color: var(--accent-gold); text-align: center;">林俊杰的音乐人生</h1>
+            <p class="anim-item delay-1" style="font-size: 1.5rem; letter-spacing: 5px; color: var(--text-color); margin-top: 20px;">用音乐照亮人生的华语天王</p>
         </section>
 
-        <!-- 页面 2：江南 -->
+        <!-- 页面 2：《江南》 -->
         <section class="slide">
-            <h2 class="anim-item">《江南》一曲火遍两岸三地</h2>
-            <div class="cards-wrapper">
-                <div class="card anim-item delay-1">
-                    <h3>争议与坚持</h3>
-                    <p><strong>选歌阶段：</strong>差点被公司毙掉，林俊杰力排众议保下。</p>
-                    <p><strong>创作构思：</strong>写歌时从未去过江南，全凭想象构建烟雨意境。</p>
-                </div>
-                <div class="card anim-item delay-2">
-                    <h3>市场反响</h3>
-                    <p><strong>编曲创新：</strong>国风旋律混搭现代流行编曲。</p>
-                    <p><strong>记忆符号：</strong>「圈圈圆圆圈圈」成为街头巷尾的集体记忆。</p>
-                    <p><strong>行业影响：</strong>带动华语国风流行浪潮。</p>
+            <div class="header-area anim-item">
+                <h1>《江南》一曲火遍两岸三地</h1>
+                <p class="subtitle">2004年，第二张专辑《第二天堂》主打歌《江南》横空出世。</p>
+                
+                <div class="intro-line">
+                    <span class="icon">🔥</span>
+                    主打歌《江南》以国风旋律混搭现代编曲，<strong>迅速火遍两岸三地</strong>，成为林俊杰音乐生涯的标志性转折点。
                 </div>
             </div>
-            <p class="anim-item delay-3" style="margin-top: 2rem; font-size: 1.2rem; color: var(--title-color); text-align: center;">
-                凭借这首歌，他彻底站稳乐坛，完成从新人到实力派的转型。
-            </p>
+
+            <div class="grid-2">
+                <!-- 争议与坚持 -->
+                <div class="card anim-item delay-1">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon-emoji">⚖️</span> 争议与坚持</div>
+                        <div class="card-badge">2项</div>
+                    </div>
+                    <div class="item-box">
+                        <h4>01选歌阶段</h4>
+                        <p>差点被公司毙掉，林俊杰力排众议保下</p>
+                    </div>
+                    <div class="item-box">
+                        <h4>02创作构思</h4>
+                        <p>写歌时从未去过江南，全凭想象构建烟雨意境</p>
+                    </div>
+                </div>
+
+                <!-- 市场反响 -->
+                <div class="card anim-item delay-2">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon-emoji">📈</span> 市场反响</div>
+                        <div class="card-badge">3项</div>
+                    </div>
+                    <div class="item-box">
+                        <h4>01编曲创新</h4>
+                        <p>国风旋律混搭现代流行编曲，迅速火遍两岸三地</p>
+                    </div>
+                    <div class="item-box">
+                        <h4>02记忆符号</h4>
+                        <p>「圈圈圆圆圈圈」成为街头巷尾的集体记忆</p>
+                    </div>
+                    <div class="item-box">
+                        <h4>03行业影响</h4>
+                        <p>带动华语国风流行浪潮，成为标志性作品</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-banner anim-item delay-3">
+                凭借这首歌，他<strong>彻底站稳乐坛</strong>，完成从新人到实力派的转型。
+            </div>
         </section>
 
-        <!-- 页面 3：春晚与转型 -->
+        <!-- 页面 3：登上春晚 -->
         <section class="slide">
-            <h2 class="anim-item">登上春晚 · 同年转身</h2>
-            <div class="cards-wrapper">
-                <div class="card anim-item delay-1">
-                    <h3>2006 年 登上春晚</h3>
-                    <p>首登央视春晚，献唱《一千年以后》。</p>
-                    <p>以 <strong>33.3%</strong> 支持率当选当晚最受观众喜爱明星。</p>
-                </div>
+            <div class="header-area anim-item">
+                <h1>登上春晚</h1>
+            </div>
+
+            <div class="dark-banner anim-item delay-1">
+                2006 年，林俊杰首登央视春晚，献唱《一千年以后》，以33.3%支持率当选当晚最受观众喜爱明星。
+            </div>
+
+            <div class="grid-3">
+                <!-- 同年转身 -->
                 <div class="card anim-item delay-2">
-                    <h3>摇滚转型与破圈</h3>
-                    <p><strong>《曹操》：</strong>首次尝试摇滚曲风，把三国故事唱进流行乐，打破刻板标签。</p>
-                    <p><strong>彩铃霸榜：</strong>《小酒窝》《背对背拥抱》长期霸占榜单，成为青春记忆。</p>
+                    <div class="card-title" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem;">
+                        <span class="icon-emoji">✏️</span> 同年转身
+                    </div>
+                    <div class="item-box">
+                        <h4>摇滚转型</h4>
+                        <p>推出《曹操》，首次尝试摇滚曲风</p>
+                    </div>
+                    <div class="item-box">
+                        <h4>国风融合</h4>
+                        <p>把三国故事唱进流行乐</p>
+                    </div>
+                    <div class="item-box">
+                        <p>打破“温柔情歌歌手”的刻板标签</p>
+                    </div>
+                    <div class="tag-list">
+                        <span class="tag">破圈</span>
+                    </div>
+                </div>
+
+                <!-- 持续发酵 -->
+                <div class="card anim-item delay-3">
+                    <div class="card-title" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem;">
+                        <span class="icon-emoji">💧</span> 持续发酵
+                    </div>
+                    <div class="item-box">
+                        <h4>彩铃霸榜</h4>
+                        <p>《小酒窝》《背对背拥抱》长期霸占彩铃榜单</p>
+                    </div>
+                    <div class="item-box">
+                        <p>成为一代人的青春记忆</p>
+                    </div>
+                    <div class="tag-list">
+                        <span class="tag">霸榜</span>
+                    </div>
+                </div>
+
+                <!-- 风格进阶 -->
+                <div class="card anim-item delay-4">
+                    <div class="card-title" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.8rem;">
+                        <span class="icon-emoji">🎸</span> 风格进阶
+                    </div>
+                    <div class="item-box">
+                        <h4>国风到多元</h4>
+                        <p>从《江南》的国风到《曹操》的多元融合</p>
+                    </div>
+                    <div class="item-box">
+                        <p>完成从爆红金曲到风格体系的进阶</p>
+                    </div>
+                    <div class="tag-list">
+                        <span class="tag">进化</span>
+                    </div>
                 </div>
             </div>
-            <p class="anim-item delay-3" style="margin-top: 2rem; font-size: 1.2rem; color: var(--title-color); text-align: center;">
-                从爆红金曲到风格体系的进阶
-            </p>
         </section>
 
         <!-- 页面 4：JJ20巡演 -->
         <section class="slide">
-            <h2 class="anim-item">JJ20 巡演：104场收官鸟巢</h2>
-            <p class="anim-item delay-1" style="margin-bottom: 2rem; color: var(--title-color);">三年 · 45城 · 104场 世界巡回演唱会完整航迹</p>
-            
-            <div class="timeline anim-item delay-2">
-                <div class="time-node">
-                    <p>起点</p>
-                    <h4>2022.11.04</h4>
-                    <p>新加坡启航</p>
-                </div>
-                <div class="time-node">
-                    <p>终点</p>
-                    <h4>2025.07.13</h4>
-                    <p>北京鸟巢收官</p>
+            <div class="header-area anim-item">
+                <h1>JJ20巡演104场收官鸟巢</h1>
+                <p class="subtitle" style="margin-bottom: 1.5rem;">从2022年新加坡启航到2025年北京鸟巢收官，覆盖亚洲、北美、欧洲、大洋洲45座城市。</p>
+                
+                <div class="capsule-bar">
+                    <strong>🚀 三年 · 45城 · 104场</strong> JJ20世界巡回演唱会完整航迹
                 </div>
             </div>
-            <p class="anim-item delay-3" style="margin-top: 3rem; font-size: 1.1rem; text-align: center; color: var(--title-color);">
-                终场数次硬咽，返场以《谢幕》完成冲线。
-            </p>
+
+            <div class="grid-3">
+                <!-- 启航·收官 -->
+                <div class="card anim-item delay-1">
+                    <div class="card-title" style="margin-bottom: 1.5rem;">
+                        <span class="icon-emoji">🛫</span> 启航 · 收官
+                    </div>
+                    <p style="font-size: 0.9rem; margin-bottom: 5px;"><span style="background: #fceabb; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: var(--title-color);">起点</span></p>
+                    <h4 style="color: var(--title-color); font-size: 1.2rem; margin-bottom: 5px;">2022.11.04</h4>
+                    <p style="margin-bottom: 1.5rem;">新加坡启航</p>
+
+                    <p style="font-size: 0.9rem; margin-bottom: 5px;"><span style="background: #fceabb; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: var(--title-color);">终点</span></p>
+                    <h4 style="color: var(--title-color); font-size: 1.2rem; margin-bottom: 5px;">2025.07.13</h4>
+                    <p>北京鸟巢收官</p>
+                </div>
+
+                <!-- 巡演版图 -->
+                <div class="card anim-item delay-2">
+                    <div class="card-title" style="margin-bottom: 1.5rem;">
+                        <span class="icon-emoji">🌍</span> 巡演版图
+                    </div>
+                    <div class="large-number">45<span>座城市</span></div>
+                    <p style="line-height: 1.6; margin-top: 10px;">覆盖亚洲、北美、欧洲、大洋洲四大洲</p>
+                </div>
+
+                <!-- 收官盛况 -->
+                <div class="card anim-item delay-3">
+                    <div class="card-title" style="margin-bottom: 1.5rem;">
+                        <span class="icon-emoji">🏆</span> 收官盛况
+                    </div>
+                    <div class="large-number">104<span>场</span></div>
+                    <p style="line-height: 1.6; margin-top: 10px;">北京收官连三周<strong>9场</strong>，累计近<strong>50万</strong>观众</p>
+                </div>
+            </div>
+
+            <div class="bottom-banner anim-item delay-4">
+                🏆 最终场数次哽咽，返场以《谢幕》完成冲线。
+            </div>
         </section>
 
-        <!-- 页面 5：未来展望 -->
+        <!-- 页面 5：F1与新专辑 -->
         <section class="slide">
-            <h2 class="anim-item">F1 压轴与新专辑蓄势待发</h2>
-            <div class="cards-wrapper">
+            <div class="header-area anim-item">
+                <h1>F1压轴与新专辑蓄势待发</h1>
+            </div>
+
+            <div class="grid-2">
+                <!-- 左上：F1演出 -->
                 <div class="card anim-item delay-1">
-                    <h3>新加坡 F1 压轴演出</h3>
-                    <span class="highlight-num">5.5万 名观众</span>
-                    <p>原定 75 分钟延长至 <strong>90 分钟</strong>，22首连唱曲目。</p>
-                    <p>全球首唱英文新单《Rise Without A Sound》。</p>
+                    <div class="card-title" style="margin-bottom: 1rem;">
+                        <span class="icon-emoji">🏁</span> 新加坡F1压轴演出
+                    </div>
+                    <p style="color: var(--title-color); font-weight: bold; margin-bottom: 1.5rem; font-size: 1rem;">2026年10月9日 林俊杰压轴新加坡F1大奖赛主舞台</p>
+                    <div class="item-box">
+                        <h4>5.5万 <span style="font-weight: normal; font-size: 0.9rem;">名观众原定75分钟延长至90分钟</span></h4>
+                    </div>
+                    <div class="item-box">
+                        <h4>22首 <span style="font-weight: normal; font-size: 0.9rem;">连唱曲目</span></h4>
+                    </div>
                 </div>
+
+                <!-- 右上：英文新单 -->
                 <div class="card anim-item delay-2">
-                    <h3>新专辑蓄势待发</h3>
-                    <p>与方文山七年再合作《我对缘分小心翼翼》。</p>
-                    <p>2026年2月上线，3天播放量破 <strong>862万</strong>。</p>
+                    <div class="card-title" style="margin-bottom: 1rem;">
+                        <span class="icon-emoji">🎵</span> 全球首唱英文新单
+                    </div>
+                    <p style="color: var(--title-color); font-weight: bold; margin-bottom: 1rem; font-size: 1.05rem;">《Rise Without A Sound》</p>
+                    <div class="item-box">
+                        <h4>零预告 <span style="font-weight: normal; font-size: 0.9rem;">下场两分钟后空降各大平台</span></h4>
+                    </div>
+                    <div class="item-box" style="border-left: none; background: transparent; padding: 0;">
+                        <p style="background: var(--item-bg); padding: 0.8rem; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--accent-gold);">词曲制作全由他包揽，以“平静、信念、重生”为核心</p>
+                        <p style="background: var(--item-bg); padding: 0.8rem; border-radius: 8px; border-left: 4px solid var(--accent-gold);">副歌反复唱着“我们在无声中站起来”</p>
+                    </div>
+                </div>
+
+                <!-- 左下：方文山合作 -->
+                <div class="card anim-item delay-3">
+                    <div class="card-title" style="margin-bottom: 1rem;">
+                        <span class="icon-emoji">✍️</span> 与方文山七年再合作
+                    </div>
+                    <p style="color: var(--title-color); margin-bottom: 1.5rem; font-size: 1rem;">《我对缘分小心翼翼》· 2026年2月上线</p>
+                    <div class="item-box" style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.5rem; font-weight: bold; color: var(--title-color);">3天</span>
+                        <span style="color: var(--text-color);">播放量破</span>
+                        <span style="font-size: 1.5rem; font-weight: bold; color: var(--title-color);">862万</span>
+                    </div>
+                </div>
+
+                <!-- 右下：第16张专辑 -->
+                <div class="card anim-item delay-4">
+                    <div class="card-title" style="margin-bottom: 1rem;">
+                        <span class="icon-emoji">💿</span> 第16张专辑收尾
+                    </div>
+                    <p style="color: var(--title-color); margin-bottom: 1.5rem; font-size: 1rem;">全新录音室专辑</p>
+                    <div class="item-box">
+                        <p>预计采用<strong>双面双篇章</strong>概念</p>
+                    </div>
+                    <div class="item-box">
+                        <p>或于<strong>2027年</strong>发行</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -371,13 +587,13 @@
         const progressContainer = document.getElementById('progress');
         let currentIndex = 0;
 
-        // 初始化底部指示点
+        // 初始化指示点
         slides.forEach((_, index) => {
             const dot = document.createElement('div');
             dot.classList.add('dot');
             if (index === 0) dot.classList.add('active');
             dot.onclick = (e) => {
-                e.stopPropagation(); // 阻止事件冒泡到热区
+                e.stopPropagation();
                 goToSlide(index);
             };
             progressContainer.appendChild(dot);
@@ -385,7 +601,6 @@
 
         const dots = document.querySelectorAll('.dot');
 
-        // 核心翻页函数
         function goToSlide(index) {
             if (index < 0) index = 0;
             if (index >= slides.length) index = slides.length - 1;
@@ -393,11 +608,8 @@
 
             slides.forEach(slide => {
                 slide.classList.remove('active');
-                if (index > currentIndex) {
-                    slide.classList.add('prev');
-                } else {
-                    slide.classList.remove('prev');
-                }
+                if (index > currentIndex) slide.classList.add('prev');
+                else slide.classList.remove('prev');
             });
 
             slides[index].classList.add('active');
@@ -409,12 +621,10 @@
             currentIndex = index;
         }
 
-        // 点击热区控制翻页
         function changeSlide(step) {
             goToSlide(currentIndex + step);
         }
 
-        // 键盘控制
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
                 changeSlide(1);
@@ -422,7 +632,6 @@
                 changeSlide(-1);
             }
         });
-
     </script>
 </body>
 </html>
