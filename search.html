@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>搜索 - 劳埃德大师 Wiki</title>
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+    <style>
+        /* ===== 搜索页专属样式 ===== */
+        .search-layout {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+        @media (max-width: 800px) {
+            .search-layout { grid-template-columns: 1fr; }
+        }
+
+        /* 左侧筛选面板 */
+        .filter-sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + 24px);
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            max-height: calc(100vh - var(--nav-height) - 48px);
+            overflow-y: auto;
+        }
+        .filter-sidebar h3 {
+            margin: 0 0 16px;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filter-sidebar h3 button {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .filter-group { margin-bottom: 20px; }
+        .filter-group > .group-title {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+        .filter-value {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .filter-value input[type="checkbox"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .filter-value .count {
+            margin-left: auto;
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
+        details { margin-top: 6px; outline: none; }
+        summary {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 4px;
+        }
+        summary:hover { opacity: 1; }
+
+        /* 右侧主区域 */
+        .search-main { min-width: 0; }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        #searchInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: var(--font-size);
+        }
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59,127,189,.2);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+        .toolbar select {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        #activeFiltersBar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .active-filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+        .active-filter-tag button {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        /* ===== 结果列表 ===== */
+        .result-list { display: flex; flex-direction: column; }
+        .result-item {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .result-thumb {
+            width: 140px;
+            height: 105px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+            background-color: var(--card-bg);
+        }
+        .result-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        /* 标题层级优化 */
+        .result-item h3 { margin: 0 0 6px; font-size: 1.15rem; line-height: 1.4; }
+        .result-item h3 a { color: var(--accent); text-decoration: none; }
+        .result-item h3 a:hover { text-decoration: underline; }
+        
+        /* 摘要层级优化：紧贴标题，醒目展示 */
+        .result-excerpt {
+            margin: 0 0 10px; /* 距离标题一点空隙，距离下面的标签再留空隙 */
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.85;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .result-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .tag-pill {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: color-mix(in srgb, var(--primary) 15%, transparent);
+            color: var(--primary);
+        }
+        .tag-pill.type {
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            color: var(--accent);
+        }
+
+        .result-meta {
+            margin-top: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+        .result-meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+        @media (max-width: 600px) {
+            .result-item { flex-direction: column; gap: 12px; }
+            .result-thumb { width: 100%; height: 160px; }
+        }
+
+        #loadMoreWrap { text-align: center; padding: 24px 0; }
+        #loadMoreBtn {
+            padding: 10px 32px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        #loadMoreBtn:disabled { opacity: 0.4; cursor: default; }
+        .state-msg { padding: 40px 0; text-align: center; opacity: 0.6; font-size: 0.95rem; }
+
+        /* ===== 日期选项卡与输入框样式 ===== */
+        .date-tabs {
+            display: flex;
+            margin-bottom: 12px;
+            background: var(--bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        .date-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            transition: all 0.2s;
+            border-radius: 0 !important; 
+            margin: 0 !important; 
+        }
+        .date-tab:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+        .date-tab.active { background: var(--primary); color: #fff; }
+
+        .date-range-inputs { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+        .date-input-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .date-input-item input[type="date"] {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--border-radius);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+        .date-input-item input[type="date"]:focus { outline: none; border-color: var(--primary); }
+    </style>
+</head>
+<body data-pagefind-ignore>
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">↑ 顶部</button>
+    <div id="fixed-nav-wrapper">
+        <nav class="navbar" id="navbar">
+            <div class="navbar-brand">
+                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                <span>劳埃德大师</span>
+            </div>
+            <ul class="navbar-links">
+                <li><a href="/index.html" class="active">首页</a></li>
+                <li><a href="/navigation_bar/about.html">关于我们</a></li>
+                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <div id="search"></div>
+                <button class="customize-btn" id="togglePanel"><span>个性化页面</span></button>
+            </div>
+        </nav>
+        <div class="customize-panel" id="customPanel">
+            <h3>个性化设置 <button class="close-panel-btn" id="closePanelBtn">✕</button></h3>
+            <div class="ctrl-group"><label>背景色</label><input type="color" id="bgColor" value="#f7f9fc" /></div>
+            <div class="ctrl-group"><label>文字颜色</label><input type="color" id="textColor" value="#1a2332" /></div>
+            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
+        </div>
+    </div>
+
+    <div class="search-layout">
+        <aside class="filter-sidebar" id="filterSidebar">
+            <h3>筛选 <button id="clearAllFilters">清空全部</button></h3>
+            <div id="filterGroups"></div>
+        </aside>
+
+        <main class="search-main">
+            <h1>搜索</h1>
+            <div class="search-bar">
+                <input id="searchInput" type="text" placeholder="输入关键词搜索…" autocomplete="off" />
+            </div>
+            <div class="toolbar">
+                <span id="resultCount">输入关键词或选择筛选条件开始</span>
+                <select id="sortSelect">
+                    <option value="relevance">按相关性</option>
+                    <option value="article-desc">文章日期（最新）</option>
+                    <option value="article-asc">文章日期（最早）</option>
+                    <option value="event-desc">事件日期（最新）</option>
+                    <option value="event-asc">事件日期（最早）</option>
+                </select>
+            </div>
+            <div id="activeFiltersBar"></div>
+            <div id="results" class="result-list"></div>
+            <div id="loadMoreWrap" style="display:none;">
+                <button id="loadMoreBtn">加载更多</button>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        const pagefind = await import("/pagefind/pagefind.js");
+        await pagefind.init();
+
+        // 全局状态
+        const state = {
+            term: "",
+            filters: {},
+            activeDateType: "article",
+            articleDateRange: { start: null, end: null },
+            eventDateRange: { start: null, end: null },
+            sortKey: null,
+            sortOrder: null,
+            page: 1,
+            perPage: 10,
+            total: 0,
+            allResults: [],
+            loadedResults: [],
+            searchToken: 0,
+        };
+
+        const filterNameMap = {
+            'author': '作者', 'type': '类型', 'tag': '标签',
+            'year': '文章年份', 'month': '文章月份', 'day': '文章日期',
+            'event_year': '事件年份', 'event_month': '事件月份', 'event_day': '事件日期'
+        };
+
+        const searchInput = document.getElementById("searchInput");
+        const filterGroupsEl = document.getElementById("filterGroups");
+        const resultCountEl = document.getElementById("resultCount");
+        const sortSelect = document.getElementById("sortSelect");
+        const resultsEl = document.getElementById("results");
+        const loadMoreWrap = document.getElementById("loadMoreWrap");
+        const loadMoreBtn = document.getElementById("loadMoreBtn");
+        const activeFiltersBar = document.getElementById("activeFiltersBar");
+        const clearAllFiltersBtn = document.getElementById("clearAllFilters");
+
+        // ============================================================
+        // 渲染筛选面板
+        // ============================================================
+        async function renderFilterPanel() {
+            const available = await pagefind.filters();
+            filterGroupsEl.innerHTML = "";
+
+            const dateKeys = ['year', 'month', 'day', 'event_year', 'event_month', 'event_day'];
+
+            for (const [key, values] of Object.entries(available)) {
+                if (dateKeys.includes(key)) continue;
+
+                const group = document.createElement("div");
+                group.className = "filter-group";
+                
+                const title = document.createElement("span");
+                title.className = "group-title";
+                title.textContent = filterNameMap[key] || key;
+                group.appendChild(title);
+
+                const normalItems = [];
+                const collapsedItems = [];
+                for (const [value, count] of Object.entries(values)) {
+                    if (key === "author" && count < 2) collapsedItems.push({ value, count });
+                    else normalItems.push({ value, count });
+                }
+
+                const createLabel = ({ value, count }) => {
+                    const label = document.createElement("label");
+                    label.className = "filter-value";
+                    const cb = document.createElement("input");
+                    cb.type = "checkbox";
+                    cb.value = value;
+                    cb.dataset.filterKey = key;
+                    cb.addEventListener("change", onFilterChange);
+                    const text = document.createElement("span"); text.textContent = value;
+                    const countEl = document.createElement("span"); countEl.className = "count"; countEl.textContent = count;
+                    label.appendChild(cb); label.appendChild(text); label.appendChild(countEl);
+                    return label;
+                };
+
+                normalItems.forEach(item => group.appendChild(createLabel(item)));
+
+                if (collapsedItems.length > 0) {
+                    const details = document.createElement("details");
+                    const summary = document.createElement("summary");
+                    summary.textContent = `显示其余 ${collapsedItems.length} 个作者`;
+                    details.appendChild(summary);
+                    collapsedItems.forEach(item => details.appendChild(createLabel(item)));
+                    group.appendChild(details);
+                }
+                filterGroupsEl.appendChild(group);
+            }
+
+            if (available.year || available.event_year) {
+                filterGroupsEl.appendChild(createDateRangeGroup());
+            }
+        }
+
+        function createDateRangeGroup() {
+            const group = document.createElement("div");
+            group.className = "filter-group";
+            
+            const title = document.createElement("span");
+            title.className = "group-title";
+            title.textContent = "日期筛选";
+            group.appendChild(title);
+
+            const tabsWrap = document.createElement("div");
+            tabsWrap.className = "date-tabs";
+            tabsWrap.innerHTML = `
+                <button class="date-tab active" data-type="article">文章日期</button>
+                <button class="date-tab" data-type="event">事件日期</button>
+            `;
+            group.appendChild(tabsWrap);
+
+            const wrap = document.createElement("div");
+            wrap.className = "date-range-inputs";
+            wrap.innerHTML = `
+                <div class="date-input-item">
+                    <span>从</span><input type="date" id="filterDateStart" />
+                </div>
+                <div class="date-input-item">
+                    <span>至</span><input type="date" id="filterDateEnd" />
+                </div>
+            `;
+            group.appendChild(wrap);
+
+            setTimeout(() => {
+                const tabs = tabsWrap.querySelectorAll('.date-tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        
+                        state.activeDateType = tab.dataset.type;
+                        
+                        document.getElementById("filterDateStart").value = "";
+                        document.getElementById("filterDateEnd").value = "";
+                        
+                        state.articleDateRange = { start: null, end: null };
+                        state.eventDateRange = { start: null, end: null };
+                        
+                        state.page = 1;
+                        doSearch(true);
+                    });
+                });
+
+                const startInput = document.getElementById("filterDateStart");
+                const endInput = document.getElementById("filterDateEnd");
+                
+                const handleDateChange = () => {
+                    const startVal = startInput.value;
+                    const endVal = endInput.value;
+                    
+                    if (state.activeDateType === "article") {
+                        state.articleDateRange = { start: startVal || null, end: endVal || null };
+                        state.eventDateRange = { start: null, end: null };
+                    } else {
+                        state.eventDateRange = { start: startVal || null, end: endVal || null };
+                        state.articleDateRange = { start: null, end: null };
+                    }
+                    
+                    state.page = 1;
+                    doSearch(true);
+                };
+
+                startInput.addEventListener("change", handleDateChange);
+                endInput.addEventListener("change", handleDateChange);
+            }, 0);
+
+            return group;
+        }
+
+        // ============================================================
+        // 各种变化处理
+        // ============================================================
+        function onFilterChange() {
+            const checked = filterGroupsEl.querySelectorAll('input[type="checkbox"]:checked');
+            const newFilters = {};
+            checked.forEach(cb => {
+                const key = cb.dataset.filterKey;
+                if (!newFilters[key]) newFilters[key] = { any: [] };
+                newFilters[key].any.push(cb.value); 
+            });
+            state.filters = newFilters;
+            state.page = 1;
+            doSearch(true);
+        }
+
+        // ============================================================
+        // 激活标签渲染
+        // ============================================================
+        function renderActiveFilterTags() {
+            activeFiltersBar.innerHTML = "";
+            for (const [key, valuesObj] of Object.entries(state.filters)) {
+                const displayKey = filterNameMap[key] || key;
+                valuesObj.any.forEach(value => {
+                    const tag = document.createElement("span");
+                    tag.className = "active-filter-tag";
+                    tag.innerHTML = `${displayKey}: ${value} <button title="移除">×</button>`;
+                    tag.querySelector("button").addEventListener("click", () => {
+                        const cb = filterGroupsEl.querySelector(`input[data-filter-key="${CSS.escape(key)}"][value="${CSS.escape(value)}"]`);
+                        if (cb) { cb.checked = false; cb.dispatchEvent(new Event("change")); }
+                    });
+                    activeFiltersBar.appendChild(tag);
+                });
+            }
+
+            if (state.articleDateRange.start || state.articleDateRange.end) {
+                addDateTag(state.articleDateRange, "文章日期");
+            } else if (state.eventDateRange.start || state.eventDateRange.end) {
+                addDateTag(state.eventDateRange, "事件日期");
+            }
+        }
+
+        function addDateTag(range, label) {
+            const tag = document.createElement("span");
+            tag.className = "active-filter-tag";
+            let text = `${label}: `;
+            if (range.start && range.end) text += `${range.start} 至 ${range.end}`;
+            else if (range.start) text += `${range.start} 起`;
+            else if (range.end) text += `至 ${range.end}`;
+            
+            tag.innerHTML = `${text} <button title="移除">×</button>`;
+            tag.querySelector("button").addEventListener("click", () => {
+                document.getElementById("filterDateStart").value = "";
+                document.getElementById("filterDateEnd").value = "";
+                
+                if (label === "文章日期") state.articleDateRange = { start: null, end: null };
+                else state.eventDateRange = { start: null, end: null };
+                
+                state.page = 1;
+                doSearch(true);
+            });
+            activeFiltersBar.appendChild(tag);
+        }
+
+        // ============================================================
+        // 执行搜索
+        // ============================================================
+        async function doSearch(reset = true) {
+            const token = ++state.searchToken;
+            if (reset) {
+                state.page = 1;
+                state.loadedResults = [];
+                resultsEl.innerHTML = "";
+                loadMoreWrap.style.display = "none";
+            }
+
+            const term = state.term || null;
+            const hasFilters = Object.keys(state.filters).length > 0;
+            const hasArticleDate = state.articleDateRange.start || state.articleDateRange.end;
+            const hasEventDate = state.eventDateRange.start || state.eventDateRange.end;
+
+            if (!term && !hasFilters && !hasArticleDate && !hasEventDate) {
+                resultCountEl.textContent = "输入关键词或选择筛选条件开始";
+                resultsEl.innerHTML = "";
+                loadMoreWrap.style.display = "none";
+                activeFiltersBar.innerHTML = "";
+                return;
+            }
+
+            resultCountEl.textContent = "搜索中…";
+            const finalFilters = { ...state.filters };
+
+            if (hasArticleDate) {
+                const dateFilters = buildDateFilters(state.articleDateRange.start, state.articleDateRange.end, "");
+                Object.entries(dateFilters).forEach(([k, v]) => {
+                    finalFilters[k] = finalFilters[k] ? { any: [...new Set([...finalFilters[k].any, ...v.any])] } : v;
+                });
+            }
+
+            if (hasEventDate) {
+                const dateFilters = buildDateFilters(state.eventDateRange.start, state.eventDateRange.end, "event_");
+                Object.entries(dateFilters).forEach(([k, v]) => {
+                    finalFilters[k] = finalFilters[k] ? { any: [...new Set([...finalFilters[k].any, ...v.any])] } : v;
+                });
+            }
+
+            const options = { filters: finalFilters };
+            if (state.sortKey && state.sortOrder) {
+                options.sort = { [state.sortKey]: state.sortOrder };
+            }
+
+            let search;
+            try {
+                search = await pagefind.search(term, options);
+            } catch (err) {
+                if (token !== state.searchToken) return;
+                console.error("Pagefind 搜索失败:", err);
+                resultCountEl.textContent = "搜索出错，请稍后重试";
+                return;
+            }
+
+            if (token !== state.searchToken) return;
+
+            state.total = search.results.length;
+            state.allResults = search.results;
+
+            if (state.total === 0) {
+                resultCountEl.textContent = "没有找到结果";
+                resultsEl.innerHTML = '<div class="state-msg">尝试更换关键词或调整日期范围。</div>';
+                loadMoreWrap.style.display = "none";
+                renderActiveFilterTags();
+                return;
+            }
+
+            resultCountEl.textContent = `找到 ${state.total} 个结果`;
+            renderActiveFilterTags();
+            await loadPage(1, token);
+        }
+
+        // 日期范围转换为过滤条件
+        function buildDateFilters(startStr, endStr, prefix) {
+            const yKey = prefix + "year";
+            const mKey = prefix + "month";
+            const dKey = prefix + "day";
+            const result = { [yKey]: { any: [] }, [mKey]: { any: [] }, [dKey]: { any: [] } };
+
+            if (!startStr && endStr) startStr = endStr;
+            if (startStr && !endStr) endStr = startStr;
+            if (!startStr && !endStr) return result;
+
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            if (isNaN(start) || isNaN(end) || start > end) return result;
+
+            const years = new Set(), months = new Set(), days = new Set();
+            const current = new Date(start);
+            while (current <= end) {
+                years.add(String(current.getFullYear()));
+                months.add(String(current.getMonth() + 1));
+                days.add(String(current.getDate()));
+                current.setDate(current.getDate() + 1);
+            }
+
+            result[yKey].any = Array.from(years);
+            result[mKey].any = Array.from(months);
+            result[dKey].any = Array.from(days);
+            return result;
+        }
+
+        // ============================================================
+        // 加载页面与结果渲染
+        // ============================================================
+        async function loadPage(page, token) {
+            const start = (page - 1) * state.perPage;
+            const end = Math.min(start + state.perPage, state.total);
+            const slice = state.allResults.slice(start, end);
+            const datas = await Promise.all(slice.map(r => r.data()));
+
+            if (token !== state.searchToken) return;
+            datas.forEach(d => state.loadedResults.push(d));
+            state.page = page;
+            renderResults();
+
+            if (state.loadedResults.length < state.total) {
+                loadMoreWrap.style.display = "block";
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.textContent = `加载更多（已显示 ${state.loadedResults.length}/${state.total}）`;
+            } else {
+                loadMoreWrap.style.display = "none";
+            }
+        }
+
+        function renderResults() {
+            resultsEl.innerHTML = state.loadedResults.map(r => {
+                const meta = r.meta || {};
+                
+                // 防御性提取：应对源HTML中英文逗号导致的解析崩溃
+                let authorDisplay = "";
+                if (meta.author) {
+                    const authors = Array.isArray(meta.author) ? meta.author : [meta.author];
+                    if (authors.length > 0 && authors[0]) {
+                        authorDisplay = String(authors[0]).split(',')[0].split('，')[0].trim();
+                    }
+                }
+
+                // 防御性处理图片
+                let imageSrc = meta.image || "";
+                if (typeof imageSrc === 'string') {
+                    imageSrc = imageSrc.split(',')[0].trim();
+                }
+                if (imageSrc && !imageSrc.startsWith('/') && !imageSrc.startsWith('http')) {
+                    imageSrc = ""; 
+                }
+
+                const imageHtml = imageSrc ? `<img src="${imageSrc}" alt="${meta.image_alt || '封面'}" class="result-thumb" loading="lazy" />` : "";
+
+                // 防御性处理描述 (替换默认的 excerpt)
+                let descText = "";
+                if (meta.description) {
+                    const descStr = Array.isArray(meta.description) ? meta.description[0] : meta.description;
+                    descText = String(descStr).split(',')[0].split('，')[0].trim();
+                }
+                
+                // 注意这里：如果有 descText 就用 descText，否则用 r.excerpt
+                const excerptContent = descText || r.excerpt;
+                const excerptHtml = `<p class="result-excerpt">${excerptContent}</p>`;
+                
+                // 处理标签
+                let tagsHtml = "";
+                const types = meta.type ? (Array.isArray(meta.type) ? meta.type : [meta.type]) : [];
+                const tags = meta.tag ? (Array.isArray(meta.tag) ? meta.tag : [meta.tag]) : [];
+                if (types.length > 0 || tags.length > 0) {
+                    tagsHtml = `<div class="result-tags">`;
+                    types.forEach(t => tagsHtml += `<span class="tag-pill type">${String(t).split(',')[0]}</span>`);
+                    tags.forEach(t => tagsHtml += `<span class="tag-pill">${String(t).split(',')[0]}</span>`);
+                    tagsHtml += `</div>`;
+                }
+
+                // 底部信息行
+                let metaLineHtml = "";
+                const metaItems = [];
+                if (authorDisplay) metaItems.push(`<span>作者：${authorDisplay}</span>`);
+                
+                if (meta.date) {
+                    const dateStr = Array.isArray(meta.date) ? meta.date[0] : meta.date;
+                    const cleanDate = String(dateStr).split(',')[0].split('，')[0].trim();
+                    metaItems.push(`<span>文章日期：${cleanDate}</span>`);
+                }
+                if (meta.event_date) {
+                    const eventDateStr = Array.isArray(meta.event_date) ? meta.event_date[0] : meta.event_date;
+                    const cleanEventDate = String(eventDateStr).split(',')[0].split('，')[0].trim();
+                    metaItems.push(`<span>事件日期：${cleanEventDate}</span>`);
+                }
+                
+                if (metaItems.length > 0) metaLineHtml = `<div class="result-meta">${metaItems.join("")}</div>`;
+
+                // 组合结构：标题 -> 摘要 -> 标签 -> 作者/日期
+                return `
+                    <div class="result-item">
+                        ${imageHtml}
+                        <div class="result-content">
+                            <h3><a href="${r.url}">${meta.title || "无标题"}</a></h3>
+                            ${excerptHtml}
+                            ${tagsHtml}
+                            ${metaLineHtml}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // ============================================================
+        // 事件绑定与启动
+        // ============================================================
+        let inputTimer;
+        searchInput.addEventListener("input", () => {
+            clearTimeout(inputTimer);
+            inputTimer = setTimeout(() => {
+                state.term = searchInput.value.trim();
+                state.page = 1;
+                doSearch(true);
+            }, 300);
+        });
+
+        sortSelect.addEventListener("change", () => {
+            const val = sortSelect.value;
+            if (val === "article-desc") { state.sortKey = "date"; state.sortOrder = "desc"; }
+            else if (val === "article-asc") { state.sortKey = "date"; state.sortOrder = "asc"; }
+            else if (val === "event-desc") { state.sortKey = "event_date"; state.sortOrder = "desc"; }
+            else if (val === "event-asc") { state.sortKey = "event_date"; state.sortOrder = "asc"; }
+            else { state.sortKey = null; state.sortOrder = null; }
+            state.page = 1;
+            doSearch(true);
+        });
+
+        loadMoreBtn.addEventListener("click", async () => {
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.textContent = "加载中…";
+            await loadPage(state.page + 1, state.searchToken);
+        });
+
+        clearAllFiltersBtn.addEventListener("click", () => {
+            filterGroupsEl.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => cb.checked = false);
+            
+            const startInput = document.getElementById("filterDateStart");
+            const endInput = document.getElementById("filterDateEnd");
+            if (startInput) startInput.value = "";
+            if (endInput) endInput.value = "";
+
+            state.activeDateType = "article";
+            const tabs = document.querySelectorAll(".date-tab");
+            if (tabs.length) {
+                tabs.forEach(t => t.classList.remove("active"));
+                if (tabs[0]) tabs[0].classList.add("active");
+            }
+
+            state.filters = {};
+            state.articleDateRange = { start: null, end: null };
+            state.eventDateRange = { start: null, end: null };
+            state.page = 1;
+            doSearch(true);
+        });
+
+        await renderFilterPanel();
+
+        const params = new URLSearchParams(location.search);
+        const q = params.get("q");
+        if (q) {
+            searchInput.value = q;
+            state.term = q;
+            doSearch(true);
+        }
+    </script>
+</body>
+</html>

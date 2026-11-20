@@ -9,11 +9,12 @@
     <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/css/timeline.css" />
 </head>
+
 <body>
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn" data-pagefind-ignore >
         ↑ 顶部
     </button>    
-    <div id="fixed-nav-wrapper">
+    <div id="fixed-nav-wrapper" data-pagefind-ignore >
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
                 <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
@@ -25,7 +26,6 @@
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
                 <li><a href="/navigation_bar/art.html">艺术展示</a></li>
                 <li><a href="/navigation_bar/contact.html">联系我们</a></li>
-            </ul>
             </ul>
             <div class="nav-actions">
                 <div id="search"></div>
@@ -81,7 +81,7 @@
     <main id="main-content">
         <br>
         <h1> 劳埃德大师 Wiki</h1>
-        <p>虚拟歌姬：将任辽</p>
+        <p data-pagefind-meta="title">虚拟歌姬：将任辽</p>
         <a href="/download/download_file/music/liao_yie_sound_source/liao-jp-vc.zip" download="将任辽音源.zip" class="card-btn">下载文件</a>
     </main>
 
@@ -92,7 +92,7 @@
     <ul>
 
         <li>
-            <a href="/character/liao_yie.html">辽yie（QQ：3610369393）</a>
+            <a href="/character/liao_yie.html">辽yie（QQ：3610369393）</a><span hidden data-pagefind-meta="author:辽yie" data-pagefind-filter="author:辽yie"></span>
         </li>
 
     </ul>
@@ -118,7 +118,7 @@
     <br><br>
     <div class="card">
         <div class="card-body">
-                        <h2 style="margin-top: 40px;">2026-08-09</h2>
+                        <h2 style="margin-top: 40px;"><span hidden data-pagefind-meta="event_date"></span></h2>
                         <h3>项目开始</h3>
                         <hr>
                         <br>
@@ -132,7 +132,7 @@
         
         <div class="timeline-item">
             <div class="content">
-                <h3>2026-08-09</h3>
+                <h3><span hidden data-pagefind-meta="event_date"></span></h3>
                 <hr>
                 <p>日语VC音源完成录制</p>
                 
@@ -141,7 +141,7 @@
 
         <div class="timeline-item">
             <div class="content">
-                <h3>2026-08-10</h3>
+                <h3><span hidden data-pagefind-meta="event_date"></span></h3>
                 <hr>
                 <p>发布宣传视频</p>
                 <p><a href="https://www.bilibili.com/video/BV1msuQ6JEhh">单击此处</a></p>
@@ -170,5 +170,6 @@
         });
     </script>
     <script src="/js/timeline.js"></script>
+<span hidden data-pagefind-filter="year:2026, month:8, day:6" data-pagefind-sort="date:2026-08-06" data-pagefind-meta="date:2026-08-06"></span>
 </body>
 </html>

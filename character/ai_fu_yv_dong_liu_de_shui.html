@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
     <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
 </head>
+
 <body>
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn" data-pagefind-ignore >
         ↑ 顶部
     </button>    
-    <div id="fixed-nav-wrapper">
+    <div id="fixed-nav-wrapper" data-pagefind-ignore >
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
                 <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
@@ -24,7 +25,6 @@
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
                 <li><a href="/navigation_bar/art.html">艺术展示</a></li>
                 <li><a href="/navigation_bar/contact.html">联系我们</a></li>
-            </ul>
             </ul>
             <div class="nav-actions">
                 <div id="search"></div>
@@ -82,7 +82,7 @@
         <h1> 爱付与东流的水</h1>
         <p>QQ深度爱好者，社群重度依赖者，互联网大手子</p>
         <br>
-        <p>本文作者：<a href="/character/ai_fu_yv_dong_liu_de_shui.html">爱付与东流的水（QQ：2640059415）</a></p>
+        <p>本文作者：<a href="/character/ai_fu_yv_dong_liu_de_shui.html">ai_fu_yv_dong_liu_de_shui（QQ：2640059415）</a><span hidden data-pagefind-filter="author:爱付与东流的水" data-pagefind-meta="author:爱付与东流的水"></span></p>
     </main>
     <br>
     <hr>
@@ -207,5 +207,6 @@
             element: "#search",
         });
     </script>
+<span hidden data-pagefind-filter="year:2026, month:8, day:6" data-pagefind-sort="date:2026-08-06" data-pagefind-meta="date:2026-08-06"></span>
 </body>
 </html>

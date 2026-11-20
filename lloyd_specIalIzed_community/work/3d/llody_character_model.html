@@ -9,11 +9,12 @@
     <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/css/timeline.css" />
 </head>
+
 <body>
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn" data-pagefind-ignore >
         ↑ 顶部
     </button>    
-    <div id="fixed-nav-wrapper">
+    <div id="fixed-nav-wrapper" data-pagefind-ignore >
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
                 <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
@@ -25,7 +26,6 @@
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
                 <li><a href="/navigation_bar/art.html">艺术展示</a></li>
                 <li><a href="/navigation_bar/contact.html">联系我们</a></li>
-            </ul>
             </ul>
             <div class="nav-actions">
                 <div id="search"></div>
@@ -81,7 +81,7 @@
     <main id="main-content">
         <br>
         <h1> 劳埃德大师 Wiki</h1>
-        <p>劳埃德大师新人模</p>
+        <p data-pagefind-meta="title">劳埃德大师新人模</p>
     </main>
 
     <br>
@@ -91,7 +91,7 @@
     <ul>
 
         <li>
-            <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+            <a href="/character/nooo.html">nooo（QQ：3778283627）</a><span hidden data-pagefind-filter="author:nooo" data-pagefind-meta="author:nooo"></span>
             <p>其他</p>
         </li>
 
@@ -120,7 +120,7 @@
     <br><br>
     <div class="card">
         <div class="card-body"><a href="https://pd.qq.com/s/d77fzvaou">
-                        <h2 style="margin-top: 40px;">2026-04-19</h2>
+                        <h2 style="margin-top: 40px;"><span hidden data-pagefind-meta="event_date"></span></h2>
                         <h3>项目正式提出</h3>
                         <hr>
                         <br>
@@ -134,7 +134,7 @@
         
         <div class="timeline-item">
             <div class="content">
-                <h3>2026-08-04</h3>
+                <h3><span hidden data-pagefind-meta="event_date"></span></h3>
                 <hr>
                 <p>该项目新建模型工程文件</p>
                 
@@ -161,5 +161,6 @@
         });
     </script>
     <script src="/js/timeline.js"></script>
+<span hidden data-pagefind-filter="year:2026, month:8, day:6" data-pagefind-sort="date:2026-08-06" data-pagefind-meta="date:2026-08-06"></span>
 </body>
 </html>

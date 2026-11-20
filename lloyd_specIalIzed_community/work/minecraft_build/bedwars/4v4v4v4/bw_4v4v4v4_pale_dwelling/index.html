@@ -9,19 +9,17 @@
     <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
 </head>
 <body>
-
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});"
-            id="backToTop" class="back-top-btn">↑ 顶部</button>
-
-    <div id="fixed-nav-wrapper">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn" data-pagefind-ignore >
+        ↑ 顶部
+    </button>    
+    <div id="fixed-nav-wrapper" data-pagefind-ignore >
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
-                <a href="javascript:history.back()">
-                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
-                </a>
+                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
                 <span>劳埃德大师</span>
             </div>
             <ul class="navbar-links">
+
                 <li><a href="/index.html" class="active">首页</a></li>
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
                 <li><a href="/navigation_bar/art.html">艺术展示</a></li>
@@ -29,12 +27,12 @@
             </ul>
             <div class="nav-actions">
                 <div id="search"></div>
+
                 <button class="customize-btn" id="togglePanel">
                     <span>个性化页面</span>
                 </button>
             </div>
         </nav>
-
         <div class="customize-panel" id="customPanel">
             <h3>
                 个性化设置
@@ -53,7 +51,7 @@
                 <input type="color" id="headingColor" value="#0a1220" />
             </div>
             <div class="ctrl-group">
-                <label>主色 <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
+                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
                 <input type="color" id="primaryColor" value="#3b7fbd" />
             </div>
             <div class="ctrl-group">
@@ -76,11 +74,10 @@
             <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;"> 设置会自动保存到浏览器</p>
         </div>
     </div>
-
-    <main id="main-content">
+        <main id="main-content">
         <br>
-        <h1>劳埃德大师wiki</h1>
-        <p>起床战争地图-苍白之地</p>
+        <h1> 劳埃德大师 Wiki</h1>
+        <p data-pagefind-meta="title">起床战争地图-苍白之地</p>
         <br>
     </main>
 
@@ -91,7 +88,7 @@
     <ul>
 
         <li>
-            <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+            <a href="/character/nooo.html"><span hidden data-pagefind-filter="author" data-pagefind-meta="author"></span>（QQ：3778283627）</a>
         </li>
 
     </ul>
@@ -143,8 +140,7 @@
             <td>
                 完成于
             </td>
-            <td>
-                2026/6/27/10:22
+<td data-pagefind-meta="event_date" data-pagefind-filter="event_year:2026, event_month:6, event_day:27" data-pagefind-sort="event_date:2026-6-27">2026/6/27/10:22
             </td>
         </tr>
         <tr>
@@ -178,7 +174,7 @@
                 建筑师
             </td>
             <td>
-                <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+                <a href="/character/nooo.html"><span hidden data-pagefind-filter="author" data-pagefind-meta="author"></span>（QQ：3778283627）</a>
             </td>
         </tr>
 
@@ -349,5 +345,6 @@
 
     <script type="module" src="/galaxy-gallery/mcmeta.js"></script>
 
+    <span hidden data-pagefind-filter="year:2026, month:8, day:1, type:地图, type:我的世界, tag:起床战争, tag:4v4v4v4" data-pagefind-sort="date:2026-08-01" data-pagefind-meta="date:2026-08-01, description:一张质量中等的大型4队地图, image:/image/minecraft/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/map.apng, image_alt:封面, keywords:BW, bedwars, 床战, 起床, 地图, 4v4v4v4"></span>
 </body>
 </html>

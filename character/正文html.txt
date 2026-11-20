@@ -10,7 +10,7 @@
         <h1> 你的名字拼音</h1>
         <p>劳埃德艺术家</p>
         <br>
-        <p>本文作者：<a href="/character/你的名字拼音.html">你的名字拼音（QQ：3778283627）</a>
+        <p>本文作者：<a href="/character/你的名字拼音.html"><span data-pagefind-meta="author" data-pagefind-filter="author"><span data-pagefind-meta="author" data-pagefind-filter="author" >你的名字拼音</span></span>（QQ：3778283627）</a>
     </main>
     <br>
     <hr>

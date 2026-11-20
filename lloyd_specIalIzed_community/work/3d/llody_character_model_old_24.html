@@ -11,11 +11,12 @@
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
 </head>
+
 <body>
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">
+    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn" data-pagefind-ignore >
         ↑ 顶部
     </button>    
-    <div id="fixed-nav-wrapper">
+    <div id="fixed-nav-wrapper" data-pagefind-ignore >
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
                 <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
@@ -27,7 +28,6 @@
                 <li><a href="/navigation_bar/about.html">关于我们</a></li>
                 <li><a href="/navigation_bar/art.html">艺术展示</a></li>
                 <li><a href="/navigation_bar/contact.html">联系我们</a></li>
-            </ul>
             </ul>
             <div class="nav-actions">
                 <div id="search"></div>
@@ -83,7 +83,7 @@
     <main id="main-content">
         <br>
         <h1> 劳埃德大师 Wiki</h1>
-        <p>劳埃德大师24年的第一个人模</p>
+        <p data-pagefind-meta="title">劳埃德大师24年的第一个人模</p>
     </main>
 
     <br>
@@ -93,7 +93,7 @@
     <ul>
 
         <li>
-            <a href="/character/nooo.html">nooo（QQ：3778283627）</a>
+            <a href="/character/nooo.html">nooo（QQ：3778283627）</a><span hidden data-pagefind-filter="author:nooo" data-pagefind-meta="author:nooo"></span>
             <p>其他</p>
         </li>
 
@@ -200,5 +200,6 @@
         });
     </script>
     <script src="/js/timeline.js"></script>
+<span hidden data-pagefind-filter="year:2026, month:8, day:6" data-pagefind-sort="date:2026-08-06" data-pagefind-meta="date:2026-08-06"></span>
 </body>
 </html>

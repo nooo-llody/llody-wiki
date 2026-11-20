@@ -29,8 +29,7 @@
 /* ==========================================
    基础元素
    ========================================== */
-
-body {
+   body {
     font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
     background-color: var(--bg);
     color: var(--text);
@@ -39,7 +38,15 @@ body {
     transition: background-color 0.2s, color 0.2s;
     min-height: 100vh;
     line-height: 1.6;
-    animation: pageFadeIn 0.35s ease-out forwards;
+}
+
+#main-content {
+    animation: pageFadeIn 0.35s ease-out;
+}
+
+@keyframes pageFadeIn {
+    0%   { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 h1, h2, h3, h4 {
@@ -276,14 +283,14 @@ th {
 .customize-panel {
     position: fixed;
     top: calc(var(--nav-height) + 12px);
-    right: 32px;
+    right: 16px;
     background: var(--card-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border);
     border-radius: var(--border-radius);
     padding: 20px 24px;
-    width: 300px;
+    width: min(300px, calc(100vw - 32px));
     max-height: calc(100vh - var(--nav-height) - 40px);
     overflow-y: auto;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
