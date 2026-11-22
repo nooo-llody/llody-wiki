@@ -384,3 +384,114 @@ document.addEventListener('click', async (e) => {
         }, 2000);
     }
 });
+
+(function() {
+    const $ = id => document.getElementById(id);
+    const root = document.documentElement;
+    const KEY = 'customTheme';
+  
+    const neuToggle = $('neuToggle'),
+          neuLight = $('neuLight'), neuLightD = $('neuLightDisplay'),
+          neuDark  = $('neuDark'),  neuDarkD  = $('neuDarkDisplay'),
+          neuDist  = $('neuDist'),  neuDistD  = $('neuDistDisplay');
+  
+    function applyNeu() {
+      document.body.classList.toggle('neu', !!neuToggle.checked);
+      if (neuLight) root.style.setProperty('--neu-light',
+        `rgba(255,255,255,${(neuLight.value / 100).toFixed(2)})`);
+      if (neuDark) root.style.setProperty('--neu-dark',
+        `rgba(29,52,90,${(neuDark.value / 100).toFixed(2)})`);
+      if (neuDist) root.style.setProperty('--neu-dist', neuDist.value + 'px');
+      if (neuLightD) neuLightD.textContent = neuLight.value + '%';
+      if (neuDarkD) neuDarkD.textContent = neuDark.value + '%';
+      if (neuDistD) neuDistD.textContent = neuDist.value + 'px';
+    }
+  
+    function saveNeu() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+        d.neu = neuToggle.checked;
+        if (neuLight) d.neuLight = neuLight.value;
+        if (neuDark) d.neuDark = neuDark.value;
+        if (neuDist) d.neuDist = neuDist.value;
+        localStorage.setItem(KEY, JSON.stringify(d));
+      } catch (e) {}
+    }
+  
+    function loadNeu() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+        if (neuToggle) neuToggle.checked = !!d.neu;
+        if (neuLight && d.neuLight !== undefined) neuLight.value = d.neuLight;
+        if (neuDark && d.neuDark !== undefined) neuDark.value = d.neuDark;
+        if (neuDist && d.neuDist !== undefined) neuDist.value = d.neuDist;
+      } catch (e) {}
+      applyNeu();
+    }
+  
+    if (neuToggle) neuToggle.addEventListener('change', () => { applyNeu(); saveNeu(); });
+    [neuLight, neuDark, neuDist].forEach(el => {
+      if (el) el.addEventListener('input', () => { applyNeu(); saveNeu(); });
+    });
+  
+    loadNeu();
+  })();
+  
+  /* ============================================================
+   新拟态模式开关 + 参数调节（选项随开关自动展开/收起）
+   ============================================================ */
+(function() {
+    const $ = id => document.getElementById(id);
+    const root = document.documentElement;
+    const KEY = 'customTheme';
+  
+    const neuToggle = $('neuToggle'),
+          neuLight  = $('neuLight'), neuLightD = $('neuLightDisplay'),
+          neuDark   = $('neuDark'),  neuDarkD  = $('neuDarkDisplay'),
+          neuDist   = $('neuDist'),  neuDistD  = $('neuDistDisplay');
+  
+    function applyNeu() {
+      // 开关控制 body.neu 类 —— CSS 据此切换全站风格 + 展开滑块区
+      document.body.classList.toggle('neu', !!neuToggle.checked);
+  
+      if (neuLight) root.style.setProperty('--neu-light',
+        `rgba(255,255,255,${(neuLight.value / 100).toFixed(2)})`);
+      if (neuDark) root.style.setProperty('--neu-dark',
+        `rgba(29,52,90,${(neuDark.value / 100).toFixed(2)})`);
+      if (neuDist) root.style.setProperty('--neu-dist', neuDist.value + 'px');
+  
+      if (neuLightD) neuLightD.textContent = neuLight.value + '%';
+      if (neuDarkD) neuDarkD.textContent = neuDark.value + '%';
+      if (neuDistD) neuDistD.textContent = neuDist.value + 'px';
+    }
+  
+    function saveNeu() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+        d.neu = neuToggle.checked;
+        if (neuLight) d.neuLight = neuLight.value;
+        if (neuDark) d.neuDark = neuDark.value;
+        if (neuDist) d.neuDist = neuDist.value;
+        localStorage.setItem(KEY, JSON.stringify(d));
+      } catch (e) {}
+    }
+  
+    function loadNeu() {
+      try {
+        const d = JSON.parse(localStorage.getItem(KEY) || '{}');
+        if (neuToggle) neuToggle.checked = !!d.neu;
+        if (neuLight && d.neuLight !== undefined) neuLight.value = d.neuLight;
+        if (neuDark && d.neuDark !== undefined) neuDark.value = d.neuDark;
+        if (neuDist && d.neuDist !== undefined) neuDist.value = d.neuDist;
+      } catch (e) {}
+      applyNeu();
+    }
+  
+    if (neuToggle) neuToggle.addEventListener('change', () => { applyNeu(); saveNeu(); });
+    [neuLight, neuDark, neuDist].forEach(el => {
+      if (el) el.addEventListener('input', () => { applyNeu(); saveNeu(); });
+    });
+  
+    loadNeu();
+  })();
+  

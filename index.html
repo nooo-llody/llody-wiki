@@ -33,6 +33,7 @@
             <div class="nav-actions">
                 <div id="search"></div>
 
+
                 <button class="customize-btn" id="togglePanel">
                     <span>个性化页面</span>
                 </button>
@@ -75,6 +76,54 @@
                 <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
                 <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
             </div>
+<!-- ===== 新拟态设置（折叠区） ===== -->
+<div class="ctrl-group neu-section">
+    <label class="neu-toggle-label">
+      <input type="checkbox" id="neuToggle">
+      <span class="neu-toggle-text">启用新拟态模式</span>
+    </label>
+  
+    <!-- 以下 3 项只在启用后展开显示 -->
+    <div class="neu-options" id="neuOptions">
+      <div class="ctrl-group">
+        <label>高光强度 <span class="value-display" id="neuLightDisplay">90%</span></label>
+        <input type="range" id="neuLight" min="0" max="100" value="90" step="5">
+      </div>
+      <div class="ctrl-group">
+        <label>阴影强度 <span class="value-display" id="neuDarkDisplay">18%</span></label>
+        <input type="range" id="neuDark" min="0" max="50" value="18" step="2">
+      </div>
+      <div class="ctrl-group">
+        <label>浮雕深度 <span class="value-display" id="neuDistDisplay">6px</span></label>
+        <input type="range" id="neuDist" min="2" max="14" value="6" step="1">
+      </div>
+    </div>
+  </div>
+<!-- ===== 新拟态设置（折叠区） ===== -->
+<div class="ctrl-group neu-section">
+    <label class="neu-toggle-label">
+      <input type="checkbox" id="neuToggle">
+      <span class="neu-toggle-text">启用新拟态模式</span>
+    </label>
+  
+    <!-- 以下 3 项只在启用后展开显示 -->
+    <div class="neu-options" id="neuOptions">
+      <div class="ctrl-group">
+        <label>高光强度 <span class="value-display" id="neuLightDisplay">90%</span></label>
+        <input type="range" id="neuLight" min="0" max="100" value="90" step="5">
+      </div>
+      <div class="ctrl-group">
+        <label>阴影强度 <span class="value-display" id="neuDarkDisplay">18%</span></label>
+        <input type="range" id="neuDark" min="0" max="50" value="18" step="2">
+      </div>
+      <div class="ctrl-group">
+        <label>浮雕深度 <span class="value-display" id="neuDistDisplay">6px</span></label>
+        <input type="range" id="neuDist" min="2" max="14" value="6" step="1">
+      </div>
+    </div>
+  </div>
+  
+              
             <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
             <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;"> 设置会自动保存到浏览器</p>
         </div>
