@@ -1,5 +1,5 @@
 /* ============================================================
- * 全站 Wiki 侧边栏 v8.3
+ * 全站 Wiki 侧边栏 v8.4
  *
  * 树形规则:
  * - ★ 数据加载后立即统一规范化 URL(目录式 → /dir/index.html)
@@ -18,19 +18,18 @@
  *
  * 分组头交互:单击展开/收起(220ms 双击识别)/ 双击、右键打开
  *
- * ★ v8.3 变更:
- * - 「小工具」卡片与「专业搜索」「返回上页」完全等大
- *   (统一 padding/margin/line-height,emoji 缩小防止撑高)
- * - 「小工具」展开/收起带 max-height + opacity 过渡动画
- *   (修复了此前 hidden 被 display:flex 覆盖导致收起不消失的 bug)
- * - TOOLS 支持 action:"random" → 真正可用的「随机页面」
- *   (从站点索引随机挑一页跳转,自动排除当前页)
+ * ★ v8.4 变更:
+ * - 导航区新增「索引加载中」指示器(spinner + 骨架条),加载完移除,失败显示错误
+ * - 随机页面点击后显示「跳转中…」,索引未就绪最多等 10 秒
+ * - TOOLS 中 href:"#" 渲染为禁用占位(灰色 + 🔒),不再拼出错误链接
+ * - Pagefind 全策略 0 条时输出更明确的排查日志
+ * - 补上随机按钮的 data-tool-action 标记,SiteSidebar.randomPage() 可正常调用
  *
  * 调试:console.table(__sbPages) / console.table(__sbGroups)
  * ============================================================ */
 
 (function () {
-  const VERSION = "v8.3";
+  const VERSION = "v8.4";
   const SB_W_FULL = 250;
   const SB_GAP = 16;
   const RECENT_COUNT = 4;
@@ -65,9 +64,10 @@
   // ★ 小工具:配置区
   //   - 普通链接:{ href: "/xxx.html", text: "名称" }
   //   - 随机页面:{ text: "随机页面", action: "random" }
+  //   - 占位项:  { href: "#", text: "正在开发" } → 渲染为禁用态
   // ============================================================
   const TOOLS = [
-    { text: "随机页面", action: "random" },
+    { text: "🎲 随机页面", action: "random" },
     { href: "#", text: "正在开发" },
     // { href: "/tools/xxx.html", text: "更多工具" },
   ];
@@ -118,7 +118,7 @@
       <img src="/image/logo.png" alt="" class="sb-logo">
       <span class="sb-title">劳埃德大师 Wiki</span>
     </div>
-        <a class="sb-back" id="sbBack" href="javascript:void(0)">
+    <a class="sb-back" id="sbBack" href="javascript:void(0)">
       <span class="sb-back-ico">←</span><span class="sb-text">返回上页</span>
     </a>
     <a class="sb-search" href="/search.html">
@@ -134,6 +134,16 @@
       <div class="sb-tools-list" id="sbToolsList"></div>
     </div>
     <nav class="sb-nav" id="sbNav"></nav>
+    <!-- ★ 加载中指示器:索引就绪后移除 -->
+    <div class="sb-loading" id="sbLoading">
+      <div class="sb-loading-row">
+        <span class="sb-spinner"></span>
+        <span class="sb-loading-text">索引加载中…</span>
+      </div>
+      <div class="sb-skeleton"></div>
+      <div class="sb-skeleton"></div>
+      <div class="sb-skeleton"></div>
+    </div>
     <div class="sb-history-wrap" id="sbHistoryWrap">
       <span class="sb-group-title" id="sbHistoryTitle">历史上的今天</span>
       <nav class="sb-history" id="sbHistory"></nav>
@@ -151,6 +161,15 @@
   const logoEl = sidebar.querySelector(".sb-logo");
   const searchEl = sidebar.querySelector(".sb-search");
   const navEl = sidebar.querySelector("#sbNav");
+
+  // ★ 控制加载指示器:传 msg 显示文字(可标记错误),不传则移除
+  function setLoading(msg, isError) {
+    const el = sidebar.querySelector("#sbLoading");
+    if (!el) return;
+    if (!msg) { el.remove(); return; }
+    el.innerHTML = `<div class="sb-loading-row"><span class="sb-loading-text${isError ? " error" : ""}"></span></div>`;
+    el.querySelector(".sb-loading-text").textContent = msg;
+  }
 
   function titleOf(d) {
     if (d.meta && d.meta.title && d.meta.title.trim()) return d.meta.title.trim();
@@ -351,6 +370,14 @@
         console.warn("[sidebar] Pagefind 策略[" + st.label + "] 失败:", (e && e.message) || e);
       }
     }
+    // ★ 全策略 0 条:给出可操作的排查提示
+    if (!datas.length && langs.length) {
+      console.warn(
+        "[sidebar] Pagefind 索引存在但搜索返回 0 条——很可能是索引未包含页面或 bundle 已过期。" +
+        "请重新构建:npx pagefind --site <构建输出目录>,终端应输出 Pages found > 0," +
+        "并确认部署的 /pagefind/ 目录是最新产物。"
+      );
+    }
     return datas;
   }
 
@@ -497,6 +524,8 @@
       const groups = toGroups(buildTree(datas));
       window.__sbGroups = groups; // 调试:确认后可删
       renderNav(groups);
+      // ★ 索引就绪:移除加载指示器(即使结果为空也移除,避免卡在加载态)
+      setLoading();
       if (!navEl.querySelector("a.sb-link")) {
         console.warn("[sidebar] 索引有数据但没有生成任何分组");
       }
@@ -556,6 +585,8 @@
     .catch(e => {
       console.error("[sidebar] 加载失败:", e);
       renderNav([]);
+      // ★ 失败时把加载指示器换成错误提示
+      setLoading("索引加载失败,请刷新重试", true);
       return []; // ★ 失败时返回空数组,随机页面可据此提示
     });
 
@@ -571,6 +602,10 @@
 
     // ---- ★ 随机页面:从站点索引中随机挑一页跳转 ----
     async function gotoRandomPage(linkEl) {
+      const span = linkEl ? linkEl.querySelector(".sb-text") : null;
+      const oldText = span ? span.textContent : "";
+      // 给用户即时反馈
+      if (span) span.textContent = "跳转中…";
       // 数据可能还在加载中,等待 pagesReady(最多等 10 秒)
       const datas = await Promise.race([
         pagesReady,
@@ -580,11 +615,9 @@
       const pool = datas.filter(d => toCanonical(d.url) !== cur);
       if (!pool.length) {
         console.warn("[sidebar] 随机页面:没有可跳转的页面(索引为空或仍在加载)");
-        if (linkEl) {
-          const span = linkEl.querySelector(".sb-text");
-          const old = span.textContent;
+        if (span) {
           span.textContent = "暂无可选页面";
-          setTimeout(() => { span.textContent = old; }, 1500);
+          setTimeout(() => { span.textContent = oldText; }, 1500);
         }
         return;
       }
@@ -600,6 +633,7 @@
         const a = document.createElement("a");
         a.href = "javascript:void(0)";
         a.className = "sb-tools-link";
+        a.dataset.toolAction = "random"; // ★ 供 SiteSidebar.randomPage() 定位
         a.innerHTML = `<span class="sb-ico"></span><span class="sb-text"></span>`;
         a.querySelector(".sb-text").textContent = t.text;
         a.addEventListener("click", e => {
@@ -607,6 +641,15 @@
           if (isMobile()) closeSidebar();
           gotoRandomPage(a);
         });
+        list.appendChild(a);
+      } else if (t.href === "#") {
+        // ★ 占位项:渲染为禁用态,不拼接错误链接
+        const a = document.createElement("a");
+        a.href = "javascript:void(0)";
+        a.className = "sb-tools-link reserved";
+        a.innerHTML = `<span class="sb-ico"></span><span class="sb-text"></span>`;
+        a.querySelector(".sb-text").textContent = t.text;
+        a.addEventListener("click", e => e.preventDefault());
         list.appendChild(a);
       } else {
         // 普通链接工具
@@ -741,7 +784,7 @@
       sessionStorage.removeItem(CRAWL_CACHE_KEY);
       console.info("[sidebar] 爬虫缓存已清除");
     },
-    // ★ 顺便暴露一个 API,方便以后外部调用随机跳转
+    // ★ 外部 API:触发随机跳转
     randomPage() {
       const randomLink = [...sidebar.querySelectorAll(".sb-tools-link")]
         .find(a => a.dataset.toolAction === "random");
@@ -907,8 +950,7 @@
     }
     .sb-tools-arrow.open { transform: rotate(90deg); }
 
-    /* ★ 工具列表:用 max-height + opacity 过渡动画展开/收起
-         (不用 hidden,避免被 display:flex 覆盖导致收起不消失) */
+    /* ★ 工具列表:max-height + opacity 过渡动画展开/收起 */
     .sb-tools-list {
       max-height: 0;
       opacity: 0;
@@ -954,6 +996,58 @@
       background: var(--primary);
       color: #fff;
       font-weight: 600;
+    }
+    .sb-tools-link.reserved { opacity: .45; }
+    .sb-tools-link.reserved::after { content: " 🔒"; font-size: 0.7rem; }
+
+    /* ★ 加载中指示器(spinner + 骨架条) */
+    .sb-loading {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px 8px 6px;
+    }
+    .sb-loading-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sb-spinner {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      border: 2px solid color-mix(in srgb, var(--primary) 25%, transparent);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: sbSpin .8s linear infinite;
+    }
+    @keyframes sbSpin { to { transform: rotate(360deg); } }
+    .sb-loading-text {
+      font-size: 0.82rem;
+      opacity: .6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sb-loading-text.error { color: #d9534f; opacity: 1; }
+    .sb-skeleton {
+      height: 12px;
+      border-radius: 6px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--border) 55%, transparent) 25%,
+        color-mix(in srgb, var(--border) 100%, transparent) 50%,
+        color-mix(in srgb, var(--border) 55%, transparent) 75%
+      );
+      background-size: 200% 100%;
+      animation: sbShimmer 1.2s linear infinite;
+    }
+    .sb-loading .sb-skeleton:nth-of-type(2) { width: 85%; }
+    .sb-loading .sb-skeleton:nth-of-type(3) { width: 70%; }
+    .sb-loading .sb-skeleton:nth-of-type(4) { width: 55%; }
+    @keyframes sbShimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
     }
 
     .sb-group-title {
