@@ -1419,5 +1419,10 @@ text-shadow:
     text-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
 }
 
+#fixed-nav-wrapper, .navbar {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+  
 
-
+  

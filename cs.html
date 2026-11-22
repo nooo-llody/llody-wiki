@@ -1,275 +1,1008 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>劳埃德大师wiki</title>
-    <link rel="stylesheet" href="/css/theme.css" />
-    <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
-    <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+  <meta name="sb_hidden" content="1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>搜索 - 劳埃德大师 Wiki</title>
+  <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="icon" href="/image/logo.svg" type="image/svg+xml" />
+  <style>
+    /* ===== 搜索页专属样式 ===== */
+    .search-layout { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 280px 1fr; gap: 32px; align-items: start; }
+
+    .filter-sidebar {
+      position: sticky;
+      top: calc(var(--nav-height) + 24px);
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      max-height: calc(100vh - var(--nav-height) - 48px);
+      overflow-y: auto;
+    }
+    .filter-sidebar h3 { margin: 0 0 16px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .filter-sidebar h3 button { background: none; border: none; color: var(--accent); font-size: 0.8rem; cursor: pointer; padding: 0; }
+
+    .filter-group { margin-bottom: 20px; }
+    .filter-group > .group-title { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; opacity: 0.8; }
+    .filter-value { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 0.9rem; cursor: pointer; user-select: none; }
+    .filter-value input[type="checkbox"] { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+    .filter-value .count { margin-left: auto; font-size: 0.8rem; opacity: 0.5; }
+    details { margin-top: 6px; outline: none; }
+    summary { font-size: 0.8rem; opacity: 0.6; cursor: pointer; user-select: none; margin-bottom: 4px; }
+    summary:hover { opacity: 1; }
+
+    /* ===== 可折叠筛选分组（type / tag 默认收起） ===== */
+    details.filter-group {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 8px 12px;
+      background: var(--input-bg);
+    }
+    details.filter-group > summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.85;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+      margin-bottom: 0;
+    }
+    details.filter-group > summary::-webkit-details-marker { display: none; }
+    details.filter-group > summary::after { content: "▸"; transition: transform 0.2s; opacity: 0.6; }
+    details.filter-group[open] > summary::after { transform: rotate(90deg); }
+    details.filter-group > summary:hover { opacity: 1; }
+    details.filter-group .group-body { margin-top: 8px; }
+    .filter-selected-count { font-size: 0.75rem; color: var(--primary); font-weight: normal; margin-left: 6px; }
+
+    /* ===== 主区域 ===== */
+    .search-main { min-width: 0; }
+    .search-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+    #searchInput {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: var(--font-size);
+    }
+    #searchInput:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,127,189,.2); }
+
+    /* ===== 移动端筛选切换按钮（桌面隐藏） ===== */
+    .mobile-filter-toggle {
+      display: none;
+      width: 100%;
+      padding: 10px 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      cursor: pointer;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mobile-filter-toggle .left { display: inline-flex; align-items: center; gap: 8px; }
+    .mobile-filter-toggle .arrow { transition: transform 0.2s; opacity: 0.6; }
+    .mobile-filter-toggle.active .arrow { transform: rotate(180deg); }
+    .mobile-filter-toggle .badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      border-radius: 50px;
+      padding: 2px 10px;
+    }
+
+    /* ===== 快捷分类按钮区 ===== */
+    .quick-categories { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .quick-category-btn {
+      padding: 6px 16px;
+      border-radius: 50px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .quick-category-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 5%, transparent);
+    }
+    .quick-category-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .quick-category-btn .count { font-size: 0.75rem; opacity: 0.6; }
+    .quick-category-btn.active .count { opacity: 0.9; }
+
+    .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; font-size: 0.9rem; }
+    .toolbar select {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    #activeFiltersBar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .active-filter-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50px;
+      font-size: 0.8rem;
+    }
+    .active-filter-tag button { background: none; border: none; color: #fff; cursor: pointer; padding: 0; font-size: 1rem; line-height: 1; }
+
+    /* ===== 结果卡片：自适应宽度 ===== */
+    .result-list { display: flex; flex-direction: column; }
+    .result-item { display: flex; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--border); min-width: 0; }
+    .result-thumb {
+      /* 缩略图随卡片/视口自适应缩放，而不是固定像素 */
+      width: clamp(110px, 22%, 200px);
+      aspect-ratio: 4 / 3;
+      height: auto;
+      object-fit: cover;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border);
+      flex-shrink: 1;
+      min-width: 0;
+      background-color: var(--card-bg);
+    }
+    .result-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .result-item h3 { margin: 0 0 6px; font-size: 1.15rem; line-height: 1.4; }
+    .result-item h3 a { color: var(--accent); text-decoration: none; }
+    .result-item h3 a:hover { text-decoration: underline; }
+    .result-excerpt {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      opacity: 0.85;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .result-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tag-pill {
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--primary) 10%, transparent);
+      color: var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+      user-select: none;
+    }
+    .tag-pill:hover { background: var(--primary); color: #fff; }
+    .tag-pill.type {
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      color: var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+    .tag-pill.type:hover { background: var(--accent); color: #fff; }
+    .result-meta { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.8rem; opacity: 0.6; }
+    .result-meta span { display: inline-flex; align-items: center; gap: 4px; }
+
+    #loadMoreWrap { text-align: center; padding: 24px 0; }
+    #loadMoreBtn {
+      padding: 10px 32px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    #loadMoreBtn:disabled { opacity: 0.4; cursor: default; }
+    .state-msg { padding: 40px 0; text-align: center; opacity: 0.6; font-size: 0.95rem; }
+
+    .date-tabs { display: flex; margin-bottom: 12px; background: var(--bg); border-radius: var(--border-radius); overflow: hidden; }
+    .date-tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      transition: all 0.2s;
+      border-radius: 0 !important;
+      margin: 0 !important;
+    }
+    .date-tab:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+    .date-tab.active { background: var(--primary); color: #fff; }
+    .date-range-inputs { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .date-input-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+    .date-input-item input[type="date"] {
+      flex: 1;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--border-radius);
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+    .date-input-item input[type="date"]:focus { outline: none; border-color: var(--primary); }
+
+    /* ============================================================
+       移动端布局：
+       搜索框 → 筛选条件按钮 → 筛选栏（可展开） → 快捷分类 → 结果
+       （筛选栏由 JS 移动到按钮之后）
+       ============================================================ */
+    @media (max-width: 800px) {
+      .search-layout { display: flex; flex-direction: column; gap: 16px; }
+
+      /* 筛选栏在移动端默认收起，不再 sticky、不限高 */
+      .filter-sidebar {
+        position: static;
+        max-height: none;
+        overflow: visible;
+        display: none;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .filter-sidebar.open { display: block; }
+
+      /* 显示移动端筛选切换按钮 */
+      .mobile-filter-toggle { display: flex; }
+    }
+
+    /* 窄屏下卡片缩略图占满整行、纵向排列 */
+    @media (max-width: 600px) {
+      .result-item { flex-direction: column; gap: 12px; }
+      .result-thumb { width: 100%; aspect-ratio: 16 / 9; }
+    }
+  </style>
 </head>
-<body>
-    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn" data-pagefind-ignore >
-        ↑ 顶部
-    </button>    
-    <div id="fixed-nav-wrapper" data-pagefind-ignore >
-        <nav class="navbar" id="navbar">
-            <div class="navbar-brand">
-                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
-                <span>劳埃德大师</span>
-            </div>
-            <ul class="navbar-links">
+<body data-pagefind-ignore>
 
-                <li><a href="/index.html" class="active">首页</a></li>
-                <li><a href="/navigation_bar/about.html">关于我们</a></li>
-                <li><a href="/navigation_bar/art.html">艺术展示</a></li>
-                <li><a href="/navigation_bar/contact.html">联系我们</a></li>
-            </ul>
-            <div class="nav-actions">
-                <div id="search"></div>
+  <button onclick="window.scrollTo({top: 0, behavior: 'smooth'});" id="backToTop" class="back-top-btn">↑ 顶部</button>
 
-                <button class="customize-btn" id="togglePanel">
-                    <span>个性化页面</span>
-                </button>
-            </div>
-        </nav>
-        <div class="customize-panel" id="customPanel">
-            <h3>
-                个性化设置
-                <button class="close-panel-btn" id="closePanelBtn">✕</button>
-            </h3>
-            <div class="ctrl-group">
-                <label>背景色 <span class="value-display" id="bgDisplay">#f7f9fc</span></label>
-                <input type="color" id="bgColor" value="#f7f9fc" />
-            </div>
-            <div class="ctrl-group">
-                <label>文字颜色 <span class="value-display" id="textDisplay">#1a2332</span></label>
-                <input type="color" id="textColor" value="#1a2332" />
-            </div>
-            <div class="ctrl-group">
-                <label>标题颜色 <span class="value-display" id="headingDisplay">#0a1220</span></label>
-                <input type="color" id="headingColor" value="#0a1220" />
-            </div>
-            <div class="ctrl-group">
-                <label>主色（按钮、表头） <span class="value-display" id="primaryDisplay">#3b7fbd</span></label>
-                <input type="color" id="primaryColor" value="#3b7fbd" />
-            </div>
-            <div class="ctrl-group">
-                <label>链接颜色 <span class="value-display" id="accentDisplay">#1f5a8e</span></label>
-                <input type="color" id="accentColor" value="#1f5a8e" />
-            </div>
-            <div class="ctrl-group">
-                <label>边框颜色 <span class="value-display" id="borderDisplay">#c0cfde</span></label>
-                <input type="color" id="borderColor" value="#c0cfde" />
-            </div>
-            <div class="ctrl-group">
-                <label>字体大小 <span class="value-display" id="fontSizeDisplay">16px</span></label>
-                <input type="range" id="fontSize" min="12" max="24" value="16" step="1" />
-            </div>
-            <div class="ctrl-group">
-                <label>圆角大小 <span class="value-display" id="radiusDisplay">6px</span></label>
-                <input type="range" id="borderRadius" min="0" max="20" value="6" step="1" />
-            </div>
-            <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
-            <p style="font-size:0.75rem; opacity:0.6; margin-top:12px;"> 设置会自动保存到浏览器</p>
-        </div>
+  <div id="fixed-nav-wrapper">
+    <nav class="navbar" id="navbar">
+      <div class="navbar-brand">
+                <a href="javascript:void(0)" id="sidebarTrigger" class="sb-trigger" aria-label="打开侧边栏" title="打开侧边栏">
+                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
+                  </a>
+        <span>劳埃德大师</span>
+      </div>
+      <ul class="navbar-links">
+        <li><a href="/index.html" class="active">首页</a></li>
+        <li><a href="/navigation_bar/about.html">关于我们</a></li>
+        <li><a href="/navigation_bar/art.html">艺术展示</a></li>
+        <li><a href="/navigation_bar/contact.html">联系我们</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div id="search"></div>
+        <button class="customize-btn" id="togglePanel"><span>个性化页面</span></button>
+      </div>
+    </nav>
+
+    <div class="customize-panel" id="customPanel">
+      <h3>个性化设置 <button class="close-panel-btn" id="closePanelBtn">✕</button></h3>
+      <div class="ctrl-group"><label>背景色</label><input type="color" id="bgColor" value="#f7f9fc" /></div>
+      <div class="ctrl-group"><label>文字颜色</label><input type="color" id="textColor" value="#1a2332" /></div>
+      <button class="reset-btn" id="resetCustom">↺ 恢复默认</button>
     </div>
-        <main id="main-content">
-        <br>
-        <h1> 劳埃德大师 Wiki</h1>
-        <p data-pagefind-meta="title">起床战争地图展示</p>
-        <br>
+  </div>
+
+  <div class="search-layout" id="searchLayout">
+    <aside class="filter-sidebar" id="filterSidebar">
+      <h3>筛选 <button id="clearAllFilters">清空全部</button></h3>
+      <div id="filterGroups"></div>
+    </aside>
+
+    <main class="search-main">
+      <h1>搜索</h1>
+      <div class="search-bar">
+        <input id="searchInput" type="text" placeholder="输入关键词搜索…" autocomplete="off" />
+      </div>
+
+      <!-- 移动端筛选切换按钮（桌面端隐藏）；移动端筛选栏会被 JS 移到此按钮之后 -->
+      <button id="mobileFilterToggle" class="mobile-filter-toggle">
+        <span class="left">⚙ 筛选条件 <span class="badge" id="mobileFilterBadge" style="display:none;">0</span></span>
+        <span class="arrow">▾</span>
+      </button>
+
+      <!-- 快捷分类按钮区 -->
+      <div id="quickCategories" class="quick-categories"></div>
+
+      <div class="toolbar">
+        <span id="resultCount">输入关键词或选择筛选条件开始</span>
+        <select id="sortSelect">
+          <option value="relevance">按相关性</option>
+          <option value="article-desc">文章日期（最新）</option>
+          <option value="article-asc">文章日期（最早）</option>
+          <option value="event-desc">事件日期（最新）</option>
+          <option value="event-asc">事件日期（最早）</option>
+        </select>
+      </div>
+
+      <div id="activeFiltersBar"></div>
+      <div id="results" class="result-list"></div>
+
+      <div id="loadMoreWrap" style="display:none;">
+        <button id="loadMoreBtn">加载更多</button>
+      </div>
     </main>
+  </div>
 
-    <hr>
-    <br>
+  <script type="module">
+    const pagefind = await import("/pagefind/pagefind.js");
+    await pagefind.init();
 
-    <div class="toc">
-        <h2>目录</h2>
-        <ul>
-            <li><a href="#build-1">起床战争-大厅</a></li>
-            <li><a href="#build-2">起床战争-solo</a></li>
-            <li><a href="#build-3">起床战争-4v4v4v4</a></li>
-            <li><a href="#build-4">起床战争-4队-钻石环岛</a></li>
-            <li><a href="#build-5">起床战争-8队-钻石环岛</a></li>
-            <li><a href="#build-6">起床战争-4队-无虚空</a></li>
-            <li><a href="#build-7">起床战争-8队-无虚空</a></li>
-            <li><a href="#build-8">起床战争-4队-中钻合并</a></li>
-            <li><a href="#build-9">起床战争-8队-中钻合并</a></li>
-            <li><a href="#build-10">起床战争-RBW</a></li>
-        </ul>
-    </div>
+    const state = {
+      term: "",
+      filters: {},
+      activeDateType: "article",
+      articleDateRange: { start: null, end: null },
+      eventDateRange: { start: null, end: null },
+      sortKey: null,
+      sortOrder: null,
+      page: 1,
+      perPage: 10,
+      total: 0,
+      allResults: [],
+      loadedResults: [],
+      searchToken: 0,
+    };
 
-    <h2 id="build-1">起床战争-大厅</h2>
-    <hr>
-    <p>起床战争的加入大厅</p>
-    <div class="galaxy-embed">
-        <script type="application/json">
-        [
-            {
-                "name": "大厅",
-                "color": "var(--accent)",
-                "starLabel": "bw_lobby",
-                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/lobby/bw_lobby",
-                "starModel": "/modle/build/bedwars/lobby/lobby-1.glb",
-                "models": [
+    const filterNameMap = {
+      'author': '作者',
+      'type': '类型',
+      'tag': '标签',
+      'year': '文章年份',
+      'month': '文章月份',
+      'day': '文章日期',
+      'event_year': '事件年份',
+      'event_month': '事件月份',
+      'event_day': '事件日期'
+    };
 
-                ]
+    // 默认折叠的筛选分组
+    const COLLAPSIBLE_KEYS = ['type', 'tag'];
+
+    const searchInput = document.getElementById("searchInput");
+    const searchLayout = document.getElementById("searchLayout");
+    const filterSidebar = document.getElementById("filterSidebar");
+    const filterGroupsEl = document.getElementById("filterGroups");
+    const resultCountEl = document.getElementById("resultCount");
+    const sortSelect = document.getElementById("sortSelect");
+    const resultsEl = document.getElementById("results");
+    const loadMoreWrap = document.getElementById("loadMoreWrap");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    const activeFiltersBar = document.getElementById("activeFiltersBar");
+    const clearAllFiltersBtn = document.getElementById("clearAllFilters");
+    const quickCategoriesEl = document.getElementById("quickCategories");
+    const mobileFilterToggle = document.getElementById("mobileFilterToggle");
+    const mobileFilterBadge = document.getElementById("mobileFilterBadge");
+
+    // ============================================================
+    // 响应式布局：移动端把筛选栏移到"筛选条件"按钮之后
+    // ============================================================
+    const mq = window.matchMedia("(max-width: 800px)");
+
+    function handleResponsiveLayout() {
+      if (mq.matches) {
+        // 移动端：搜索框 → 筛选条件按钮 → 筛选栏 → 快捷分类 → 结果
+        mobileFilterToggle.after(filterSidebar);
+        filterSidebar.classList.remove("open"); // 保持收起
+        mobileFilterToggle.classList.remove("active");
+      } else {
+        // 桌面端：筛选栏移回布局首位（作为左栏）
+        searchLayout.prepend(filterSidebar);
+        filterSidebar.classList.add("open"); // 桌面端始终显示
+        mobileFilterToggle.classList.remove("active");
+      }
+    }
+    mq.addEventListener("change", handleResponsiveLayout);
+    handleResponsiveLayout();
+
+    // ============================================================
+    // 移动端筛选栏折叠逻辑
+    // ============================================================
+    mobileFilterToggle.addEventListener("click", () => {
+      const open = filterSidebar.classList.toggle("open");
+      mobileFilterToggle.classList.toggle("active", open);
+    });
+
+    // 更新切换按钮上的筛选数量徽标
+    function updateMobileFilterBadge() {
+      const count = activeFiltersBar.querySelectorAll(".active-filter-tag").length;
+      mobileFilterBadge.style.display = count > 0 ? "inline-block" : "none";
+      mobileFilterBadge.textContent = count;
+    }
+
+    async function renderFilterPanel() {
+      const available = await pagefind.filters();
+
+      // 1. 渲染筛选面板
+      filterGroupsEl.innerHTML = "";
+      const dateKeys = ['year', 'month', 'day', 'event_year', 'event_month', 'event_day'];
+
+      for (const [key, values] of Object.entries(available)) {
+        if (dateKeys.includes(key)) continue;
+
+        const collapsible = COLLAPSIBLE_KEYS.includes(key);
+
+        // 可折叠分组：用 <details>（不加 open = 默认收起）
+        const group = collapsible
+          ? document.createElement("details")
+          : document.createElement("div");
+        group.className = "filter-group" + (collapsible ? " collapsible" : "");
+        group.dataset.filterGroup = key;
+
+        // 分组标题（可折叠的放 summary 里）
+        const titleHost = collapsible
+          ? document.createElement("summary")
+          : group;
+        if (!collapsible) {
+          titleHost.className = "group-title-host";
+        }
+        const title = document.createElement("span");
+        title.className = collapsible ? "" : "group-title";
+        title.textContent = filterNameMap[key] || key;
+        titleHost.appendChild(title);
+        if (collapsible) {
+          const selCount = document.createElement("span");
+          selCount.className = "filter-selected-count";
+          selCount.dataset.selectedCount = key;
+          selCount.textContent = "";
+          titleHost.appendChild(selCount);
+          group.appendChild(titleHost);
+          const body = document.createElement("div");
+          body.className = "group-body";
+          group.appendChild(body);
+          var container = body;
+        } else {
+          var container = group;
+        }
+
+        const normalItems = [], collapsedItems = [];
+        for (const [value, count] of Object.entries(values)) {
+          if (key === "author" && count < 2) collapsedItems.push({ value, count });
+          else normalItems.push({ value, count });
+        }
+
+        const createLabel = ({ value, count }) => {
+          const label = document.createElement("label");
+          label.className = "filter-value";
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.value = value;
+          cb.dataset.filterKey = key;
+          cb.addEventListener("change", onFilterChange);
+          const text = document.createElement("span");
+          text.textContent = value;
+          const countEl = document.createElement("span");
+          countEl.className = "count";
+          countEl.textContent = count;
+          label.appendChild(cb);
+          label.appendChild(text);
+          label.appendChild(countEl);
+          return label;
+        };
+
+        normalItems.forEach(item => container.appendChild(createLabel(item)));
+
+        if (collapsedItems.length > 0) {
+          const details = document.createElement("details");
+          const summary = document.createElement("summary");
+          summary.textContent = `显示其余 ${collapsedItems.length} 个作者`;
+          details.appendChild(summary);
+          collapsedItems.forEach(item => details.appendChild(createLabel(item)));
+          container.appendChild(details);
+        }
+
+        filterGroupsEl.appendChild(group);
+      }
+
+      if (available.year || available.event_year) filterGroupsEl.appendChild(createDateRangeGroup());
+
+      // 2. 渲染顶部的"快捷分类按钮"
+      renderQuickCategories(available);
+    }
+
+    // 更新折叠分组 summary 上的"已选 n"徽标
+    function updateSelectedCounts() {
+      filterGroupsEl.querySelectorAll("details.filter-group[data-filter-group]").forEach(group => {
+        const key = group.dataset.filterGroup;
+        const checked = group.querySelectorAll('input[type="checkbox"]:checked').length;
+        const badge = group.querySelector(`[data-selected-count="${key}"]`);
+        if (badge) {
+          badge.textContent = checked > 0 ? `已选 ${checked}` : "";
+          if (checked > 0) group.open = true;
+        }
+      });
+    }
+
+    // ============================================================
+    // 渲染顶部快捷分类按钮
+    // ============================================================
+    function renderQuickCategories(available) {
+      quickCategoriesEl.innerHTML = "";
+
+      const cats = [];
+      if (available.type) {
+        for (const [val, count] of Object.entries(available.type)) cats.push({ key: "type", val, count });
+      }
+      if (available.tag) {
+        for (const [val, count] of Object.entries(available.tag)) cats.push({ key: "tag", val, count });
+      }
+      if (cats.length === 0) return;
+
+      const allBtn = document.createElement("button");
+      allBtn.className = "quick-category-btn active";
+      allBtn.textContent = "全部";
+      allBtn.onclick = () => {
+        filterGroupsEl.querySelectorAll('input[data-filter-key="type"], input[data-filter-key="tag"]').forEach(cb => {
+          if (cb.checked) {
+            cb.checked = false;
+            cb.dispatchEvent(new Event("change"));
+          }
+        });
+      };
+      quickCategoriesEl.appendChild(allBtn);
+
+      cats.forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = "quick-category-btn";
+        btn.dataset.key = c.key;
+        btn.dataset.val = c.val;
+        btn.innerHTML = `${c.val} <span class="count">${c.count}</span>`;
+        btn.onclick = () => {
+          const cb = filterGroupsEl.querySelector(`input[data-filter-key="${c.key}"][value="${CSS.escape(c.val)}"]`);
+          if (cb) {
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event("change"));
+          }
+        };
+        quickCategoriesEl.appendChild(btn);
+      });
+    }
+
+    // 同步快捷按钮和左侧复选框的亮暗状态
+    function syncQuickCategories() {
+      const btns = quickCategoriesEl.querySelectorAll(".quick-category-btn[data-key]");
+      let hasActive = false;
+      btns.forEach(btn => {
+        const key = btn.dataset.key;
+        const val = btn.dataset.val;
+        const cb = filterGroupsEl.querySelector(`input[data-filter-key="${key}"][value="${CSS.escape(val)}"]`);
+        if (cb && cb.checked) {
+          btn.classList.add("active");
+          hasActive = true;
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+      const allBtn = quickCategoriesEl.querySelector(".quick-category-btn:not([data-key])");
+      if (allBtn) {
+        if (hasActive) allBtn.classList.remove("active");
+        else allBtn.classList.add("active");
+      }
+    }
+
+    function createDateRangeGroup() {
+      const group = document.createElement("div");
+      group.className = "filter-group";
+      const title = document.createElement("span");
+      title.className = "group-title";
+      title.textContent = "日期筛选";
+      group.appendChild(title);
+
+      const tabsWrap = document.createElement("div");
+      tabsWrap.className = "date-tabs";
+      tabsWrap.innerHTML = `<button class="date-tab active" data-type="article">文章日期</button><button class="date-tab" data-type="event">事件日期</button>`;
+      group.appendChild(tabsWrap);
+
+      const wrap = document.createElement("div");
+      wrap.className = "date-range-inputs";
+      wrap.innerHTML = `<div class="date-input-item"><span>从</span><input type="date" id="filterDateStart" /></div><div class="date-input-item"><span>至</span><input type="date" id="filterDateEnd" /></div>`;
+      group.appendChild(wrap);
+
+      setTimeout(() => {
+        const tabs = tabsWrap.querySelectorAll('.date-tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            state.activeDateType = tab.dataset.type;
+            document.getElementById("filterDateStart").value = "";
+            document.getElementById("filterDateEnd").value = "";
+            state.articleDateRange = { start: null, end: null };
+            state.eventDateRange = { start: null, end: null };
+            state.page = 1;
+            doSearch(true);
+          });
+        });
+
+        const startInput = document.getElementById("filterDateStart");
+        const endInput = document.getElementById("filterDateEnd");
+        const handleDateChange = () => {
+          const startVal = startInput.value, endVal = endInput.value;
+          if (state.activeDateType === "article") {
+            state.articleDateRange = { start: startVal || null, end: endVal || null };
+            state.eventDateRange = { start: null, end: null };
+          } else {
+            state.eventDateRange = { start: startVal || null, end: endVal || null };
+            state.articleDateRange = { start: null, end: null };
+          }
+          state.page = 1;
+          doSearch(true);
+        };
+        startInput.addEventListener("change", handleDateChange);
+        endInput.addEventListener("change", handleDateChange);
+      }, 0);
+
+      return group;
+    }
+
+    function onFilterChange() {
+      const checked = filterGroupsEl.querySelectorAll('input[type="checkbox"]:checked');
+      const newFilters = {};
+      checked.forEach(cb => {
+        const key = cb.dataset.filterKey;
+        if (!newFilters[key]) newFilters[key] = { any: [] };
+        newFilters[key].any.push(cb.value);
+      });
+      state.filters = newFilters;
+      state.page = 1;
+
+      syncQuickCategories();
+      updateSelectedCounts();
+      doSearch(true);
+    }
+
+    function renderActiveFilterTags() {
+      activeFiltersBar.innerHTML = "";
+      for (const [key, valuesObj] of Object.entries(state.filters)) {
+        const displayKey = filterNameMap[key] || key;
+        valuesObj.any.forEach(value => {
+          const tag = document.createElement("span");
+          tag.className = "active-filter-tag";
+          tag.innerHTML = `${displayKey}: ${value} <button title="移除">×</button>`;
+          tag.querySelector("button").addEventListener("click", () => {
+            const cb = filterGroupsEl.querySelector(`input[data-filter-key="${CSS.escape(key)}"][value="${CSS.escape(value)}"]`);
+            if (cb) {
+              cb.checked = false;
+              cb.dispatchEvent(new Event("change"));
             }
-        ]
-        </script>
-    </div>
+          });
+          activeFiltersBar.appendChild(tag);
+        });
+      }
 
-    <h2 id="build-2">起床战争-solo</h2>
-    <hr>
-    <p>八支队伍的起床战争地图，主要用于 solo。</p>
+      if (state.articleDateRange.start || state.articleDateRange.end) addDateTag(state.articleDateRange, "文章日期");
+      else if (state.eventDateRange.start || state.eventDateRange.end) addDateTag(state.eventDateRange, "事件日期");
 
-    <div class="galaxy-embed">
-        <script type="application/json">
-        [
-            {
-                "name": "solo-小型地图",
-                "color": "var(--accent)",
-                "starLabel": "bw_4v4v4v4_basement",
-                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_basement",
-                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb",
-                "models": [
-                    {
-                        "label": "bw_solo_snow_field",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo/bw_solo_snow_field",
-                        "model": "/modle/build/bedwars/solo/bw_solo_snow_field/base.glb"
-                    },
-                    {
-                        "label": "bw_solo_machine_chinampa",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo/bw_solo_machine_chinampa",
-                        "model": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb"
-                    },
-                    {
-                        "label": "bw_solo_flesh_reforged",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo/bw_solo_flesh_reforged",
-                        "model": "/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb"
-                    }
-                ]
-            },
-            {
-                "name": "solo-只是展示一下。",
-                "starLabel": "bw_solo_machine_chinampa",
-                "color": "var(--accent)",
-                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo/bw_solo_machine_chinampa",
-                "starModel": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb",
-                "models": [
-                    {
-                        "label": "bw_solo_machine_chinampa",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo/bw_solo_machine_chinampa",
-                        "model": "/modle/build/bedwars/solo/bw_solo_machine_chinampa/base.glb"
-                    },
-                    {
-                        "label": "bw_solo_flesh_reforged",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/solo/bw_solo_flesh_reforged",
-                        "model": "/modle/build/bedwars/solo/bw_solo_flesh_reforged/base.glb"
-                    }
-                ]
-            }
-        ]
-        </script>
-    </div>
+      // 同步移动端按钮徽标
+      updateMobileFilterBadge();
+    }
 
-    <h2 id="build-3">起床战争-4v4v4v4</h2>
-    <hr>
-    <p>四支队伍的起床战争地图，主要用于 4v4v4v4。</p>
+    function addDateTag(range, label) {
+      const tag = document.createElement("span");
+      tag.className = "active-filter-tag";
+      let text = `${label}: `;
+      if (range.start && range.end) text += `${range.start} 至 ${range.end}`;
+      else if (range.start) text += `${range.start} 起`;
+      else if (range.end) text += `至 ${range.end}`;
+      tag.innerHTML = `${text} <button title="移除">×</button>`;
+      tag.querySelector("button").addEventListener("click", () => {
+        document.getElementById("filterDateStart").value = "";
+        document.getElementById("filterDateEnd").value = "";
+        if (label === "文章日期") state.articleDateRange = { start: null, end: null };
+        else state.eventDateRange = { start: null, end: null };
+        state.page = 1;
+        doSearch(true);
+      });
+      activeFiltersBar.appendChild(tag);
+    }
 
-    <div class="galaxy-embed">
-        <script type="application/json">
-        [
-            {
-                "name": "4v4v4v4",
-                "color": "var(--accent)",
-                "starLabel": "bw_4v4v4v4_speedrun",
-                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun",
-                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_speedrun/base.glb",
-                "models": [
-                    {
-                        "label": "bw_4v4v4v4_pale_dwelling",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling",
-                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_pale_dwelling/base.glb"
-                    },
-                    {
-                        "label": "bw_4v4v4v4_basement",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_basement",
-                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_basement/base.glb"
-                    }
-                ]
-            }
-        ]
-        </script>
-    </div>
+    async function doSearch(reset = true) {
+      const token = ++state.searchToken;
 
-    <h2 id="build-4">起床战争-4队-钻石环岛</h2>
-    <hr>
-    <p>四个钻岛相互连接组成环岛</p>
+      if (reset) {
+        state.page = 1;
+        state.loadedResults = [];
+        resultsEl.innerHTML = "";
+        loadMoreWrap.style.display = "none";
+      }
 
-    <div class="galaxy-embed">
-        <script type="application/json">
-        [
-            {
-                "name": "4队-钻石环岛",
-                "color": "var(--accent)",
-                "starLabel": "bw_4v4v4v4_desert_castle",
-                "starUrl": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle",
-                "starModel": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/base.glb",
-                "models": [
-                    {
-                        "label": "bw_4v4v4v4_desert_castle-完整",
-                        "url": "/lloyd_specIalIzed_community/work/minecraft_build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle",
-                        "model": "/modle/build/bedwars/4v4v4v4/bw_4v4v4v4_desert_castle/all.glb"
-                    }
-                ]
-            }
-        ]
-        </script>
-    </div>
+      const term = state.term || null;
+      const hasFilters = Object.keys(state.filters).length > 0;
+      const hasArticleDate = state.articleDateRange.start || state.articleDateRange.end;
+      const hasEventDate = state.eventDateRange.start || state.eventDateRange.end;
 
-    <h2 id="build-5">起床战争-8队-钻石环岛</h2>
-    <hr>
-    <p>四个钻岛相互连接组成环岛</p>
-    <p>暂未收入…</p>
+      if (!term && !hasFilters && !hasArticleDate && !hasEventDate) {
+        resultCountEl.textContent = "输入关键词或选择筛选条件开始";
+        resultsEl.innerHTML = "";
+        loadMoreWrap.style.display = "none";
+        activeFiltersBar.innerHTML = "";
+        updateMobileFilterBadge();
+        return;
+      }
 
-    <h2 id="build-6">起床战争-4队-无虚空</h2>
-    <hr>
-    <p>这里的地图将不再有虚空</p>
-    <p>暂未收入…</p>
+      resultCountEl.textContent = "搜索中…";
 
-    <h2 id="build-7">起床战争-8队-无虚空</h2>
-    <hr>
-    <p>这里的地图将不再有虚空</p>
-    <p>暂未收入…</p>
+      const finalFilters = { ...state.filters };
 
-    <h2 id="build-8">起床战争-4队-中钻合并</h2>
-    <hr>
-    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
-    <p>暂未收入…</p>
+      if (hasArticleDate) {
+        const dateFilters = buildDateFilters(state.articleDateRange.start, state.articleDateRange.end, "");
+        Object.entries(dateFilters).forEach(([k, v]) => {
+          finalFilters[k] = finalFilters[k] ? { any: [...new Set([...finalFilters[k].any, ...v.any])] } : v;
+        });
+      }
+      if (hasEventDate) {
+        const dateFilters = buildDateFilters(state.eventDateRange.start, state.eventDateRange.end, "event_");
+        Object.entries(dateFilters).forEach(([k, v]) => {
+          finalFilters[k] = finalFilters[k] ? { any: [...new Set([...finalFilters[k].any, ...v.any])] } : v;
+        });
+      }
 
-    <h2 id="build-9">起床战争-8队-中钻合并</h2>
-    <hr>
-    <p>钻石岛与中岛将合并为一个较大的岛屿</p>
-    <p>暂未收入…</p>
+      const options = { filters: finalFilters };
+      if (state.sortKey && state.sortOrder) options.sort = { [state.sortKey]: state.sortOrder };
 
-    <h2 id="build-10">起床战争-RBW</h2>
-    <hr>
-    <p>用于 RBW 的 4V4 地图，有时也用于 1v1</p>
-    <p>暂未收入…</p>
+      let search;
+      try {
+        search = await pagefind.search(term, options);
+      } catch (err) {
+        if (token !== state.searchToken) return;
+        resultCountEl.textContent = "搜索出错，请稍后重试";
+        return;
+      }
 
-    <hr>
-    <br>
+      if (token !== state.searchToken) return;
 
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+      state.total = search.results.length;
+      state.allResults = search.results;
 
-    <script src="/js/theme.js"></script>
-    <script src="/pagefind/pagefind-ui.js"></script>
-    <script>new PagefindUI({ element: "#search" });</script>
+      if (state.total === 0) {
+        resultCountEl.textContent = "没有找到结果";
+        resultsEl.innerHTML = '<div class="state-msg">尝试更换关键词或调整日期范围。</div>';
+        loadMoreWrap.style.display = "none";
+        renderActiveFilterTags();
+        return;
+      }
 
-    <script type="module" src="/galaxy-gallery/mcmeta.js"></script>
+      resultCountEl.textContent = `找到 ${state.total} 个结果`;
+      renderActiveFilterTags();
+      await loadPage(1, token);
+    }
 
-<span hidden data-pagefind-filter="year:2026, month:8, day:6" data-pagefind-sort="date:2026-08-06" data-pagefind-meta="date:2026-08-06"></span>
+    function buildDateFilters(startStr, endStr, prefix) {
+      const yKey = prefix + "year", mKey = prefix + "month", dKey = prefix + "day";
+      const result = { [yKey]: { any: [] }, [mKey]: { any: [] }, [dKey]: { any: [] } };
+
+      if (!startStr && endStr) startStr = endStr;
+      if (startStr && !endStr) endStr = startStr;
+      if (!startStr && !endStr) return result;
+
+      const start = new Date(startStr), end = new Date(endStr);
+      if (isNaN(start) || isNaN(end) || start > end) return result;
+
+      const years = new Set(), months = new Set(), days = new Set();
+      const current = new Date(start);
+      while (current <= end) {
+        years.add(String(current.getFullYear()));
+        months.add(String(current.getMonth() + 1));
+        days.add(String(current.getDate()));
+        current.setDate(current.getDate() + 1);
+      }
+      result[yKey].any = Array.from(years);
+      result[mKey].any = Array.from(months);
+      result[dKey].any = Array.from(days);
+      return result;
+    }
+
+    async function loadPage(page, token) {
+      const start = (page - 1) * state.perPage;
+      const end = Math.min(start + state.perPage, state.total);
+      const slice = state.allResults.slice(start, end);
+      const datas = await Promise.all(slice.map(r => r.data()));
+
+      if (token !== state.searchToken) return;
+
+      datas.forEach(d => state.loadedResults.push(d));
+      state.page = page;
+      renderResults();
+
+      if (state.loadedResults.length < state.total) {
+        loadMoreWrap.style.display = "block";
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = `加载更多（已显示 ${state.loadedResults.length}/${state.total}）`;
+      } else {
+        loadMoreWrap.style.display = "none";
+      }
+    }
+
+    function renderResults() {
+      resultsEl.innerHTML = state.loadedResults.map(r => {
+        let meta = r.meta || {};
+
+        let realDate = meta.date || "";
+        let realDesc = meta.description || "";
+        let realImage = meta.image || "";
+        let realImageAlt = meta.image_alt || "封面";
+
+        if (realDate.includes("description:") || realDate.includes("image:")) {
+          const raw = realDate;
+          const regex = /([a-zA-Z_]+):\s*([^,]+)(?:,\s*|$)/g;
+          let match;
+          while ((match = regex.exec(raw)) !== null) {
+            const k = match[1].trim();
+            const v = match[2].trim();
+            if (k === "date") realDate = v;
+            if (k === "description") realDesc = v;
+            if (k === "image") realImage = v;
+            if (k === "image_alt") realImageAlt = v;
+          }
+          if (realDate.includes(",")) realDate = realDate.split(",")[0].trim();
+        }
+
+        let authorDisplay = "";
+        if (meta.author) {
+          const authors = Array.isArray(meta.author) ? meta.author : [meta.author];
+          if (authors.length > 0 && authors[0]) authorDisplay = authors[0];
+        }
+
+        const imageHtml = realImage
+          ? `<img src="${realImage}" alt="${realImageAlt}" class="result-thumb" loading="lazy" onerror="this.style.display='none'" />`
+          : "";
+
+        const excerptContent = realDesc || r.excerpt;
+        const excerptHtml = `<p class="result-excerpt">${excerptContent}</p>`;
+
+        let tagsHtml = "";
+        const types = meta.type ? (Array.isArray(meta.type) ? meta.type : [meta.type]) : [];
+        const tags = meta.tag ? (Array.isArray(meta.tag) ? meta.tag : [meta.tag]) : [];
+        if (types.length > 0 || tags.length > 0) {
+          tagsHtml = `<div class="result-tags">`;
+          types.forEach(t => tagsHtml += `<span class="tag-pill type" data-key="type" data-val="${t}" title="点击筛选该类型">+ ${t}</span>`);
+          tags.forEach(t => tagsHtml += `<span class="tag-pill" data-key="tag" data-val="${t}" title="点击筛选该标签">+ ${t}</span>`);
+          tagsHtml += `</div>`;
+        }
+
+        let metaLineHtml = "";
+        const metaItems = [];
+        if (authorDisplay) metaItems.push(`<span>作者：${authorDisplay}</span>`);
+        if (realDate) metaItems.push(`<span>文章日期：${realDate}</span>`);
+        if (meta.event_date) metaItems.push(`<span>事件日期：${meta.event_date}</span>`);
+        if (metaItems.length > 0) metaLineHtml = `<div class="result-meta">${metaItems.join("")}</div>`;
+
+        return `
+          <div class="result-item">
+            ${imageHtml}
+            <div class="result-content">
+              <h3><a href="${r.url}">${meta.title || "无标题"}</a></h3>
+              ${excerptHtml}
+              ${tagsHtml}
+              ${metaLineHtml}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    let inputTimer;
+    searchInput.addEventListener("input", () => {
+      clearTimeout(inputTimer);
+      inputTimer = setTimeout(() => {
+        state.term = searchInput.value.trim();
+        state.page = 1;
+        doSearch(true);
+      }, 300);
+    });
+
+    sortSelect.addEventListener("change", () => {
+      const val = sortSelect.value;
+      if (val === "article-desc") { state.sortKey = "date"; state.sortOrder = "desc"; }
+      else if (val === "article-asc") { state.sortKey = "date"; state.sortOrder = "asc"; }
+      else if (val === "event-desc") { state.sortKey = "event_date"; state.sortOrder = "desc"; }
+      else if (val === "event-asc") { state.sortKey = "event_date"; state.sortOrder = "asc"; }
+      else { state.sortKey = null; state.sortOrder = null; }
+      state.page = 1;
+      doSearch(true);
+    });
+
+    loadMoreBtn.addEventListener("click", async () => {
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.textContent = "加载中…";
+      await loadPage(state.page + 1, state.searchToken);
+    });
+
+    clearAllFiltersBtn.addEventListener("click", () => {
+      filterGroupsEl.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => cb.checked = false);
+      const startInput = document.getElementById("filterDateStart");
+      const endInput = document.getElementById("filterDateEnd");
+      if (startInput) startInput.value = "";
+      if (endInput) endInput.value = "";
+      state.activeDateType = "article";
+      const tabs = document.querySelectorAll(".date-tab");
+      if (tabs.length) {
+        tabs.forEach(t => t.classList.remove('active'));
+        if (tabs[0]) tabs[0].classList.add('active');
+      }
+      state.filters = {};
+      state.articleDateRange = { start: null, end: null };
+      state.eventDateRange = { start: null, end: null };
+      state.page = 1;
+      syncQuickCategories();
+      updateSelectedCounts();
+      doSearch(true);
+    });
+
+    resultsEl.addEventListener("click", (e) => {
+      const pill = e.target.closest(".tag-pill");
+      if (!pill) return;
+      const key = pill.dataset.key;
+      const val = pill.dataset.val;
+      if (!key || !val) return;
+
+      const cb = filterGroupsEl.querySelector(`input[data-filter-key="${CSS.escape(key)}"][value="${CSS.escape(val)}"]`);
+      if (cb) {
+        if (!cb.checked) {
+          cb.checked = true;
+          cb.dispatchEvent(new Event("change"));
+        }
+      } else {
+        if (!state.filters[key]) state.filters[key] = { any: [] };
+        if (!state.filters[key].any.includes(val)) {
+          state.filters[key].any.push(val);
+          state.page = 1;
+          syncQuickCategories();
+          updateSelectedCounts();
+          doSearch(true);
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    await renderFilterPanel();
+
+    // 渲染完筛选面板后，再执行一次响应式布局，
+    // 确保移动端筛选栏位于"筛选条件"按钮之后
+    handleResponsiveLayout();
+
+    const params = new URLSearchParams(location.search);
+    const q = params.get("q");
+    const cat = params.get("category");
+
+    if (q) {
+      searchInput.value = q;
+      state.term = q;
+    }
+
+    if (cat) {
+      // 通过 URL 参数直接打开某个分类；移动端自动展开筛选栏让用户看到勾选状态
+      setTimeout(() => {
+        filterSidebar.classList.add("open");
+        mobileFilterToggle.classList.add("active");
+        const cb = filterGroupsEl.querySelector(`input[value="${CSS.escape(cat)}"]`);
+        if (cb && !cb.checked) {
+          cb.checked = true;
+          cb.dispatchEvent(new Event("change"));
+        }
+      }, 100);
+    } else if (q) {
+      doSearch(true);
+    }
+  </script>
 </body>
 </html>

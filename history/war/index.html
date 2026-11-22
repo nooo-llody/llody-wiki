@@ -16,7 +16,9 @@
     <div id="fixed-nav-wrapper" data-pagefind-ignore >
         <nav class="navbar" id="navbar">
             <div class="navbar-brand">
-                <a href="javascript:history.back()"><img src="/image/llody_icon_1.png" width="50" height="50" alt="劳"></a>
+                        <a href="javascript:void(0)" id="sidebarTrigger" class="sb-trigger" aria-label="打开侧边栏" title="打开侧边栏">
+                    <img src="/image/llody_icon_1.png" width="50" height="50" alt="劳">
+                  </a>
                 <span>劳埃德大师</span>
             </div>
             <ul class="navbar-links">
@@ -78,8 +80,8 @@
 
     <!-- 这里写全部的内容。知道吧，。 -->
     <main id="main-content">
-        <h1> 劳埃德大师 Wiki</h1>
-        <p>这里记载了劳埃德大师的历史</p>
+        <h1> 劳埃德大师战争史</h1>
+        <p>这里记载了劳埃德大师战争故事</p>
     </main>
 
     <br>
@@ -116,12 +118,18 @@
 
 
     <script src="/js/theme.js"></script>
+    <script src="/js/sidebar.js"></script>
     <script src="/pagefind/pagefind-ui.js"></script>
     <script>
         new PagefindUI({ 
             element: "#search",
         });
     </script>
-<span hidden data-pagefind-filter="year:2026, month:8, day:6" data-pagefind-sort="date:2026-08-06" data-pagefind-meta="date:2026-08-06"></span>
+<span hidden data-pagefind-filter="year:2026"></span>
+<span hidden data-pagefind-filter="month:8"></span>
+<span hidden data-pagefind-filter="day:6"></span>
+<span hidden data-pagefind-meta="date:2026-08-06"></span>
+<span hidden data-pagefind-sort="date" data-pagefind-sort-attribute="content">2026-08-06</span>
+<span hidden data-pagefind-meta="title">战争</span>
 </body>
 </html>
