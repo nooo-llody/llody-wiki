@@ -70,7 +70,7 @@
    a:hover { text-decoration: underline; }
    ul, ol { padding-left: 24px; }
    
-   /* ---------- 图片：默认原风格 ---------- */
+   /* ---------- 图片：默认原风格（带边框） ---------- */
    img {
      max-width: 300px;
      border-radius: var(--border-radius);
@@ -129,7 +129,7 @@
      background-color: var(--table-bg);
      border-radius: var(--border-radius);
      overflow: hidden;
-     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
    }
    th, td { border: 1px solid var(--border); padding: 10px 14px; text-align: center; }
    th { background-color: var(--primary); color: #fff; }
@@ -187,15 +187,15 @@
    
    .nav-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
    
-   /* 导航栏 logo 图片：默认原风格 */
-   .navbar-brand .brand-icon,
+   /* 导航栏 logo 图片：默认原风格（带边框） */
+   .navbar-brand img.brand-icon,
    .navbar-brand img,
    .navbar-logo {
      width: auto;
      max-width: 40px;
      max-height: 40px;
      border-radius: var(--border-radius);
-     border: none;
+     border: 1px solid var(--border);
      margin: 0;
      transition: all 0.3s;
    }
@@ -426,7 +426,7 @@
      background: var(--card-bg) !important;
      border: 1px solid var(--border) !important;
      border-radius: var(--border-radius) !important;
-     box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
      backdrop-filter: blur(8px);
      -webkit-backdrop-filter: blur(8px);
      padding: 6px 0 !important;
@@ -546,7 +546,7 @@
      border-radius: var(--border-radius);
      padding: 20px 28px;
      margin: 20px 0 30px;
-     box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
    }
    .toc h2 { margin: 0 0 12px 0; font-size: 1.2rem; color: var(--heading); }
    .toc ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
@@ -577,7 +577,7 @@
      padding: 10px 18px;
      font-size: 0.9rem;
      cursor: pointer;
-     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
      transition: opacity 0.3s, transform 0.2s;
      opacity: 0;
      pointer-events: none;
@@ -1044,6 +1044,157 @@
    
    #fixed-nav-wrapper, .navbar { padding-left: 32px !important; padding-right: 32px !important; }
    
+   /* ==========================================
+      时间线（默认原风格）
+      ========================================== */
+   .timeline {
+     position: relative;
+     max-width: 900px;
+     margin: 40px auto;
+     padding: 40px 0;
+   }
+   .timeline::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     bottom: 0;
+     left: 50%;
+     width: 4px;
+     background: var(--primary);
+     transform: translateX(-50%);
+     border-radius: 2px;
+   }
+   
+   .timeline-item {
+     display: flex;
+     justify-content: flex-end;
+     align-items: center;
+     padding: 20px 0;
+     position: relative;
+     width: 50%;
+     margin-left: 0;
+     padding-right: 40px;
+     text-align: right;
+     opacity: 0;
+     transform: translateX(-30px);
+     transition: opacity 0.8s ease, transform 0.8s ease;
+   }
+   .timeline-item:nth-child(even) {
+     margin-left: 50%;
+     padding-right: 0;
+     padding-left: 40px;
+     text-align: left;
+     transform: translateX(30px);
+   }
+   
+   .timeline-item .content {
+     background: var(--card-bg);
+     padding: 20px 24px;
+     border-radius: var(--border-radius);
+     border: 1px solid var(--border);
+     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+     max-width: 80%;
+     transition: box-shadow 0.3s, border-color 0.2s;
+   }
+   .timeline-item .content:hover {
+     border-color: var(--primary);
+     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+   }
+   .timeline-item .content h3 { color: var(--heading); margin: 0 0 6px 0; font-size: 1.2rem; }
+   .timeline-item .content p { color: var(--text); line-height: 1.5; font-size: 0.95rem; margin: 0; }
+   
+   .timeline-item::after {
+     content: '';
+     position: absolute;
+     top: 50%;
+     width: 16px;
+     height: 16px;
+     background: var(--primary);
+     border: 3px solid var(--bg);
+     border-radius: 50%;
+     box-shadow: 0 0 0 3px var(--primary);
+     z-index: 2;
+     right: 0;
+     transform: translateX(50%) translateY(-50%);
+   }
+   .timeline-item:nth-child(even)::after { left: 0; right: auto; transform: translateX(-50%) translateY(-50%); }
+   
+   .timeline-item.show { opacity: 1; transform: translateX(0); }
+   
+   @media (max-width: 700px) {
+     .timeline::before { left: 20px; }
+     .timeline-item {
+       width: 100%;
+       margin-left: 0 !important;
+       padding-left: 50px !important;
+       padding-right: 0 !important;
+       text-align: left !important;
+       transform: none !important;
+       align-items: center;
+     }
+     .timeline-item:nth-child(even) { transform: none !important; }
+     .timeline-item::after {
+       left: 20px !important;
+       right: auto !important;
+       top: 50% !important;
+       transform: translate(-50%, -50%) !important;
+     }
+     .timeline-item .content { max-width: 100%; margin: 0; }
+   }
+   
+   /* ==========================================
+      新拟态折叠设置区（个性化面板内）
+      ========================================== */
+   .neu-toggle-label {
+     display: flex !important;
+     align-items: center;
+     gap: 8px;
+     cursor: pointer;
+     font-weight: 600 !important;
+     padding: 8px 12px;
+     background: var(--card-bg);
+     border: 1px solid var(--border);
+     border-radius: var(--border-radius);
+     transition: background 0.2s, border-color 0.2s;
+     user-select: none;
+   }
+   .neu-toggle-label:hover { border-color: var(--primary); }
+   .neu-toggle-label input[type="checkbox"] {
+     width: 16px;
+     height: 16px;
+     accent-color: var(--primary);
+     cursor: pointer;
+     margin: 0;
+   }
+   
+   /* 3 个滑块：默认收起隐藏，启用新拟态后展开 */
+   .neu-options {
+     display: none;
+     overflow: hidden;
+     max-height: 0;
+     opacity: 0;
+     margin-top: 0;
+     margin-left: 8px;
+     padding: 0 4px;
+     border-left: 2px solid color-mix(in srgb, var(--primary) 30%, transparent);
+     transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.35s ease, padding 0.35s ease;
+   }
+   body.neu .neu-options {
+     display: block;
+     max-height: 300px;
+     opacity: 1;
+     margin-top: 12px;
+     padding: 4px 4px 0;
+   }
+   
+   body.neu .neu-toggle-label {
+     background: var(--bg);
+     border: none;
+     box-shadow:
+       inset 2px 2px 5px var(--neu-dark),
+       inset -2px -2px 5px var(--neu-light);
+   }
+   
    /* ============================================================
       ★★★ 新拟态模式 —— body.neu 时全部覆盖 ★★★
       ============================================================ */
@@ -1071,8 +1222,8 @@
      box-shadow: var(--neu-out);
    }
    
-   /* 导航栏 logo 图片：拟态下融入页面（凸起浮雕徽章感） */
-   body.neu .navbar-brand .brand-icon,
+   /* 导航栏 logo 图片：拟态下融入页面（凸起浮雕徽章感，无描边） */
+   body.neu .navbar-brand img.brand-icon,
    body.neu .navbar-brand img,
    body.neu .navbar-logo {
      border: none;
@@ -1386,66 +1537,4 @@
      box-shadow: var(--neu-out-hover);
    }
    body.neu .timeline-item::after { border-color: var(--bg); }
-   /* ==========================================
-   新拟态折叠设置区
-   ========================================== */
-
-/* 开关行 */
-.neu-toggle-label {
-    display: flex !important;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-weight: 600 !important;
-    padding: 8px 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius);
-    transition: background 0.2s, border-color 0.2s;
-    user-select: none;
-  }
-  .neu-toggle-label:hover { border-color: var(--primary); }
-  .neu-toggle-label input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--primary);
-    cursor: pointer;
-    margin: 0;
-  }
-  
-  /* 3 个滑块：默认收起隐藏，启用后展开 */
-  .neu-options {
-    display: none;
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    margin-top: 0;
-    padding: 0 4px;
-    transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.35s ease, padding 0.35s ease;
-  }
-  
-  /* 启用新拟态时（body.neu）展开显示 */
-  body.neu .neu-options {
-    display: block;
-    max-height: 300px;
-    opacity: 1;
-    margin-top: 12px;
-    padding: 4px 4px 0;
-  }
-  
-  /* 展开区加个视觉分隔 */
-  .neu-options {
-    border-left: 2px solid color-mix(in srgb, var(--primary) 30%, transparent);
-    margin-left: 8px;
-  }
-  body.neu .neu-options { margin-left: 8px; }
-  
-  /* 新拟态模式下面板内控件也跟着拟态（可选美化） */
-  body.neu .neu-toggle-label {
-    background: var(--bg);
-    border: none;
-    box-shadow:
-      inset 2px 2px 5px var(--neu-dark),
-      inset -2px -2px 5px var(--neu-light);
-  }
-  
+   
