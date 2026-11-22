@@ -1,47 +1,46 @@
 /* ============================================================
- * 全站 Wiki 侧边栏 v8.4
+ * 全站 Wiki 侧边栏 v8.8
  *
  * 树形规则:
- * - ★ 数据加载后立即统一规范化 URL(目录式 → /dir/index.html)
+ * - 数据加载后立即统一规范化 URL(目录式 → /dir/index.html)
  *   文件夹里的 index.html 严格作为该文件夹的父级分组头,
  *   同级其他 .html 与子文件夹全部是它的子级(递归,无限深度)
  * - 没有 index.html 的文件夹:内容上提一级,保证不丢页面
+ * - 只有 index.html、无其他内容的分组自动降级为叶子,单击直达
  *
- * 隐藏页面(两种方式):
- * 1. 下方 EXCLUDE 正则数组(渲染前过滤,不受缓存影响,推荐)
- * 2. 页面 <head> 加 <meta name="sb_hidden" content="1">
- *    (爬虫解析时过滤;受 5 分钟缓存影响,改后需 SiteSidebar.clearCache())
+ * 隐藏页面(两种方式,均对 Pagefind 与爬虫两条路径生效):
+ * 1. sidebar.js 里的 EXCLUDE 正则数组(渲染前过滤,刷新即生效)
+ * 2. 页面 <head> 加:
+ *    <meta name="sb_hidden" content="1" data-pagefind-filter="sb_hidden[content]">
+ *    ★ 必须重建 Pagefind 索引后才对 Pagefind 路径生效
+ *    ★ 爬虫路径识别纯 <meta name="sb_hidden" content="1">(无需 data 属性)
  *
- * 数据来源:Pagefind 多策略 → 纯 JS 爬虫兜底
- * 爬虫:sitemap.xml 种子 + 首页链接遍历 + EXTRA_SEEDS 手动种子
- * 支持 .html / 目录式(/dir/) / 无扩展名链接
+ * 数据来源:Pagefind 多策略合并 → 纯 JS 爬虫兜底
+ * ★ v8.8 变更:
+ * - 修复 filter 值判断:Pagefind 返回的 filters 值是数组(sb_hidden:["1"])
+ * - 所有语言包策略全部执行并合并(修复 en 包页面/父级 index 消失)
+ * - 支持 head 中 meta 标签形式声明 sb_hidden(官方文档确认的写法)
  *
- * 分组头交互:单击展开/收起(220ms 双击识别)/ 双击、右键打开
- *
- * ★ v8.4 变更:
- * - 导航区新增「索引加载中」指示器(spinner + 骨架条),加载完移除,失败显示错误
- * - 随机页面点击后显示「跳转中…」,索引未就绪最多等 10 秒
- * - TOOLS 中 href:"#" 渲染为禁用占位(灰色 + 🔒),不再拼出错误链接
- * - Pagefind 全策略 0 条时输出更明确的排查日志
- * - 补上随机按钮的 data-tool-action 标记,SiteSidebar.randomPage() 可正常调用
+ * 其他保留特性:
+ * - Pagefind url 专用规范化 / 树形连接线 / 展开动画 / 空分组降级
+ * - 三卡等大 / 小工具折叠 / 加载指示器 / 随机页面 / 无 emoji
  *
  * 调试:console.table(__sbPages) / console.table(__sbGroups)
  * ============================================================ */
 
 (function () {
-  const VERSION = "v8.4";
+  const VERSION = "v8.8";
   const SB_W_FULL = 250;
   const SB_GAP = 16;
   const RECENT_COUNT = 4;
   const HISTORY_COUNT = 5;
   const MAX_RESULTS = 800;
-  const CRAWL_CACHE_KEY = "sb_crawl_cache_v3"; // ★ v3:键升级,旧缓存自动作废
+  const CRAWL_CACHE_KEY = "sb_crawl_cache_v3";
   const CRAWL_TTL = 5 * 60 * 1000;
   const DBL_CLICK_MS = 220;
   const MQ = window.matchMedia("(max-width: 850px)");
   const isMobile = () => MQ.matches;
 
-  // 若需要 sb_hidden 在 Pagefind 路径下也生效,设为 true(总是用爬虫)
   const FORCE_CRAWLER = false;
 
   // ============================================================
@@ -49,30 +48,24 @@
   // ============================================================
   const EXCLUDE = [
     /\/404\.html$/i,
-    /\/cs\.html$/i, // 搜索页(不需要可删除此行)
-    // /\/navigation_bar\//i, // 例:隐藏整个文件夹
-    // /\/draft\//i,
+    /\/cs\.html$/i,
+    // /\/navigation_bar\//i,
   ];
 
-  // ★ 手动种子:爬虫发现不了的页面(相对站根路径),按需增删
+  // 手动种子:爬虫发现不了的页面
   const EXTRA_SEEDS = [
     // "/character/index.html",
-    // "/navigation_bar/index.html",
   ];
 
   // ============================================================
-  // ★ 小工具:配置区
-  //   - 普通链接:{ href: "/xxx.html", text: "名称" }
-  //   - 随机页面:{ text: "随机页面", action: "random" }
-  //   - 占位项:  { href: "#", text: "正在开发" } → 渲染为禁用态
+  // 小工具配置区
   // ============================================================
   const TOOLS = [
-    { text: "🎲 随机页面", action: "random" },
+    { text: "随机页面", action: "random" },
     { href: "#", text: "正在开发" },
-    // { href: "/tools/xxx.html", text: "更多工具" },
   ];
 
-  console.info("[sidebar] " + VERSION + " 已加载(index.html 严格作父级;EXCLUDE 渲染前过滤)");
+  console.info("[sidebar] " + VERSION + " 已加载");
 
   // ============================================================
   // 0. 站点前缀探测 + Pagefind 加载
@@ -124,7 +117,6 @@
     <a class="sb-search" href="/search.html">
       <span class="sb-search-ico"></span><span class="sb-text">专业搜索</span>
     </a>
-    <!-- ★ 小工具折叠菜单 -->
     <div class="sb-tools" id="sbTools">
       <button class="sb-tools-toggle" id="sbToolsToggle" type="button">
         <span class="sb-tools-ico">🛠</span>
@@ -134,7 +126,6 @@
       <div class="sb-tools-list" id="sbToolsList"></div>
     </div>
     <nav class="sb-nav" id="sbNav"></nav>
-    <!-- ★ 加载中指示器:索引就绪后移除 -->
     <div class="sb-loading" id="sbLoading">
       <div class="sb-loading-row">
         <span class="sb-spinner"></span>
@@ -162,7 +153,6 @@
   const searchEl = sidebar.querySelector(".sb-search");
   const navEl = sidebar.querySelector("#sbNav");
 
-  // ★ 控制加载指示器:传 msg 显示文字(可标记错误),不传则移除
   function setLoading(msg, isError) {
     const el = sidebar.querySelector("#sbLoading");
     if (!el) return;
@@ -178,8 +168,7 @@
   }
 
   // ============================================================
-  // 2. URL 规范化(全链路统一口径)
-  //    /dir/、/dir、/dir/index.html → 全部统一为 /dir/index.html
+  // 2. URL 规范化
   // ============================================================
   function toCanonical(p) {
     let q = (p || "").replace(/\/+$/, "");
@@ -191,12 +180,38 @@
   function normalizeUrl(u) { return toCanonical(u); }
   function isActive(href) { return toCanonical(P(href)) === toCanonical(location.pathname); }
 
+  // ★ Pagefind url 专用规范化(绝对 URL / 无斜杠 / 编码 / "." 记号)
+  function normalizePagefindUrl(raw) {
+    let u = String(raw || "").trim();
+    if (!u) return "";
+    if (/^https?:\/\//i.test(u)) {
+      try { u = new URL(u).pathname; } catch (e) { return ""; }
+    }
+    u = u.split("#")[0].split("?")[0];
+    if (u === "." || u === "./") return "/index.html";
+    if (!u.startsWith("/")) u = "/" + u;
+    try { u = decodeURIComponent(u); } catch (e) {}
+    return toCanonical(u);
+  }
+
+  // ============================================================
+  // ★ 统一隐藏判断
+  //   - EXCLUDE 正则
+  //   - Pagefind filter:sb_hidden(★ 值是数组,如 ["1"])
+  // ============================================================
+  function isHidden(d) {
+    if (EXCLUDE.some(re => re.test(d.url || ""))) return true;
+    const fv = d.filters && d.filters.sb_hidden;
+    if (fv === "1" || fv === true) return true;               // 兼容字符串
+    if (Array.isArray(fv) && fv.includes("1")) return true;   // ★ 官方格式:数组
+    return false;
+  }
+
   // ============================================================
   // 3. 树构建 + 渲染
   // ============================================================
   const INDEX_RE = /^index\.html?$/i;
 
-  // ---- 第一步:按路径挂成目录树(输入已全部规范化) ----
   function buildTree(pages) {
     const root = { dirs: new Map(), files: [] };
     pages.forEach(d => {
@@ -224,8 +239,6 @@
     });
   }
 
-  // ---- 第二步:目录树 → 分组数组 ----
-  // ★ 文件夹有 index.html → 它是父级,同级文件+子文件夹全为子级(递归)
   function toGroups(node) {
     const out = [];
     const used = new Set();
@@ -248,20 +261,40 @@
           ]),
         });
       } else {
-        // 没有 index.html 的文件夹:内容上提一级,保证不丢页面
         sub.files.forEach(f => pushOnce({ href: f.url, text: f.title }));
         toGroups(sub).forEach(pushOnce);
       }
     });
-    // 当前目录的散文件(根目录 index.html 是站点首页,不重复列出)
     node.files.filter(f => !INDEX_RE.test(f.file))
       .forEach(f => pushOnce({ href: f.url, text: f.title }));
     return out;
   }
 
-  // ---- 第三步:渲染 ----
   function isActiveDeep(g) {
     return isActive(g.href) || (g.children || []).some(isActiveDeep);
+  }
+
+  const hasChildren = g => !!(g.children && g.children.length);
+
+  function animateDetails(details, open) {
+    const wrap = details.querySelector(":scope > .sb-children-wrap");
+    if (!wrap) { details.open = open; return; }
+    if (open) {
+      details.open = true;
+      requestAnimationFrame(() => requestAnimationFrame(() => wrap.classList.add("open")));
+    } else {
+      wrap.classList.remove("open");
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        wrap.removeEventListener("transitionend", onEnd);
+        if (!wrap.classList.contains("open")) details.open = false;
+      };
+      const onEnd = e => { if (e.propertyName === "grid-template-rows") finish(); };
+      wrap.addEventListener("transitionend", onEnd);
+      setTimeout(finish, 220);
+    }
   }
 
   function renderNav(groups) {
@@ -283,7 +316,6 @@
     const makeGroup = g => {
       const details = document.createElement("details");
       details.className = "sb-node";
-      if (isActiveDeep(g)) details.open = true;
       const summary = document.createElement("summary");
       summary.className = "sb-node-summary";
       summary.title = "单击展开/收起 · 双击或右键打开页面";
@@ -296,7 +328,21 @@
       label.querySelector(".sb-text").textContent = g.text;
       if (isActive(g.href)) label.classList.add("active");
       summary.append(arrow, label);
-      // 单击展开(延迟识别双击)/ 双击、右键打开
+
+      const wrap = document.createElement("div");
+      wrap.className = "sb-children-wrap";
+      const cw = document.createElement("div");
+      cw.className = "sb-children";
+      g.children.forEach(c => cw.appendChild(hasChildren(c) ? makeGroup(c) : makeLeaf(c)));
+      wrap.appendChild(cw);
+      details.appendChild(summary);
+      details.appendChild(wrap);
+
+      if (isActiveDeep(g)) {
+        details.open = true;
+        wrap.classList.add("open");
+      }
+
       let clickTimer = null;
       const openPage = e => {
         if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
@@ -314,20 +360,15 @@
         } else {
           clickTimer = setTimeout(() => {
             clickTimer = null;
-            details.open = !details.open;
+            animateDetails(details, !details.open || !wrap.classList.contains("open"));
           }, DBL_CLICK_MS);
         }
       });
       summary.addEventListener("dblclick", openPage);
       summary.addEventListener("contextmenu", openPage);
-      details.appendChild(summary);
-      const cw = document.createElement("div");
-      cw.className = "sb-children";
-      g.children.forEach(c => cw.appendChild(c.children ? makeGroup(c) : makeLeaf(c)));
-      details.appendChild(cw);
       return details;
     };
-    groups.forEach(g => navEl.appendChild(g.children ? makeGroup(g) : makeLeaf(g)));
+    groups.forEach(g => navEl.appendChild(hasChildren(g) ? makeGroup(g) : makeLeaf(g)));
   }
 
   // ============================================================
@@ -342,10 +383,13 @@
         try { return await r.data(); } catch (e) { return null; }
       }));
       chunk.forEach(d => {
-        if (d && d.url && !seen.has(d.url)) {
-          seen.add(d.url);
-          datas.push(d);
-        }
+        if (!d) return;
+        const url = normalizePagefindUrl(d.url);
+        if (!url || seen.has(url)) return;
+        const item = Object.assign({}, d, { url });
+        if (isHidden(item)) return;
+        seen.add(url);
+        datas.push(item);
       });
     };
     let langs = [];
@@ -353,39 +397,57 @@
       const entry = await (await fetch(P("/pagefind/pagefind-entry.json"), { cache: "no-store" })).json();
       langs = Object.keys(entry.languages || {});
     } catch (e) {}
+
+    // ★ v8.8:所有策略全部执行并合并(不再拿到结果就 break)
+    //   原因:不带 language 选项时 Pagefind 按浏览器语言选包,
+    //   其他语言包(如 en)里的页面会被漏掉 → 父级 index.html 消失
     const strategies = [
-      { label: "全库空搜索", opts: baseOpts, q: "" },
-      ...langs.map(l => ({ label: "语言 " + l, opts: Object.assign({ language: l }, baseOpts || {}), q: "" })),
-      { label: "空格", opts: baseOpts, q: " " },
-      { label: "通配符", opts: baseOpts, q: "*" },
+      { label: "全量(null)", opts: baseOpts, q: null },
+      ...langs.map(l => ({
+        label: "语言 " + l,
+        opts: Object.assign({ language: l }, baseOpts || {}),
+        q: null,
+      })),
     ];
     for (const st of strategies) {
-      if (datas.length) break;
       try {
         if (st.opts) await pagefind.options(st.opts);
         const s = await pagefind.search(st.q);
-        console.info("[sidebar] Pagefind 策略[" + st.label + "] → " + s.results.length + " 条");
+        const before = datas.length;
         if (s.results.length) await addResults(s.results);
+        console.info("[sidebar] Pagefind 策略[" + st.label + "] → " + s.results.length + " 条(累计 " + datas.length + ")");
+        if (datas.length === before) { /* 本策略无新增,继续下一个 */ }
       } catch (e) {
         console.warn("[sidebar] Pagefind 策略[" + st.label + "] 失败:", (e && e.message) || e);
       }
     }
-    // ★ 全策略 0 条:给出可操作的排查提示
     if (!datas.length && langs.length) {
       console.warn(
-        "[sidebar] Pagefind 索引存在但搜索返回 0 条——很可能是索引未包含页面或 bundle 已过期。" +
-        "请重新构建:npx pagefind --site <构建输出目录>,终端应输出 Pages found > 0," +
-        "并确认部署的 /pagefind/ 目录是最新产物。"
+        "[sidebar] Pagefind 索引存在但返回 0 条。请检查 pagefind-entry.json 中" +
+        "各语言的 page_count,以及浏览器 Console 是否有 WASM/CSP 报错。"
       );
     }
+    console.info("[sidebar] Pagefind URL 样本:",
+      datas.slice(0, 8).map(d => d.url));
+    console.info("[sidebar] Pagefind 标题样本:",
+      datas.slice(0, 8).map(d => titleOf(d)));
     return datas;
   }
 
   function parsePage(text, path) {
     const doc = new DOMParser().parseFromString(text, "text/html");
     if (!doc.querySelector("html")) return null;
-    // ★ 隐藏方式二:<meta name="sb_hidden" content="1"> → 不进树
-    if (doc.querySelector('meta[name="sb_hidden"]')?.content === "1") return null;
+    // ★ 隐藏方式二(爬虫路径):多种写法都识别
+    //   a) 纯 meta:<meta name="sb_hidden" content="1">
+    //   b) meta+filter:<meta ... data-pagefind-filter="sb_hidden[content]">
+    //   c) 任意元素:data-pagefind-filter="sb_hidden:1"
+    const metaPlain = doc.querySelector('meta[name="sb_hidden"]');
+    if (metaPlain && metaPlain.getAttribute("content") === "1") return null;
+    const metaCapture = doc.querySelector('meta[data-pagefind-filter="sb_hidden[content]"]');
+    if (metaCapture && metaCapture.getAttribute("content") === "1") return null;
+    const spanHidden = [...doc.querySelectorAll('[data-pagefind-filter]')]
+      .some(el => (el.getAttribute("data-pagefind-filter") || "") === "sb_hidden:1");
+    if (spanHidden) return null;
     let title = "";
     const tEl = doc.querySelector('[data-pagefind-meta*="title"]');
     if (tEl) title = tEl.textContent.trim();
@@ -402,11 +464,9 @@
       const m = (dEl.getAttribute("data-pagefind-meta") || "").match(/date:\s*(\d{4}-\d{2}-\d{2})/);
       if (m) date = m[1];
     }
-    // 存储时即规范化,后续全链路统一
     return { url: toCanonical(path), meta: { title, date } };
   }
 
-  // 链接收集:.html / 目录式 / 无扩展名均可
   function collectLinks(doc, fromPath) {
     const out = new Set();
     doc.querySelectorAll("a[href]").forEach(a => {
@@ -431,7 +491,7 @@
     try {
       const cached = JSON.parse(sessionStorage.getItem(CRAWL_CACHE_KEY) || "null");
       if (cached && Date.now() - cached.t < CRAWL_TTL && cached.pages.length) {
-        console.info("[sidebar] 爬虫结果使用缓存(" + cached.pages.length + " 页," + Math.round((Date.now() - cached.t) / 1000) + "s 前生成;SiteSidebar.clearCache() 可强制刷新)");
+        console.info("[sidebar] 爬虫结果使用缓存(" + cached.pages.length + " 页;SiteSidebar.clearCache() 可强制刷新)");
         return cached.pages;
       }
     } catch (e) {}
@@ -442,7 +502,6 @@
       const c = toCanonical(p);
       if (!seen.has(c)) { seen.add(c); queue.push(c); }
     };
-    // 种子 1:sitemap.xml(目录式 loc 也接受)
     try {
       const res = await fetch(P("/sitemap.xml"), { cache: "no-store" });
       if (res.ok) {
@@ -462,11 +521,8 @@
         console.info("[sidebar] sitemap.xml 提供 " + queue.length + " 个种子页面");
       }
     } catch (e) {}
-    // 种子 2:首页
     enqueue(P("/index.html"));
-    // 种子 3:手动追加
     EXTRA_SEEDS.forEach(s => enqueue(P(s)));
-    if (EXTRA_SEEDS.length) console.info("[sidebar] EXTRA_SEEDS 追加 " + EXTRA_SEEDS.length + " 个种子");
     while (queue.length && pages.length < MAX_RESULTS) {
       const path = queue.shift();
       let res, text;
@@ -499,32 +555,23 @@
         datas = await crawlAllPages();
       }
     }
-    // ★ 立即统一规范化 + 去重(/dir/ 与 /dir/index.html 必然合并)
     const seenMap = new Map();
     datas.forEach(d => {
       const k = toCanonical(d.url);
       if (k && !seenMap.has(k)) seenMap.set(k, Object.assign({}, d, { url: k }));
     });
-    const result = [...seenMap.values()];
-    if (result.length !== datas.length) {
-      console.warn("[sidebar] 规范化去重:" + datas.length + " → " + result.length + " 页");
-    }
-    return result;
+    return [...seenMap.values()];
   }
 
-  // ★ 保存"数据加载完成"的 Promise,供小工具(随机页面)等使用
-  //   resolve 值 = 过滤 EXCLUDE 后的全量页面数组
   const pagesReady = loadPagefind()
     .then(async (pagefind) => {
       let datas = await loadAllPages(pagefind);
-      // ★ EXCLUDE 渲染前统一过滤(两条数据路径都生效,刷新即生效)
-      datas = datas.filter(d => !EXCLUDE.some(re => re.test(d.url)));
+      datas = datas.filter(d => !isHidden(d));
       console.info("[sidebar] 索引共 " + datas.length + " 页");
-      window.__sbPages = datas; // 调试:确认后可删
+      window.__sbPages = datas;
       const groups = toGroups(buildTree(datas));
-      window.__sbGroups = groups; // 调试:确认后可删
+      window.__sbGroups = groups;
       renderNav(groups);
-      // ★ 索引就绪:移除加载指示器(即使结果为空也移除,避免卡在加载态)
       setLoading();
       if (!navEl.querySelector("a.sb-link")) {
         console.warn("[sidebar] 索引有数据但没有生成任何分组");
@@ -535,9 +582,7 @@
         url: d.url,
         title: titleOf(d),
         date: ((d.meta && d.meta.date) || "").trim(),
-      })).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d.date))
-        .filter(d => !EXCLUDE.some(re => re.test(d.url)));
-      console.info("[sidebar] 带有效日期的页面 " + dated.length + " 个");
+      })).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d.date));
       if (document.body.getAttribute("data-sidebar-recent") !== "off") {
         const recent = [...dated].sort((a, b) => b.date.localeCompare(a.date)).slice(0, RECENT_COUNT);
         if (recent.length) {
@@ -579,34 +624,28 @@
           el.appendChild(p);
         }
       }
-      // ★ 返回数据,让 pagesReady 能拿到页面列表
       return datas;
     })
     .catch(e => {
       console.error("[sidebar] 加载失败:", e);
       renderNav([]);
-      // ★ 失败时把加载指示器换成错误提示
       setLoading("索引加载失败,请刷新重试", true);
-      return []; // ★ 失败时返回空数组,随机页面可据此提示
+      return [];
     });
 
   // ============================================================
-  // ★ 6.5 小工具折叠菜单(展开/收起 + 随机页面)
+  // 6.5 小工具折叠菜单
   // ============================================================
   (function () {
     const toggle = sidebar.querySelector("#sbToolsToggle");
     const list = sidebar.querySelector("#sbToolsList");
     const arrow = sidebar.querySelector("#sbToolsArrow");
-
     if (!toggle || !list || !arrow) return;
 
-    // ---- ★ 随机页面:从站点索引中随机挑一页跳转 ----
     async function gotoRandomPage(linkEl) {
       const span = linkEl ? linkEl.querySelector(".sb-text") : null;
       const oldText = span ? span.textContent : "";
-      // 给用户即时反馈
       if (span) span.textContent = "跳转中…";
-      // 数据可能还在加载中,等待 pagesReady(最多等 10 秒)
       const datas = await Promise.race([
         pagesReady,
         new Promise(res => setTimeout(() => res([]), 10000)),
@@ -614,7 +653,6 @@
       const cur = toCanonical(location.pathname);
       const pool = datas.filter(d => toCanonical(d.url) !== cur);
       if (!pool.length) {
-        console.warn("[sidebar] 随机页面:没有可跳转的页面(索引为空或仍在加载)");
         if (span) {
           span.textContent = "暂无可选页面";
           setTimeout(() => { span.textContent = oldText; }, 1500);
@@ -626,45 +664,31 @@
       location.href = P(pick.url);
     }
 
-    // ---- 渲染工具项 ----
     TOOLS.forEach(t => {
+      const a = document.createElement("a");
+      a.className = "sb-tools-link";
+      a.innerHTML = `<span class="sb-ico"></span><span class="sb-text"></span>`;
+      a.querySelector(".sb-text").textContent = t.text;
       if (t.action === "random") {
-        // 随机页面:行为按钮(不是普通链接)
-        const a = document.createElement("a");
         a.href = "javascript:void(0)";
-        a.className = "sb-tools-link";
-        a.dataset.toolAction = "random"; // ★ 供 SiteSidebar.randomPage() 定位
-        a.innerHTML = `<span class="sb-ico"></span><span class="sb-text"></span>`;
-        a.querySelector(".sb-text").textContent = t.text;
+        a.dataset.toolAction = "random";
         a.addEventListener("click", e => {
           e.preventDefault();
           if (isMobile()) closeSidebar();
           gotoRandomPage(a);
         });
-        list.appendChild(a);
       } else if (t.href === "#") {
-        // ★ 占位项:渲染为禁用态,不拼接错误链接
-        const a = document.createElement("a");
         a.href = "javascript:void(0)";
-        a.className = "sb-tools-link reserved";
-        a.innerHTML = `<span class="sb-ico"></span><span class="sb-text"></span>`;
-        a.querySelector(".sb-text").textContent = t.text;
+        a.classList.add("placeholder");
         a.addEventListener("click", e => e.preventDefault());
-        list.appendChild(a);
       } else {
-        // 普通链接工具
-        const a = document.createElement("a");
         a.href = P(toCanonical(t.href));
-        a.className = "sb-tools-link";
-        a.innerHTML = `<span class="sb-ico"></span><span class="sb-text"></span>`;
-        a.querySelector(".sb-text").textContent = t.text;
         if (isActive(t.href)) a.classList.add("active");
         a.addEventListener("click", () => { if (isMobile()) closeSidebar(); });
-        list.appendChild(a);
       }
+      list.appendChild(a);
     });
 
-    // ---- 展开/收起(★ 用 class + max-height 过渡动画,不用 hidden) ----
     toggle.addEventListener("click", () => {
       const isOpen = toggle.classList.toggle("expanded");
       list.classList.toggle("open", isOpen);
@@ -673,7 +697,7 @@
   })();
 
   // ============================================================
-  // 5. 本页目录(优先 .toc,回退 h2/h3)
+  // 5. 本页目录
   // ============================================================
   if (document.body.getAttribute("data-sidebar-toc") !== "off") {
     const toc = sidebar.querySelector("#sbToc");
@@ -784,7 +808,6 @@
       sessionStorage.removeItem(CRAWL_CACHE_KEY);
       console.info("[sidebar] 爬虫缓存已清除");
     },
-    // ★ 外部 API:触发随机跳转
     randomPage() {
       const randomLink = [...sidebar.querySelectorAll(".sb-tools-link")]
         .find(a => a.dataset.toolAction === "random");
@@ -793,13 +816,14 @@
   };
 
   // ============================================================
-  // 8. 完整样式(内嵌,多级嵌套缩进)
+  // 8. 完整样式(树形连接线 + 加快版动效)
   // ============================================================
   const style = document.createElement("style");
   style.textContent = `
     :root {
       --sb-placeholder: "#";
       --sb-placeholder-color: #9db4c8;
+      --sb-tree-line: color-mix(in srgb, var(--border) 90%, transparent);
       --sb-search-icon: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.7549 11.255H11.9649L11.6849 10.985C12.6649 9.845 13.2549 8.365 13.2549 6.755C13.2549 3.165 10.3449 0.255005 6.75488 0.255005C3.16488 0.255005 0.254883 3.165 0.254883 6.755C0.254883 10.345 3.16488 13.255 6.75488 13.255C8.36488 13.255 9.84488 12.665 10.9849 11.685L11.2549 11.965V12.755L16.2549 17.745L17.7449 16.255L12.7549 11.255ZM6.75488 11.255C4.26488 11.255 2.25488 9.245 2.25488 6.755C2.25488 4.26501 4.26488 2.255 6.75488 2.255C9.24488 2.255 11.2549 4.26501 11.2549 6.755C11.2549 9.245 9.24488 11.255 6.75488 11.255Z' fill='%23000000'/%3E%3C/svg%3E%0A");
     }
 
@@ -818,7 +842,7 @@
       overflow-x: hidden;
       z-index: 1500;
       transform: translateX(-100%);
-      transition: transform .25s cubic-bezier(.4, 0, .2, 1), box-shadow .25s cubic-bezier(.4, 0, .2, 1);
+      transition: transform .15s cubic-bezier(.4, 0, .2, 1), box-shadow .15s cubic-bezier(.4, 0, .2, 1);
       box-shadow: none;
       scrollbar-width: thin;
     }
@@ -846,10 +870,7 @@
     }
     .sb-title { font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
 
-    /* ---- 专业搜索 / 返回上页 / 小工具:三卡统一尺寸基准 ----
-       共同规格:margin 6px 0 / padding 8px 12px / border-radius 10px
-                 font-size 0.88rem / line-height 1.2 / 图标宽 15px */
-
+    /* ---- 三卡统一尺寸基准 ---- */
     .sb-search {
       display: flex;
       align-items: center;
@@ -864,7 +885,7 @@
       font-size: 0.88rem;
       line-height: 1.2;
       white-space: nowrap;
-      transition: border-color .2s, color .2s;
+      transition: border-color .15s, color .15s;
     }
     .sb-search:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
     .sb-search-ico {
@@ -881,7 +902,7 @@
       mask-size: contain;
       -webkit-mask-position: center;
       mask-position: center;
-      transition: opacity .2s;
+      transition: opacity .15s;
     }
     .sb-search:hover .sb-search-ico { opacity: 1; }
 
@@ -899,13 +920,12 @@
       font-size: 0.88rem;
       line-height: 1.2;
       white-space: nowrap;
-      transition: border-color .2s, color .2s;
+      transition: border-color .15s, color .15s;
     }
     .sb-back:hover { border-color: var(--primary); color: var(--primary); text-decoration: none; }
     .sb-back-ico { font-weight: 700; width: 15px; flex-shrink: 0; text-align: center; opacity: .7; }
     .sb-back:hover .sb-back-ico { opacity: 1; }
 
-    /* ★ 小工具卡片(与 sb-search / sb-back 完全等大) */
     .sb-tools { margin: 0; }
     .sb-tools-toggle {
       display: flex;
@@ -923,7 +943,7 @@
       line-height: 1.2;
       cursor: pointer;
       white-space: nowrap;
-      transition: border-color .2s, color .2s, background .15s;
+      transition: border-color .15s, color .15s, background .15s;
       font-family: inherit;
       -webkit-appearance: none;
       appearance: none;
@@ -938,7 +958,7 @@
       text-align: center;
       opacity: .7;
       flex-shrink: 0;
-      font-size: 0.85rem;   /* ★ 缩小 emoji,防止撑高卡片 */
+      font-size: 0.85rem;
       line-height: 1;
     }
     .sb-tools-toggle .sb-text { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; }
@@ -946,11 +966,10 @@
       font-size: 0.7rem;
       opacity: .5;
       flex-shrink: 0;
-      transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+      transition: transform .15s cubic-bezier(.4, 0, .2, 1);
     }
     .sb-tools-arrow.open { transform: rotate(90deg); }
 
-    /* ★ 工具列表:max-height + opacity 过渡动画展开/收起 */
     .sb-tools-list {
       max-height: 0;
       opacity: 0;
@@ -962,14 +981,14 @@
       border-left: 2px solid transparent;
       transform: translateY(-4px);
       transition:
-        max-height .3s cubic-bezier(.4, 0, .2, 1),
-        opacity .22s ease,
-        transform .22s ease,
-        border-color .3s ease,
-        margin-top .3s ease;
+        max-height .18s cubic-bezier(.4, 0, .2, 1),
+        opacity .14s ease,
+        transform .14s ease,
+        border-color .18s ease,
+        margin-top .18s ease;
     }
     .sb-tools-list.open {
-      max-height: 400px;    /* 展开上限,工具过多时请调大 */
+      max-height: 400px;
       opacity: 1;
       transform: translateY(0);
       border-left-color: var(--border);
@@ -997,24 +1016,18 @@
       color: #fff;
       font-weight: 600;
     }
-    .sb-tools-link.reserved { opacity: .45; }
-    .sb-tools-link.reserved::after { content: " 🔒"; font-size: 0.7rem; }
+    .sb-tools-link.placeholder { opacity: .4; }
 
-    /* ★ 加载中指示器(spinner + 骨架条) */
+    /* 加载中指示器 */
     .sb-loading {
       display: flex;
       flex-direction: column;
       gap: 10px;
       padding: 12px 8px 6px;
     }
-    .sb-loading-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .sb-loading-row { display: flex; align-items: center; gap: 10px; }
     .sb-spinner {
-      width: 16px;
-      height: 16px;
+      width: 16px; height: 16px;
       flex-shrink: 0;
       border: 2px solid color-mix(in srgb, var(--primary) 25%, transparent);
       border-top-color: var(--primary);
@@ -1062,6 +1075,8 @@
       white-space: nowrap;
     }
     .sb-nav { margin-top: 4px; }
+
+    /* =============== 树形连接线 + 展开动画 =============== */
     .sb-node { margin: 1px 0; }
     .sb-node > summary {
       list-style: none;
@@ -1071,11 +1086,57 @@
       align-items: center;
       padding-right: 4px;
       border-radius: var(--border-radius);
+      position: relative;
     }
     .sb-node > summary::-webkit-details-marker { display: none; }
-    .sb-node > summary .sb-link { cursor: pointer; }
-    .sb-arrow { font-size: 0.7rem; opacity: .5; width: 14px; flex-shrink: 0; transition: transform .2s; text-align: center; }
+    .sb-arrow {
+      font-size: 0.7rem;
+      opacity: .5;
+      width: 14px;
+      flex-shrink: 0;
+      text-align: center;
+      transition: transform .15s cubic-bezier(.4, 0, .2, 1);
+    }
+    .sb-node.open > summary .sb-arrow,
     .sb-node[open] > summary .sb-arrow { transform: rotate(90deg); }
+
+    .sb-children-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .16s cubic-bezier(.4, 0, .2, 1);
+    }
+    .sb-children-wrap.open { grid-template-rows: 1fr; }
+    .sb-children {
+      overflow: hidden;
+      min-height: 0;
+      position: relative;
+      margin-left: 13px;
+      padding-left: 10px;
+    }
+    .sb-children::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--sb-tree-line);
+    }
+    .sb-children > a.sb-link,
+    .sb-children > .sb-node > summary {
+      position: relative;
+    }
+    .sb-children > a.sb-link::before,
+    .sb-children > .sb-node > summary::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      width: 10px;
+      height: 1px;
+      background: var(--sb-tree-line);
+      transform: translateY(-50%);
+    }
 
     .sb-link {
       flex: 1;
@@ -1094,13 +1155,9 @@
     .sb-link:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); text-decoration: none; }
     .sb-link.active { background: var(--primary); color: #fff; font-weight: 600; }
 
-    /* 多级嵌套缩进(最深 4 层) */
     .sb-children .sb-node > summary .sb-link { font-size: 0.86rem; }
     .sb-children .sb-children .sb-node > summary .sb-link { font-size: 0.83rem; }
     .sb-children .sb-children .sb-children .sb-node > summary .sb-link { font-size: 0.8rem; }
-    .sb-children .sb-link { padding-left: 26px; }
-    .sb-children .sb-children .sb-link { padding-left: 38px; }
-    .sb-children .sb-children .sb-children .sb-link { padding-left: 50px; }
 
     .sb-text { overflow: hidden; text-overflow: ellipsis; }
     .sb-ico {
@@ -1114,9 +1171,6 @@
     }
     .sb-ico::before { content: var(--sb-placeholder); }
     .sb-ico:not(:empty)::before { content: none; }
-
-    .sb-link.reserved { opacity: .45; }
-    .sb-link.reserved::after { content: " 🔒"; font-size: 0.7rem; }
 
     .sb-toc-wrap, .sb-recent-wrap, .sb-history-wrap {
       border-top: 1px solid var(--border);
@@ -1134,7 +1188,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: border-color .2s, color .2s;
+      transition: border-color .15s, color .15s;
     }
     .sb-toc-link:hover { text-decoration: none; opacity: 1; }
     .sb-toc-link.sub { padding-left: 20px; font-size: 0.78rem; }
@@ -1169,7 +1223,7 @@
     .sb-history-empty { display: block; padding: 5px 8px; font-size: 0.8rem; opacity: .45; }
 
     body {
-      transition: background-color 0.2s, color 0.2s, padding-left .25s cubic-bezier(.4, 0, .2, 1) !important;
+      transition: background-color 0.2s, color 0.2s, padding-left .15s cubic-bezier(.4, 0, .2, 1) !important;
     }
     .sb-trigger { cursor: pointer; display: inline-flex; border-radius: 8px; }
     .sb-trigger img { transition: transform .15s ease; }
