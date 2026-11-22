@@ -1,35 +1,38 @@
 /* ============================================================
- * 全站 Wiki 侧边栏 v8.8
+ * 全站 Wiki 侧边栏 v9.2(混合加载 + 树排序)
+ *
+ * 加载策略:
+ * 1. Pagefind 索引先渲染(毫秒级首屏)
+ * 2. 同时后台启动纯 JS 爬虫(fetch 各页实时解析)
+ * 3. 爬虫完成后合并:爬虫数据覆盖同 URL 的索引数据,
+ *    索引独有的页面保留(直到爬虫确认它已删除)
+ * 4. 合并前后 URL 集合一致则不重渲染(保留展开/高亮状态)
  *
  * 树形规则:
- * - 数据加载后立即统一规范化 URL(目录式 → /dir/index.html)
- *   文件夹里的 index.html 严格作为该文件夹的父级分组头,
- *   同级其他 .html 与子文件夹全部是它的子级(递归,无限深度)
- * - 没有 index.html 的文件夹:内容上提一级,保证不丢页面
- * - 只有 index.html、无其他内容的分组自动降级为叶子,单击直达
+ * - URL 统一规范化为 /dir/index.html
+ * - 文件夹里的 index.html 严格作为父级分组头(递归,无限深度)
+ * - 没有 index.html 的文件夹:内容上提一级
+ * - 只有 index.html、无其他内容的分组自动降级为叶子
  *
- * 隐藏页面(两种方式,均对 Pagefind 与爬虫两条路径生效):
- * 1. sidebar.js 里的 EXCLUDE 正则数组(渲染前过滤,刷新即生效)
- * 2. 页面 <head> 加:
- *    <meta name="sb_hidden" content="1" data-pagefind-filter="sb_hidden[content]">
- *    ★ 必须重建 Pagefind 索引后才对 Pagefind 路径生效
- *    ★ 爬虫路径识别纯 <meta name="sb_hidden" content="1">(无需 data 属性)
+ * ★ v9.2 排序规则:
+ * - 同级内「有子级的分组在前,无子级的叶子在后」
+ * - 各自内部按标题首字母排序(中文按拼音,localeCompare zh-Hans-CN)
+ * - 递归应用于每一层
  *
- * 数据来源:Pagefind 多策略合并 → 纯 JS 爬虫兜底
- * ★ v8.8 变更:
- * - 修复 filter 值判断:Pagefind 返回的 filters 值是数组(sb_hidden:["1"])
- * - 所有语言包策略全部执行并合并(修复 en 包页面/父级 index 消失)
- * - 支持 head 中 meta 标签形式声明 sb_hidden(官方文档确认的写法)
- *
- * 其他保留特性:
- * - Pagefind url 专用规范化 / 树形连接线 / 展开动画 / 空分组降级
- * - 三卡等大 / 小工具折叠 / 加载指示器 / 随机页面 / 无 emoji
+ * 隐藏/排除页面:
+ * 1. EXCLUDE 正则(刷新即生效)
+ * 2. <html data-pagefind-ignore>:
+ *    - 索引路径:Pagefind 天然不收录
+ *    - 爬虫路径:整页跳过,不进树、不采集其链接
+ * 3. <meta name="sb_hidden" content="1">(爬虫实时生效;
+ *    索引路径需 data-pagefind-filter 属性并重建索引)
+ *    ★ 两种写法都要求英文直引号
  *
  * 调试:console.table(__sbPages) / console.table(__sbGroups)
  * ============================================================ */
 
 (function () {
-  const VERSION = "v8.8";
+  const VERSION = "v9.2";
   const SB_W_FULL = 250;
   const SB_GAP = 16;
   const RECENT_COUNT = 4;
@@ -41,10 +44,12 @@
   const MQ = window.matchMedia("(max-width: 850px)");
   const isMobile = () => MQ.matches;
 
+  // true = 只用爬虫(完全实时,不用索引)
+  // false = 混合模式:索引首屏 + 爬虫后台校正(推荐)
   const FORCE_CRAWLER = false;
 
   // ============================================================
-  // ★ 隐藏页面方式一:正则匹配站内路径(渲染前过滤,刷新即生效)
+  // ★ 隐藏页面方式一:正则匹配站内路径
   // ============================================================
   const EXCLUDE = [
     /\/404\.html$/i,
@@ -52,7 +57,6 @@
     // /\/navigation_bar\//i,
   ];
 
-  // 手动种子:爬虫发现不了的页面
   const EXTRA_SEEDS = [
     // "/character/index.html",
   ];
@@ -65,7 +69,7 @@
     { href: "#", text: "正在开发" },
   ];
 
-  console.info("[sidebar] " + VERSION + " 已加载");
+  console.info("[sidebar] " + VERSION + " 已加载(混合模式)");
 
   // ============================================================
   // 0. 站点前缀探测 + Pagefind 加载
@@ -161,14 +165,8 @@
     el.querySelector(".sb-loading-text").textContent = msg;
   }
 
-  function titleOf(d) {
-    if (d.meta && d.meta.title && d.meta.title.trim()) return d.meta.title.trim();
-    const seg = (d.url || "").replace(/\/+$/, "").split("/").pop() || "未命名页面";
-    return decodeURIComponent(seg);
-  }
-
   // ============================================================
-  // 2. URL 规范化
+  // 2. URL 规范化 + 标题
   // ============================================================
   function toCanonical(p) {
     let q = (p || "").replace(/\/+$/, "");
@@ -177,10 +175,8 @@
     try { q = decodeURIComponent(q); } catch (e) {}
     return q;
   }
-  function normalizeUrl(u) { return toCanonical(u); }
   function isActive(href) { return toCanonical(P(href)) === toCanonical(location.pathname); }
 
-  // ★ Pagefind url 专用规范化(绝对 URL / 无斜杠 / 编码 / "." 记号)
   function normalizePagefindUrl(raw) {
     let u = String(raw || "").trim();
     if (!u) return "";
@@ -194,28 +190,29 @@
     return toCanonical(u);
   }
 
-  // ============================================================
-  // ★ 统一隐藏判断
-  //   - EXCLUDE 正则
-  //   - Pagefind filter:sb_hidden(★ 值是数组,如 ["1"])
-  // ============================================================
+  function titleOf(d) {
+    if (d.meta && d.meta.title && d.meta.title.trim()) return d.meta.title.trim();
+    const seg = (d.url || "").replace(/\/+$/, "").split("/").pop() || "未命名页面";
+    return decodeURIComponent(seg).replace(/\.html?$/i, "") || "未命名页面";
+  }
+
+  // ★ 统一隐藏判断(EXCLUDE + 索引 filter)
   function isHidden(d) {
     if (EXCLUDE.some(re => re.test(d.url || ""))) return true;
     const fv = d.filters && d.filters.sb_hidden;
-    if (fv === "1" || fv === true) return true;               // 兼容字符串
-    if (Array.isArray(fv) && fv.includes("1")) return true;   // ★ 官方格式:数组
+    if (fv === "1" || fv === true) return true;
+    if (Array.isArray(fv) && fv.includes("1")) return true;
     return false;
   }
 
   // ============================================================
-  // 3. 树构建 + 渲染
+  // 3. 树构建 + 排序 + 渲染
   // ============================================================
   const INDEX_RE = /^index\.html?$/i;
 
   function buildTree(pages) {
     const root = { dirs: new Map(), files: [] };
     pages.forEach(d => {
-      if (EXCLUDE.some(re => re.test(d.url))) return;
       const url = toCanonical(d.url);
       const parts = url.split("/").filter(Boolean);
       const file = parts.pop();
@@ -270,11 +267,34 @@
     return out;
   }
 
+  // ============================================================
+  // ★ v9.2 树排序:同级「有子级在前,无子级在后」,各自按首字母
+  //   中文标题按拼音排序(localeCompare zh-Hans-CN)
+  // ============================================================
+  function hasChildren(g) {
+    return !!(g.children && g.children.length);
+  }
+
+  function sortGroups(groups) {
+    if (!Array.isArray(groups)) return groups;
+    const cmp = (a, b) =>
+      String(a.text || "").localeCompare(String(b.text || ""), "zh-Hans-CN", { numeric: true });
+    const sorted = [...groups].sort((a, b) => {
+      const ga = hasChildren(a) ? 1 : 0;
+      const gb = hasChildren(b) ? 1 : 0;
+      if (ga !== gb) return gb - ga; // 有子级的分组排前面
+      return cmp(a, b);              // 同类内部按首字母/拼音
+    });
+    // 递归应用到每一层的子级
+    sorted.forEach(g => {
+      if (hasChildren(g)) g.children = sortGroups(g.children);
+    });
+    return sorted;
+  }
+
   function isActiveDeep(g) {
     return isActive(g.href) || (g.children || []).some(isActiveDeep);
   }
-
-  const hasChildren = g => !!(g.children && g.children.length);
 
   function animateDetails(details, open) {
     const wrap = details.querySelector(":scope > .sb-children-wrap");
@@ -304,6 +324,8 @@
       return;
     }
     navEl.hidden = false;
+    // ★ v9.2:渲染前统一排序(含所有子级)
+    const sorted = sortGroups(groups);
     const makeLeaf = g => {
       const a = document.createElement("a");
       a.href = P(toCanonical(g.href));
@@ -368,11 +390,74 @@
       summary.addEventListener("contextmenu", openPage);
       return details;
     };
-    groups.forEach(g => navEl.appendChild(hasChildren(g) ? makeGroup(g) : makeLeaf(g)));
+    sorted.forEach(g => navEl.appendChild(hasChildren(g) ? makeGroup(g) : makeLeaf(g)));
   }
 
   // ============================================================
-  // 4. 全量加载页面
+  // 4. 渲染入口(树 + 最近更新 + 历史上的今天,可重复调用)
+  // ============================================================
+  function renderAll(datas) {
+    window.__sbPages = datas;
+    const groups = toGroups(buildTree(datas));
+    window.__sbGroups = sortGroups(groups);
+    renderNav(groups);
+
+    const dated = datas.map(d => ({
+      url: d.url,
+      title: titleOf(d),
+      date: ((d.meta && d.meta.date) || "").trim(),
+    })).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d.date));
+
+    if (document.body.getAttribute("data-sidebar-recent") !== "off") {
+      const recent = [...dated].sort((a, b) => b.date.localeCompare(a.date)).slice(0, RECENT_COUNT);
+      const wrap = sidebar.querySelector("#sbRecentWrap");
+      const el = sidebar.querySelector("#sbRecent");
+      el.innerHTML = "";
+      if (recent.length) {
+        wrap.hidden = false;
+        recent.forEach(d => {
+          const a = document.createElement("a");
+          a.href = P(toCanonical(d.url));
+          a.className = "sb-recent-link";
+          a.innerHTML = `<span class="sb-recent-title"></span><span class="sb-recent-date"></span>`;
+          a.querySelector(".sb-recent-title").textContent = d.title;
+          a.querySelector(".sb-recent-date").textContent = d.date.slice(5);
+          el.appendChild(a);
+        });
+      } else {
+        wrap.hidden = true;
+      }
+    }
+
+    if (document.body.getAttribute("data-sidebar-history") !== "off") {
+      const now = new Date();
+      const md = String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+      const hits = dated.filter(d => d.date.slice(5) === md).sort((a, b) => b.date.localeCompare(a.date));
+      const limited = hits.slice(0, HISTORY_COUNT);
+      sidebar.querySelector("#sbHistoryTitle").textContent = "历史上的今天 · " + md.replace("-", "/");
+      const el = sidebar.querySelector("#sbHistory");
+      el.innerHTML = "";
+      if (limited.length) {
+        limited.forEach(d => {
+          const a = document.createElement("a");
+          a.href = P(toCanonical(d.url));
+          a.className = "sb-history-link";
+          a.innerHTML = `<span class="sb-history-title"></span><span class="sb-history-year"></span>`;
+          a.querySelector(".sb-history-title").textContent = d.title;
+          a.querySelector(".sb-history-year").textContent = d.date.slice(0, 4);
+          el.appendChild(a);
+        });
+      } else {
+        const p = document.createElement("span");
+        p.className = "sb-history-empty";
+        p.textContent = "暂无";
+        el.appendChild(p);
+      }
+    }
+  }
+
+  // ============================================================
+  // 5. 数据路径一:Pagefind 索引
   // ============================================================
   async function tryPagefind(pagefind) {
     const seen = new Set();
@@ -392,62 +477,30 @@
         datas.push(item);
       });
     };
-    let langs = [];
     try {
-      const entry = await (await fetch(P("/pagefind/pagefind-entry.json"), { cache: "no-store" })).json();
-      langs = Object.keys(entry.languages || {});
-    } catch (e) {}
-
-    // ★ v8.8:所有策略全部执行并合并(不再拿到结果就 break)
-    //   原因:不带 language 选项时 Pagefind 按浏览器语言选包,
-    //   其他语言包(如 en)里的页面会被漏掉 → 父级 index.html 消失
-    const strategies = [
-      { label: "全量(null)", opts: baseOpts, q: null },
-      ...langs.map(l => ({
-        label: "语言 " + l,
-        opts: Object.assign({ language: l }, baseOpts || {}),
-        q: null,
-      })),
-    ];
-    for (const st of strategies) {
-      try {
-        if (st.opts) await pagefind.options(st.opts);
-        const s = await pagefind.search(st.q);
-        const before = datas.length;
-        if (s.results.length) await addResults(s.results);
-        console.info("[sidebar] Pagefind 策略[" + st.label + "] → " + s.results.length + " 条(累计 " + datas.length + ")");
-        if (datas.length === before) { /* 本策略无新增,继续下一个 */ }
-      } catch (e) {
-        console.warn("[sidebar] Pagefind 策略[" + st.label + "] 失败:", (e && e.message) || e);
-      }
+      if (baseOpts) await pagefind.options(baseOpts);
+      // 枚举全库必须 search(null)
+      const s = await pagefind.search(null);
+      console.info("[sidebar] Pagefind 索引 → " + s.results.length + " 条");
+      if (s.results.length) await addResults(s.results);
+    } catch (e) {
+      console.warn("[sidebar] Pagefind 枚举失败:", (e && e.message) || e);
     }
-    if (!datas.length && langs.length) {
-      console.warn(
-        "[sidebar] Pagefind 索引存在但返回 0 条。请检查 pagefind-entry.json 中" +
-        "各语言的 page_count,以及浏览器 Console 是否有 WASM/CSP 报错。"
-      );
-    }
-    console.info("[sidebar] Pagefind URL 样本:",
-      datas.slice(0, 8).map(d => d.url));
-    console.info("[sidebar] Pagefind 标题样本:",
-      datas.slice(0, 8).map(d => titleOf(d)));
     return datas;
   }
 
-  function parsePage(text, path) {
-    const doc = new DOMParser().parseFromString(text, "text/html");
-    if (!doc.querySelector("html")) return null;
-    // ★ 隐藏方式二(爬虫路径):多种写法都识别
-    //   a) 纯 meta:<meta name="sb_hidden" content="1">
-    //   b) meta+filter:<meta ... data-pagefind-filter="sb_hidden[content]">
-    //   c) 任意元素:data-pagefind-filter="sb_hidden:1"
+  // ============================================================
+  // 6. 数据路径二:纯 JS 爬虫(实时)
+  // ============================================================
+
+  // <html data-pagefind-ignore> 的页面在爬虫路径下也整页排除
+  function isIgnoredDoc(doc) {
+    return !!(doc.documentElement && doc.documentElement.hasAttribute("data-pagefind-ignore"));
+  }
+
+  function parsePage(doc, path) {
     const metaPlain = doc.querySelector('meta[name="sb_hidden"]');
     if (metaPlain && metaPlain.getAttribute("content") === "1") return null;
-    const metaCapture = doc.querySelector('meta[data-pagefind-filter="sb_hidden[content]"]');
-    if (metaCapture && metaCapture.getAttribute("content") === "1") return null;
-    const spanHidden = [...doc.querySelectorAll('[data-pagefind-filter]')]
-      .some(el => (el.getAttribute("data-pagefind-filter") || "") === "sb_hidden:1");
-    if (spanHidden) return null;
     let title = "";
     const tEl = doc.querySelector('[data-pagefind-meta*="title"]');
     if (tEl) title = tEl.textContent.trim();
@@ -531,10 +584,16 @@
         if (!res.ok) continue;
         text = await res.text();
       } catch (e) { continue; }
-      const d = parsePage(text, path);
+      const doc = new DOMParser().parseFromString(text, "text/html");
+      if (!doc.querySelector("html")) continue;
+      // <html data-pagefind-ignore> → 不进树,也不采集其链接
+      if (isIgnoredDoc(doc)) {
+        console.info("[sidebar] 已跳过(data-pagefind-ignore):", path);
+        continue;
+      }
+      const d = parsePage(doc, path);
       if (d) pages.push(d);
-      collectLinks(new DOMParser().parseFromString(text, "text/html"), path)
-        .forEach(enqueue);
+      collectLinks(doc, path).forEach(enqueue);
     }
     console.info("[sidebar] 爬虫完成:共 " + pages.length + " 页");
     try {
@@ -543,98 +602,104 @@
     return pages;
   }
 
-  async function loadAllPages(pagefind) {
-    let datas;
-    if (FORCE_CRAWLER) {
-      console.info("[sidebar] 已强制使用纯 JS 爬虫");
-      datas = await crawlAllPages();
-    } else {
-      datas = await tryPagefind(pagefind);
-      if (!datas.length) {
-        console.info("[sidebar] Pagefind 枚举不可用,切换到纯 JS 爬虫…");
-        datas = await crawlAllPages();
-      }
-    }
-    const seenMap = new Map();
-    datas.forEach(d => {
-      const k = toCanonical(d.url);
-      if (k && !seenMap.has(k)) seenMap.set(k, Object.assign({}, d, { url: k }));
+  // ============================================================
+  // 7. 混合加载主流程
+  // ============================================================
+  let currentDatas = [];
+
+  function mergeDatas(indexDatas, crawlDatas) {
+    const map = new Map();
+    (indexDatas || []).forEach(d => {
+      if (isHidden(d)) return;
+      map.set(toCanonical(d.url), Object.assign({}, d, { url: toCanonical(d.url) }));
     });
-    return [...seenMap.values()];
+    (crawlDatas || []).forEach(d => {
+      if (isHidden(d)) return;
+      map.set(toCanonical(d.url), Object.assign({}, d, { url: toCanonical(d.url) }));
+    });
+    return [...map.values()];
   }
 
-  const pagesReady = loadPagefind()
-    .then(async (pagefind) => {
-      let datas = await loadAllPages(pagefind);
-      datas = datas.filter(d => !isHidden(d));
-      console.info("[sidebar] 索引共 " + datas.length + " 页");
-      window.__sbPages = datas;
-      const groups = toGroups(buildTree(datas));
-      window.__sbGroups = groups;
-      renderNav(groups);
-      setLoading();
-      if (!navEl.querySelector("a.sb-link")) {
-        console.warn("[sidebar] 索引有数据但没有生成任何分组");
+  function urlKeySet(datas) {
+    return new Set(datas.map(d => toCanonical(d.url)));
+  }
+
+  function sameUrlSet(a, b) {
+    const ka = urlKeySet(a), kb = urlKeySet(b);
+    if (ka.size !== kb.size) return false;
+    for (const k of ka) if (!kb.has(k)) return false;
+    return true;
+  }
+
+  const baseReady = loadPagefind();
+
+  if (FORCE_CRAWLER) {
+    baseReady
+      .then(() => crawlAllPages())
+      .then(datas => {
+        currentDatas = mergeDatas([], datas);
+        console.info("[sidebar] 索引共 " + currentDatas.length + " 页(纯爬虫)");
+        renderAll(currentDatas);
+        setLoading();
+        logoEl.src = P("/image/logo.png");
+        searchEl.href = P("/search.html");
+      })
+      .catch(e => {
+        console.error("[sidebar] 加载失败:", e);
+        setLoading("索引加载失败,请刷新重试", true);
+      });
+  } else {
+    const indexPromise = baseReady.then(pf => tryPagefind(pf));
+    const crawlPromise = baseReady
+      .then(() => crawlAllPages())
+      .catch(e => {
+        console.warn("[sidebar] 爬虫失败,保持索引数据:", (e && e.message) || e);
+        return null;
+      });
+
+    indexPromise
+      .then(datas => {
+        currentDatas = datas;
+        console.info("[sidebar] 索引首屏:" + datas.length + " 页(等待爬虫校正…)");
+        renderAll(datas);
+        setLoading();
+        logoEl.src = P("/image/logo.png");
+        searchEl.href = P("/search.html");
+      })
+      .catch(e => {
+        console.error("[sidebar] 索引加载失败:", e);
+        setLoading("索引加载失败,请刷新重试", true);
+      });
+
+    crawlPromise.then(crawlDatas => {
+      if (!crawlDatas) return;
+      const merged = mergeDatas(currentDatas, crawlDatas);
+      if (sameUrlSet(merged, currentDatas)) {
+        console.info("[sidebar] 爬虫校正:URL 集合与索引一致,跳过重渲染(" + merged.length + " 页)");
+      } else {
+        const added = merged.filter(d => !urlKeySet(currentDatas).has(toCanonical(d.url)));
+        const removed = currentDatas.filter(d => !urlKeySet(merged).has(toCanonical(d.url)));
+        console.info(
+          "[sidebar] 爬虫校正:重渲染(" + merged.length + " 页;" +
+          "新增 " + added.length + ":[" + added.map(d => d.url).join(", ") + "]" +
+          " 移除 " + removed.length + ":[" + removed.map(d => d.url).join(", ") + "])"
+        );
+        currentDatas = merged;
+        renderAll(merged);
       }
-      logoEl.src = P("/image/logo.png");
-      searchEl.href = P("/search.html");
-      const dated = datas.map(d => ({
-        url: d.url,
-        title: titleOf(d),
-        date: ((d.meta && d.meta.date) || "").trim(),
-      })).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d.date));
-      if (document.body.getAttribute("data-sidebar-recent") !== "off") {
-        const recent = [...dated].sort((a, b) => b.date.localeCompare(a.date)).slice(0, RECENT_COUNT);
-        if (recent.length) {
-          const el = sidebar.querySelector("#sbRecent");
-          sidebar.querySelector("#sbRecentWrap").hidden = false;
-          recent.forEach(d => {
-            const a = document.createElement("a");
-            a.href = P(toCanonical(d.url));
-            a.className = "sb-recent-link";
-            a.innerHTML = `<span class="sb-recent-title"></span><span class="sb-recent-date"></span>`;
-            a.querySelector(".sb-recent-title").textContent = d.title;
-            a.querySelector(".sb-recent-date").textContent = d.date.slice(5);
-            el.appendChild(a);
-          });
-        }
-      }
-      if (document.body.getAttribute("data-sidebar-history") !== "off") {
-        const now = new Date();
-        const md = String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-        const hits = dated.filter(d => d.date.slice(5) === md).sort((a, b) => b.date.localeCompare(a.date));
-        const limited = hits.slice(0, HISTORY_COUNT);
-        sidebar.querySelector("#sbHistoryTitle").textContent = "历史上的今天 · " + md.replace("-", "/");
-        const el = sidebar.querySelector("#sbHistory");
-        el.innerHTML = "";
-        if (limited.length) {
-          limited.forEach(d => {
-            const a = document.createElement("a");
-            a.href = P(toCanonical(d.url));
-            a.className = "sb-history-link";
-            a.innerHTML = `<span class="sb-history-title"></span><span class="sb-history-year"></span>`;
-            a.querySelector(".sb-history-title").textContent = d.title;
-            a.querySelector(".sb-history-year").textContent = d.date.slice(0, 4);
-            el.appendChild(a);
-          });
-        } else {
-          const p = document.createElement("span");
-          p.className = "sb-history-empty";
-          p.textContent = "暂无";
-          el.appendChild(p);
-        }
-      }
-      return datas;
-    })
-    .catch(e => {
-      console.error("[sidebar] 加载失败:", e);
-      renderNav([]);
-      setLoading("索引加载失败,请刷新重试", true);
-      return [];
     });
+  }
+
+  const pagesReady = new Promise(res => {
+    const check = () => {
+      if (currentDatas.length || !sidebar.querySelector("#sbLoading")) res(currentDatas);
+      else setTimeout(check, 150);
+    };
+    check();
+  });
 
   // ============================================================
-  // 6.5 小工具折叠菜单
+  // 8. 小工具折叠菜单
   // ============================================================
   (function () {
     const toggle = sidebar.querySelector("#sbToolsToggle");
@@ -697,7 +762,7 @@
   })();
 
   // ============================================================
-  // 5. 本页目录
+  // 9. 本页目录
   // ============================================================
   if (document.body.getAttribute("data-sidebar-toc") !== "off") {
     const toc = sidebar.querySelector("#sbToc");
@@ -742,7 +807,7 @@
   }
 
   // ============================================================
-  // 6. 返回上页
+  // 10. 返回上页
   // ============================================================
   sidebar.querySelector("#sbBack").addEventListener("click", e => {
     e.preventDefault();
@@ -755,7 +820,7 @@
   });
 
   // ============================================================
-  // 7. 开关逻辑
+  // 11. 开关逻辑
   // ============================================================
   const overlay = document.createElement("div");
   overlay.id = "sbOverlay";
@@ -816,7 +881,7 @@
   };
 
   // ============================================================
-  // 8. 完整样式(树形连接线 + 加快版动效)
+  // 12. 完整样式
   // ============================================================
   const style = document.createElement("style");
   style.textContent = `
@@ -870,7 +935,6 @@
     }
     .sb-title { font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
 
-    /* ---- 三卡统一尺寸基准 ---- */
     .sb-search {
       display: flex;
       align-items: center;
@@ -1018,7 +1082,6 @@
     }
     .sb-tools-link.placeholder { opacity: .4; }
 
-    /* 加载中指示器 */
     .sb-loading {
       display: flex;
       flex-direction: column;
@@ -1076,7 +1139,6 @@
     }
     .sb-nav { margin-top: 4px; }
 
-    /* =============== 树形连接线 + 展开动画 =============== */
     .sb-node { margin: 1px 0; }
     .sb-node > summary {
       list-style: none;
