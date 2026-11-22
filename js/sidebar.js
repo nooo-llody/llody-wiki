@@ -340,7 +340,7 @@
       details.className = "sb-node";
       const summary = document.createElement("summary");
       summary.className = "sb-node-summary";
-      summary.title = "单击展开/收起 · 双击或右键打开页面";
+      summary.title = "单击展开/收起   双击或右键打开页面";
       const arrow = document.createElement("span");
       arrow.className = "sb-arrow";
       arrow.textContent = "▸";
@@ -434,7 +434,7 @@
       const md = String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
       const hits = dated.filter(d => d.date.slice(5) === md).sort((a, b) => b.date.localeCompare(a.date));
       const limited = hits.slice(0, HISTORY_COUNT);
-      sidebar.querySelector("#sbHistoryTitle").textContent = "历史上的今天 · " + md.replace("-", "/");
+      sidebar.querySelector("#sbHistoryTitle").textContent = "历史上的今天   " + md.replace("-", "/");
       const el = sidebar.querySelector("#sbHistory");
       el.innerHTML = "";
       if (limited.length) {
