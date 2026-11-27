@@ -1538,3 +1538,259 @@
    }
    body.neu .timeline-item::after { border-color: var(--bg); }
    
+   /* ============================================================
+   新拟态扩展：侧边栏 + 搜索页
+   ============================================================ */
+
+/* ---------- 全站侧边栏 .site-sidebar ---------- */
+body.neu .site-sidebar {
+  background: var(--bg);
+  border-right: none;
+  box-shadow: 6px 0 20px var(--neu-dark),
+              -6px 0 20px var(--bg); /* 右侧柔和投影 */
+}
+
+/* 头部区域 */
+body.neu .sb-head {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+body.neu .sb-logo {
+  background: var(--bg);
+  border-radius: var(--neu-radius);
+  padding: 2px;
+  box-shadow: var(--neu-btn);
+}
+
+/* 「返回上页」「专业搜索」「小工具」按钮 → 凸起拟态 */
+body.neu .sb-back,
+body.neu .sb-search,
+body.neu .sb-tools-toggle {
+  background: var(--bg);
+  border: none;
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .sb-back:hover,
+body.neu .sb-search:hover,
+body.neu .sb-tools-toggle:hover {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: 3px 3px 8px var(--neu-dark), -3px -3px 8px var(--neu-light);
+}
+
+body.neu .sb-tools-toggle.expanded {
+  background: var(--bg);
+  box-shadow: var(--neu-in); /* 展开时切换为凹陷 */
+}
+
+/* 小工具列表项 */
+body.neu .sb-tools-link {
+  border-radius: var(--neu-radius);
+}
+
+body.neu .sb-tools-link:hover {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .sb-tools-link.active {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: var(--neu-in);
+}
+
+/* 树形节点链接 */
+body.neu .sb-link {
+  border-radius: var(--neu-radius);
+}
+
+body.neu .sb-link:hover {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .sb-link.active {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: var(--neu-in);
+}
+
+/* 加载骨架：改为凹陷 */
+body.neu .sb-skeleton {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--neu-dark) 30%, var(--bg)) 25%,
+    color-mix(in srgb, var(--neu-light) 60%, var(--bg)) 50%,
+    color-mix(in srgb, var(--neu-dark) 30%, var(--bg)) 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* 「最近更新 / 历史上的今天 / 本页目录」区块 */
+body.neu .sb-toc-wrap,
+body.neu .sb-recent-wrap,
+body.neu .sb-history-wrap {
+  border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+body.neu .sb-toc-link.active {
+  color: var(--primary);
+  border-left-color: var(--primary);
+}
+
+body.neu .sb-recent-link:hover,
+body.neu .sb-history-link:hover {
+  background: var(--bg);
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .sb-history-year {
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg));
+}
+
+/* ---------- 搜索页 search.html ---------- */
+
+/* 左侧筛选栏 → 凸起拟态面板 */
+body.neu .filter-sidebar {
+  background: var(--bg);
+  border: none;
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-out);
+}
+
+/* 主搜索输入框 → 凹陷 */
+body.neu #searchInput {
+  border: none;
+  border-radius: 50px;
+  background: var(--bg);
+  box-shadow: var(--neu-in);
+}
+
+body.neu #searchInput:focus {
+  border-color: transparent;
+  box-shadow: var(--neu-in),
+              0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+/* 移动端「筛选条件」切换按钮 → 凸起 */
+body.neu .mobile-filter-toggle {
+  background: var(--bg);
+  border: none;
+  border-radius: 50px;
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .mobile-filter-toggle.active {
+  box-shadow: var(--neu-in);
+}
+
+body.neu .mobile-filter-toggle .badge {
+  box-shadow: 2px 2px 5px var(--neu-dark);
+}
+
+/* 快捷分类按钮 → 凸起药丸 */
+body.neu .quick-category-btn {
+  background: var(--bg);
+  border: none;
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .quick-category-btn:hover {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: 3px 3px 8px var(--neu-dark), -3px -3px 8px var(--neu-light);
+}
+
+body.neu .quick-category-btn.active {
+  background: var(--bg);
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: var(--neu-in);
+}
+
+/* 可折叠筛选分组（details.filter-group）→ 凹陷 */
+body.neu details.filter-group {
+  background: var(--bg);
+  border: none;
+  border-radius: var(--neu-radius);
+  box-shadow: var(--neu-in);
+}
+
+/* 普通筛选分组内嵌 details → 微凸 */
+body.neu .filter-value details {
+  border-radius: var(--neu-radius);
+  box-shadow: 2px 2px 5px var(--neu-dark), -2px -2px 5px var(--neu-light);
+}
+
+/* 复选框、日期输入 → 凹陷 */
+body.neu .filter-value input[type="checkbox"] {
+  box-shadow: 1px 1px 3px var(--neu-dark), -1px -1px 3px var(--neu-light);
+  border-radius: 4px;
+}
+
+body.neu .date-input-item input[type="date"] {
+  border: none;
+  border-radius: var(--neu-radius);
+  background: var(--bg);
+  box-shadow: var(--neu-in);
+}
+
+/* 下拉排序框 → 凹陷 */
+body.neu .toolbar select {
+  border: none;
+  background: var(--bg);
+  box-shadow: var(--neu-in);
+}
+
+/* 已选筛选标签 → 凸起小药丸 */
+body.neu .active-filter-tag {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: 2px 2px 6px var(--neu-dark), -2px -2px 6px var(--neu-light);
+}
+
+body.neu .active-filter-tag button {
+  color: var(--primary);
+}
+
+/* 结果列表分隔线柔化 */
+body.neu .result-item {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+}
+
+/* 标签药丸 */
+body.neu .tag-pill {
+  background: var(--bg);
+  box-shadow: 2px 2px 5px var(--neu-dark), -2px -2px 5px var(--neu-light);
+  border: none;
+}
+
+body.neu .tag-pill:hover {
+  background: var(--bg);
+  color: var(--primary);
+  box-shadow: var(--neu-in);
+}
+
+/* 「加载更多」按钮 → 凸起 */
+body.neu #loadMoreBtn {
+  background: var(--bg);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: var(--neu-btn);
+}
+
+body.neu #loadMoreBtn:hover {
+  color: var(--primary);
+  filter: none;
+}
+
+/* 结果缩略图 → 凹陷内嵌 */
+body.neu .result-thumb {
+  border: none;
+  background: var(--bg);
+  box-shadow: inset 3px 3px 8px var(--neu-dark),
+              inset -3px -3px 8px var(--neu-light);
+}
